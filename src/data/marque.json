@@ -1,0 +1,222 @@
+{
+  "marques": [
+    {
+      "nom": "The North Face",
+      "description_fr": "Dans notre magasin, découvrez un corner exclusif dédié à la marque The North Face. Ce veritable espace de plus de 50m2 propose une selection complete pour toute la famille : vetements tcehniques et decontractés pour homme, femme et enfants, sans oublier une gamme d'accesoires indispensables. Que vous recherchiez l'excellence des collections SUMMIT SERIES pour vos aventures en altitude ou le style moderne et confortable de la ligne LIFESTYLE, vous trouverez ici tout ce qu'il vous faut. Faites le plein d'équipement pour la montagne ou le quotidien dans un cadre chaleureux au cœur de la station.",
+      "description_en": "In our store, discover an exclusive corner dedicated to the brand The North Face. This real space of more than 50 m2 offers a complete selection for the whole family: technical and casual clothing for men, women and children, not forgetting a range of essential accessories. Whether you are looking for the excellence of the SUMMIT SERIES collections for your adventures at altitude or the modern and comfortable style of the LIFESTYLE line, you will find everything you need here. Stock up on equipment for the mountains or everyday life in a warm setting in the heart of the resort.",
+      "description": "Marque outdoor réputée pour ses équipements techniques, vêtements et accessoires résistants aux intempéries.",
+      "imageFolder": "/img/Thenorthface/",
+      "mainImage": "/img/Thenorthface/The%20North%20Face%20Dawn%20Turn.jpg",
+      "logo": "/img/Thenorthface/logo.svg",
+      "images": [
+        "/img/Thenorthface/image%20tnf1.avif",
+        "/img/Thenorthface/image%20tnf%203.avif",
+        "/img/Thenorthface/image%20tnf%205.avif",
+        "/img/Thenorthface/image%20tnf%206.avif",
+        "/img/Thenorthface/image%20tnf%207.avif"
+      ],
+      "tags": ["Fashion", "Products"],
+      "type": "Vêtements outdoor"
+    },
+    {
+      "nom": "ICEBREAKER",
+      "description_fr": "Icebreaker incarne l'essence même de la Nouvelle Zélande à travers ses vêtements de performance ancrés dans la nature. En prônant la transparence, la responsabilité et l'innovation inspirée par celle-ci, la marque met en avant une laine mérinos haut de gamme, provenant directement des moutons élevés dans leurs propres fermes néo-zélandaises. Au cœur de leur démarche, une durabilité inégalée et des valeurs profondes se distinguent, faisant d'Icebreaker bien plus qu'une simple marque, mais un véritable symbole d'engagement envers la nature et le bien être de chacun, en proposant notamment une large gamme de produits adaptés à tous types d'activités.",
+      "description_en": "Icebreaker embodies the essence of New Zealand through its performance clothing rooted in nature. By promoting transparency, responsibility and innovation inspired by it, the brand highlights premium merino wool, sourced directly from sheep raised on their own New Zealand farms. At the heart of their approach, unmatched sustainability and deep values stand out, making Icebreaker much more than just a brand, but a true symbol of commitment to nature and the well-being of each person, notably by offering a wide range of products adapted to all types of activities.",
+      "description": "Vêtements et équipements durables, inspirés par la nature, principalement en laine mérinos.",
+      "imageFolder": "/img/ICEBREAKER/",
+      "mainImage": "/img/ICEBREAKER/image (1).png",
+      "logo": "/img/ICEBREAKER/img.svg",
+      "images": ["/img/ICEBREAKER/image (1).png", "/img/ICEBREAKER/image.png"],
+      "tags": ["Fashion", "Products"],
+      "type": "Vêtements techniques"
+    },
+    {
+      "nom": "Save the duck",
+      "description_fr": "Découvrez l'élégance éthique avec Save The Duck, une marque révolutionnaire que nous avons le plaisir de proposer dans notre boutique. Conjuguant style et responsabilité, leurs vêtements allient haute qualité et engagement envers la protection des animaux, en utilisant des matériaux innovants et respectueux de l'environnement. Chaque pièce incarne l'équilibre parfait entre mode et durabilité, offrant à nos clients la possibilité de faire un choix conscient sans compromettre leur style. Venez explorer en magasin toute l'année notre sélection de vestes de prêt à porter et accessoires.",
+      "description_en": "Discover ethical elegance with Save The Duck, a revolutionary brand that we are pleased to offer in our store. Combining style and responsibility, their garments combine high quality with a commitment to animal protection, using innovative and environmentally friendly materials. Each piece embodies the perfect balance between fashion and sustainability, offering our customers the opportunity to make a conscious choice without compromising their style. Come and explore our selection of ready-to-wear jackets and accessories in store all year round.",
+      "description": "Marque italienne proposant des vêtements éco-responsables sans plumes ni matières animales.",
+      "imageFolder": "/img/Savetheduck/",
+      "mainImage": "/img/Savetheduck/IMG_1222.jpg",
+      "logo": "/img/Savetheduck/logo.png",
+      "images": [
+        "/img/Savetheduck/IMG_1222.jpg",
+        "/img/Savetheduck/IMG_1223.jpg",
+        "/img/Savetheduck/IMG_1224.jpg",
+        "/img/Savetheduck/IMG_1225.jpg"
+      ],
+      "tags": ["Fashion", "Products"],
+      "type": "Vêtements éco-responsables"
+    },
+    {
+      "nom": "Timberland",
+      "description_fr": "Lola Espeleta, une marque française, rayonne dans l'univers de la mode féminine avec des collections empreintes de fraîcheur et d'originalité. célébrant l'individualité, elle se distingue par son indépendance et son engagement envers les détaillants multimarques. Chaque piece, au style intemporel et au prix raissonable, offre une invitation subtile a chaque femme pour exprimer sa propre histoire à tarvers sa garde robe.",
+      "description_en": "Lola Espeleta, a French brand, shines in the world of women's fashion with collections full of freshness and originality. Celebrating individuality, it stands out for its independence and commitment to multi-brand retailers. Each piece, with its timeless style and reasonable price, offers a subtle invitation to each woman to express her own story through her wardrobe.",
+      "description": "Marque emblématique de chaussures et vêtements outdoor, axée sur durabilité et style.",
+      "imageFolder": "/img/Timberland/",
+      "mainImage": "/img/Timberland/IMG_1221.jpg",
+      "logo": "/img/Timberland/logosvg.svg",
+      "images": [
+        "/img/Timberland/IMG_1218.jpg",
+        "/img/Timberland/IMG_1219.jpg",
+        "/img/Timberland/IMG_1220.jpg",
+        "/img/Timberland/IMG_1221.jpg"
+      ],
+      "tags": ["Fashion", "Products"],
+      "type": "Chaussures et vêtements"
+    },
+    {
+      "nom": "UGG",
+      "description_fr": "Plonger dans l'univers de UGG, une marque dont le nom est synonyme de confort et de style. Des emblématiques bottes en peau de moutons aux vêtements chics et décontractés, UGG propose une gamme diversifiée de produits qui allient qualité et esthétique. Avec un engagement ferme envers le bien être animal et la préservation de l'environnement, chaque article est conçu avec des matériaux durables et des pratiques éthiques, offrant ainsi une expérience de mode authentique et responsable.",
+      "description_en": "Delve into the world of UGG, a brand whose name is synonymous with comfort and style. From iconic sheepskin boots to smart and casual apparel, UGG offers a diverse range of products that combine quality and aesthetics. With a strong commitment to animal welfare and environmental conservation, each item is designed with sustainable materials and ethical practices, providing an authentic and responsible fashion experience.",
+      "description": "Marque australienne célèbre pour ses bottes en peau de mouton, confortables et stylées.",
+      "imageFolder": "/img/Ugg/",
+      "mainImage": "/img/Ugg/IMG_1212.jpeg",
+      "logo": "/img/Ugg/logo.svg",
+      "images": [
+        "/img/Ugg/ugg%20image%201.jpg",
+        "/img/Ugg/ugg%20image%202.jpg",
+        "/img/Ugg/ugg%20image%203.jpg",
+        "/img/Ugg/IMG_1212.jpeg",
+        "/img/Ugg/IMG_1215.jpeg",
+        "/img/Ugg/IMG_1216.jpeg"
+      ],
+      "tags": ["Fashion", "Products"],
+      "type": "Chaussures"
+    },
+    {
+      "nom": "Lola espeleta",
+      "description_fr": "Lola Espeleta, une marque française, rayonne dans l'univers de la mode féminine avec des collections empreintes de fraîcheur et d'originalité. célébrant l'individualité, elle se distingue par son indépendance et son engagement envers les détaillants multimarques. Chaque piece, au style intemporel et au prix raissonable, offre une invitation subtile a chaque femme pour exprimer sa propre histoire à tarvers sa garde robe.",
+      "description_en": "Lola Espeleta, a French brand, shines in the world of women's fashion with collections full of freshness and originality. Celebrating individuality, it stands out for its independence and commitment to multi-brand retailers. Each piece, with its timeless style and reasonable price, offers a subtle invitation to each woman to express her own story through her wardrobe.",
+      "description": "Marque française proposant des vêtements féminins colorés, élégants et accessibles.",
+      "imageFolder": "/img/Lola espeleta/",
+      "mainImage": "/img/Lola espeleta/image (2).png",
+      "logo": "/img/Lola espeleta/logo.svg",
+      "images": [
+        "/img/Lola%20espeleta/image%20lola%20espeleta%201.jpg",
+        "/img/Lola%20espeleta/image%20lola%20espeleta%202.jpg",
+        "/img/Lola%20espeleta/image%20lola%20espeleta%203.webp",
+        "/img/Lola%20espeleta/image%20lola%20espeleta%204.jpg",
+        "/img/Lola%20espeleta/image%20lola%20espeleta%205.jpg",
+        "/img/Lola espeleta/image (2).png"
+      ],
+      "tags": ["Fashion", "Products"],
+      "type": "Vêtements féminins"
+    },
+    {
+      "nom": "La fee maraboutée",
+      "description_fr": "La Fée Maraboutée puise sa créativité dans le goût des voyages, les mélanges des cultures, et les rencontres. Elle propose un style qui traverse les modes en s'affranchissant des tendances. Elle change le regard sur le vêtement et sur les corps en valorisant toutes les morphologies. La marque honore toutes les féminités et invite à se connecter au plaisir de se sentir belle et bien au quotidien. Éclectiques, généreuses, inattendues, ses collections se déclinent dans des palettes de couleurs naturelles et chaleureuses. Nous commercialisons également la ligne \"La Fée Atelier\" que vous trouverez uniquement dans les commerces indépendants. La fée maraboutée veille au respect de ses valeurs éthiques dans l'ensemble des étapes de confection en étroite collaboration avec ses partenaires fabricants.",
+      "description_en": "La Fée Maraboutée draws its creativity from a taste for travel, the blending of cultures, and encounters. It offers a style that transcends fashions by freeing itself from trends. It changes the way we look at clothing and bodies by enhancing all body types. The brand honors all femininities and invites us to connect with the pleasure of feeling beautiful and good every day. Eclectic, generous, unexpected, its collections come in palettes of natural and warm colors. We also market the \"La Fée Atelier\" line that you will find only in independent stores. La fée maraboutée ensures that its ethical values are respected throughout all stages of production in close collaboration with its manufacturing partners.",
+      "description": "Marque française de prêt-à-porter féminin, mêlant créativité, élégance et originalité.",
+      "imageFolder": "/img/La fee maraboute/",
+      "mainImage": "/img/La fee maraboute/image.png",
+      "logo": "/img/La%20fee%20maraboute/logo.png",
+      "images": [
+        "/img/La fee maraboute/image.png",
+        "/img/La fee maraboute/image (1).png",
+        "/img/La fee maraboute/image (2).png",
+        "/img/La fee maraboute/image (3).png"
+      ],
+      "tags": ["Fashion", "Products"],
+      "type": "Prêt-à-porter féminin"
+    },
+    {
+      "nom": "Lorenacanals",
+      "description_fr": "Lorena Canals, marque espagnole, révolutionne le monde du design d'intérieur avec ses tapis et accessoires innovants. Conjuguant élégance et praticité, chaque pièce est conçue avec des matériaux de haute qualité et une attention méticuleuse aux détails. Ce qui distingue Lorena Canals, c'est sa technologie de produits en laine lavables en machine, offrant une solution sans effort pour garder les espaces impeccables et accueillants. Explorer une gamme de créations contemporaines dans nos boutiques ou le style rencontre la fonctionnalité.",
+      "description_en": "Spanish brand Lorena Canals is revolutionising the world of interior design with its innovative rugs and accessories. Combining elegance and practicality, each piece is designed with high-quality materials and meticulous attention to detail. What sets Lorena Canals apart is its machine-washable wool product technology, offering an effortless solution to keeping spaces spotless and welcoming. Explore a range of contemporary designs in our stores where style meets functionality.",
+      "description": "Marque spécialisée dans des tapis lavables et accessoires pour maison, pratiques et élégants.",
+      "imageFolder": "/img/lorenacanals/",
+      "mainImage": "/img/lorenacanals/image (2).png",
+      "logo": "/img/lorenacanals/logo.svg",
+      "images": [
+        "/img/lorenacanals/image.png",
+        "/img/lorenacanals/image (1).png",
+        "/img/lorenacanals/image (2).png",
+        "/img/lorenacanals/image (4).png"
+      ],
+      "tags": ["Home", "Decor"],
+      "type": "Décoration intérieure"
+    },
+    {
+      "nom": "RH+",
+      "description_fr": "rh+ produit depuis plus de 15 ans des vêtements et accessoires de sport de haute performance. La marque italienne rh+ est synonyme d'esprit sportif, une valeur qui se reflète dans les matériaux techniques de haute performance que l'entreprise a développés au fil des années, tant dans son laboratoire spécialisé qu'avec les retours de vrais athlètes. Les produits de l'entreprise portent tous le même design de marque, qui allie le meilleur en termes de style et de performances. Plus que toute autre entreprise, rh+ a toujours cru qu'il fallait apporter de l'élégance à ses collections de vêtements de sport et des matériaux innovants à ses vêtements lifestyle.",
+      "description_en": "rh+ has been producing high-performance sportswear and accessories for over 15 years. The Italian brand rh+ is synonymous with sportsmanship, a value reflected in the high-performance technical materials the company has developed over the years, both in its specialized laboratory and with feedback from real athletes. The company's products all bear the same brand design, which combines the best in terms of style and performance. More than any other company, rh+ has always believed in bringing elegance to its sportswear collections and innovative materials to its lifestyle clothing.",
+      "description": "Marque italienne proposant équipements sportifs et vêtements techniques, axés sur performance et design.",
+      "imageFolder": "/img/RH+/",
+      "mainImage": "/img/RH+/image.png",
+      "logo": "/img/RH+/logo.svg",
+      "images": [
+        "/img/RH+/image.png",
+        "/img/RH+/image (1).png",
+        "/img/RH+/image (2).png",
+        "/img/RH+/image (3).png"
+      ],
+      "tags": ["Sport", "Performance"],
+      "type": "Équipements sportifs"
+    },
+    {
+      "nom": "Maison pechavy",
+      "description_fr": "Découvrez Maison Pechavy, une marque française que nous avons le plaisir de représenter. Spécialisée dans les bougies, les allumes feux naturels et les diffuseurs, Maison Pechavy incarne l'élégance à la française avec ses produits raffinés et ses senteurs délicates, toujours de bon goût. Offrant des ambiances feutrées et chaleureuses pour toutes les envies, nous sommes fiers de proposer les créations de cette maison familiale du sud-ouest de la France. Maison Pechavy trouve désormais sa place dans notre boutique, prête à enchanter vos moments de détente et de convivialité.",
+      "description_en": "Discover Maison Pechavy, a French brand that we have the pleasure of representing. Specializing in candles, natural firelighters and diffusers, Maison Pechavy embodies French elegance with its refined products and delicate scents, always in good taste. Offering cozy and warm atmospheres for all desires, we are proud to offer the creations of this family house from the southwest of France. Maison Pechavy now finds its place in our boutique, ready to enchant your moments of relaxation and conviviality.",
+      "description": "Marque française d'art de vivre proposant produits élégants pour cheminées et ambiances raffinées.",
+      "imageFolder": "/img/maisonpechavy/",
+      "mainImage": "/img/maisonpechavy/image (3).png",
+      "logo": "/img/maisonpechavy/logo.png",
+      "images": [
+        "/img/maisonpechavy/image.png",
+        "/img/maisonpechavy/image (1).png",
+        "/img/maisonpechavy/image (3).png"
+      ],
+      "tags": ["Home", "Luxury"],
+      "type": "Art de vivre"
+    },
+    {
+      "nom": "Sport d'epoque",
+      "description_fr": "Sports d'Epoque, marque française, propose une large gamme de produits \"authentiques\" qui sont des répliques de maillots originaux, mais aussi une gamme de produits \"inspirés\" dans des styles modernes ou classiques qui intègrent des éléments de l'histoire du sport. Le design, la coupe, les couleurs... Chaque matière a fait l'objet d'une attention particulière lors de leur confection. Attachés à l'authenticité, la transparence, l'ADN de la marque. Le lieu de fabrication des produits est toujours indiqué, France, Portugal ou Italie.",
+      "description_en": "Sports d'Epoque, a French brand, offers a wide range of \"authentic\" products that are replicas of original jerseys, but also a range of \"inspired\" products in modern or classic styles that incorporate elements of sports history. The design, the cut, the colors... Each material has been given special attention during their manufacture. Attached to authenticity, transparency, the DNA of the brand. The place of manufacture of the products is always indicated, France, Portugal or Italy.",
+      "description": "Marque française créant des vêtements et accessoires inspirés du sport vintage et élégant.",
+      "imageFolder": "/img/sportdepoque/",
+      "mainImage": "/img/sportdepoque/polaire-zippe-capuche.jpg",
+      "logo": "/img/sportdepoque/c67f658ceaea3d45d06cd569e9e65e57.svg",
+      "images": [
+        "/img/sportdepoque/polaire-zippe-capuche.jpg",
+        "/img/sportdepoque/polo-afrique-du-sud-1906.jpg",
+        "/img/sportdepoque/surchemise-brand.jpg",
+        "/img/sportdepoque/sweat-great-althea.jpg"
+      ],
+      "tags": ["Fashion", "Vintage"],
+      "type": "Vêtements sportswear"
+    },
+    {
+      "nom": "Benson&Cherry",
+      "description_fr": "Venez découvrir l'authenticité à la française avec Benson&Cherry. Depuis plus de 15 ans, Benson s'engage à offrir des vêtements durables, conçus avec soin dans leurs propres usines en Turquie et accessibles à tous. Inspirées par la diversité du monde qui nous entoure, leurs collections allient tendances et élégance, tout en promouvant une mode plus responsable et éthique. Laissez vous séduire par leurs créations.",
+      "description_en": "Come and discover French authenticity with Benson&Cherry. For over 15 years, Benson has been committed to offering sustainable clothing, carefully designed in their own factories in Turkey and accessible to all. Inspired by the diversity of the world around us, their collections combine trends and elegance, while promoting a more responsible and ethical fashion. Let yourself be seduced by their creations.",
+      "description": "Benson & Cherry est une marque de prêt-à-porter française qui propose des vêtements masculins intemporels et de qualité dans un style européen classique.",
+      "imageFolder": "/img/B&C/",
+      "mainImage": "/img/B&C/image%20benson%203.jpg",
+      "logo": "/img/B&C/Logo%20Benson.png",
+      "images": [
+        "/img/B&C/benson%20image%202.jpg",
+        "/img/B&C/image%20benson.webp",
+        "/img/B&C/image%20benson%203.jpg"
+      ],
+      "tags": ["Fashion", "Men"],
+      "type": "Prêt-à-porter masculin"
+    },
+    {
+      "nom": "Arpin",
+      "description_fr": "Marque historique française spécialisée dans les tissus de laine et la confection artisanale de qualité, perpétuant un savoir-faire traditionnel depuis 1817.",
+      "description_en": "Historic French brand specializing in wool fabrics and quality artisanal craftsmanship, perpetuating traditional know-how since 1817.",
+      "description": "Marque historique française spécialisée dans les tissus de laine et la confection artisanale de qualité, perpétuant un savoir-faire traditionnel depuis 1817.",
+      "imageFolder": "/img/Arpin/",
+      "mainImage": "/img/Arpin/image4.jpeg",
+      "logo": "/img/Arpin/IMG_0253.jpg",
+      "images": [
+        "/img/Arpin/image4.jpeg",
+        "/img/Arpin/image003.jpg",
+        "/img/Arpin/IMG_0253.jpg"
+      ],
+      "tags": ["Home", "Fashion", "Tradition"],
+      "type": "Textile et décoration"
+    }
+  ]
+}
