@@ -141,24 +141,30 @@ export default function Footer() {
               Contact
             </h3>
             <address className="not-italic text-amber-200">
-              <p className="mb-2">123 Avenue de la Mode</p>
-              <p className="mb-2">75001 Paris, France</p>
+              <p className="mb-2">21 Rte du Front de Neige</p>
+              <p className="mb-2">74260 Les Gets, France</p>
               <p className="mb-2">
                 <a
-                  href="tel:+33123456789"
+                  href="tel:0450801355"
                   className="hover:text-white transition-colors"
                 >
-                  +33 1 23 45 67 89
+                  04 50 80 13 55
                 </a>
               </p>
-              <p>
+              <p className="mb-4">
                 <a
-                  href="mailto:contact@example.com"
+                  href="mailto:contact@nivalis.fr"
                   className="hover:text-white transition-colors"
                 >
-                  contact@example.com
+                  contact@nivalis.fr
                 </a>
               </p>
+              <div className="text-sm">
+                <p className="mb-1">
+                  <span className="font-medium">Horaires:</span>
+                </p>
+                <p className="mb-1">Lun-Dim: 10:00–12:30, 14:30–19:00</p>
+              </div>
             </address>
           </div>
         </div>
