@@ -1,15 +1,68 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
 interface ImageGalleryProps {
-  images: string[];
+  // Uniquement le chemin du dossier d'images
+  imageFolderPath: string;
   marqueNom: string;
 }
 
-export default function ImageGallery({ images, marqueNom }: ImageGalleryProps) {
+export default function ImageGallery({
+  imageFolderPath,
+  marqueNom,
+}: ImageGalleryProps) {
   const [fullscreen, setFullscreen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const imagesPerPage = 12; // Nombre d'images par page
+
+  useEffect(() => {
+    // Fonction pour charger les images à partir du dossier
+    const loadImagesFromFolder = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // Assurez-vous que le chemin se termine par un slash
+        const folder = imageFolderPath.endsWith("/")
+          ? imageFolderPath
+          : `${imageFolderPath}/`;
+
+        // Appel à l'API pour récupérer la liste des images
+        const response = await fetch(
+          `/api/images?folder=${encodeURIComponent(folder)}`
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Erreur lors de la récupération des images: ${response.status}`
+          );
+        }
+
+        const data = await response.json();
+
+        if (data && data.images && Array.isArray(data.images)) {
+          setGalleryImages(data.images);
+        } else {
+          setGalleryImages([]);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des images:", error);
+        setError(
+          "Impossible de charger les images. Veuillez réessayer plus tard."
+        );
+        setGalleryImages([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadImagesFromFolder();
+  }, [imageFolderPath]);
 
   // Fonction pour ouvrir le mode plein écran
   const openFullscreen = (index: number) => {
@@ -19,12 +72,104 @@ export default function ImageGallery({ images, marqueNom }: ImageGalleryProps) {
 
   // Navigation dans le mode plein écran
   const nextImage = () => {
-    setSelectedImage((prev) => (prev + 1) % images.length);
+    setSelectedImage((prev) => (prev + 1) % galleryImages.length);
   };
 
   const prevImage = () => {
-    setSelectedImage((prev) => (prev - 1 + images.length) % images.length);
+    setSelectedImage(
+      (prev) => (prev - 1 + galleryImages.length) % galleryImages.length
+    );
   };
+
+  // Gestion des touches du clavier en mode plein écran
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!fullscreen) return;
+
+      switch (e.key) {
+        case "ArrowRight":
+          nextImage();
+          break;
+        case "ArrowLeft":
+          prevImage();
+          break;
+        case "Escape":
+          setFullscreen(false);
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [fullscreen]);
+
+  // Calcul pour la pagination
+  const totalPages = Math.ceil(galleryImages.length / imagesPerPage);
+  const currentImages = galleryImages.slice(
+    (currentPage - 1) * imagesPerPage,
+    currentPage * imagesPerPage
+  );
+
+  // Changement de page
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // On affiche un message de chargement si les images sont en cours de chargement
+  if (isLoading) {
+    return (
+      <section className="py-16 bg-amber-50/30">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-amber-900 mb-8">
+            Collection {marqueNom}
+          </h2>
+          <div className="bg-white p-8 rounded-lg shadow-md">
+            <p className="text-amber-800">Chargement des images...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // On affiche un message d'erreur si le chargement a échoué
+  if (error) {
+    return (
+      <section className="py-16 bg-amber-50/30">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-amber-900 mb-8">
+            Collection {marqueNom}
+          </h2>
+          <div className="bg-white p-8 rounded-lg shadow-md">
+            <p className="text-amber-800">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors shadow-sm"
+            >
+              Réessayer
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // On affiche un message si aucune image n'est disponible
+  if (galleryImages.length === 0) {
+    return (
+      <section className="py-16 bg-amber-50/30">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-amber-900 mb-8">
+            Collection {marqueNom}
+          </h2>
+          <div className="bg-white p-8 rounded-lg shadow-md">
+            <p className="text-amber-800">
+              Aucune image disponible pour le moment.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 bg-amber-50/30">
@@ -33,27 +178,32 @@ export default function ImageGallery({ images, marqueNom }: ImageGalleryProps) {
           Collection {marqueNom}
         </h2>
 
-        {/* Grille d'images avec animation */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {images.map((img, index) => (
+        {/* Grille d'images avec animation - affiche toutes les images de la page courante */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {currentImages.map((img, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
+              transition={{ duration: 0.4, delay: index * 0.05 }} // Délai réduit pour ne pas attendre trop longtemps
               className="group relative aspect-square rounded-lg overflow-hidden shadow-md cursor-pointer"
-              onClick={() => openFullscreen(index)}
+              onClick={() =>
+                openFullscreen((currentPage - 1) * imagesPerPage + index)
+              }
             >
               <Image
                 src={img}
-                alt={`Image ${index + 1} de ${marqueNom}`}
+                alt={`Image ${
+                  (currentPage - 1) * imagesPerPage + index + 1
+                } de ${marqueNom}`}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
-                sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <div className="absolute bottom-3 left-3 text-white text-sm font-medium">
-                  {index + 1}/{images.length}
+                  {(currentPage - 1) * imagesPerPage + index + 1}/
+                  {galleryImages.length}
                 </div>
                 <div className="absolute bottom-3 right-3">
                   <svg
@@ -76,19 +226,63 @@ export default function ImageGallery({ images, marqueNom }: ImageGalleryProps) {
           ))}
         </div>
 
-        {/* Bouton pour voir toutes les images si plus de 6 */}
-        {images.length > 6 && (
-          <div className="flex justify-center mt-8">
+        {/* Pagination pour naviguer entre les pages d'images */}
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-8 gap-2">
             <button
-              onClick={() => setFullscreen(true)}
-              className="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors shadow-sm"
+              onClick={() => goToPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className={`px-3 py-1 rounded-md ${
+                currentPage === 1
+                  ? "bg-amber-100 text-amber-400 cursor-not-allowed"
+                  : "bg-amber-100 hover:bg-amber-200 text-amber-800"
+              }`}
             >
-              Voir toutes les images ({images.length})
+              &larr;
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => goToPage(i + 1)}
+                className={`px-3 py-1 rounded-md ${
+                  currentPage === i + 1
+                    ? "bg-amber-500 text-white"
+                    : "bg-amber-100 hover:bg-amber-200 text-amber-800"
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+
+            <button
+              onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className={`px-3 py-1 rounded-md ${
+                currentPage === totalPages
+                  ? "bg-amber-100 text-amber-400 cursor-not-allowed"
+                  : "bg-amber-100 hover:bg-amber-200 text-amber-800"
+              }`}
+            >
+              &rarr;
             </button>
           </div>
         )}
 
-        {/* Mode plein écran */}
+        {/* Bouton pour voir toutes les images en plein écran */}
+        <div className="flex justify-center mt-8">
+          <button
+            onClick={() => {
+              setSelectedImage(0);
+              setFullscreen(true);
+            }}
+            className="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors shadow-sm"
+          >
+            Voir toutes les images ({galleryImages.length})
+          </button>
+        </div>
+
+        {/* Mode plein écran - permet de parcourir toutes les images */}
         {fullscreen && (
           <div
             className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center"
@@ -96,7 +290,7 @@ export default function ImageGallery({ images, marqueNom }: ImageGalleryProps) {
           >
             <div className="relative h-full w-full p-10 flex items-center justify-center">
               <Image
-                src={images[selectedImage]}
+                src={galleryImages[selectedImage]}
                 alt={`Image ${selectedImage + 1} de ${marqueNom}`}
                 fill
                 className="object-contain"
@@ -172,13 +366,13 @@ export default function ImageGallery({ images, marqueNom }: ImageGalleryProps) {
                 </svg>
               </button>
 
-              {/* Miniatures en bas */}
+              {/* Miniatures en bas avec défilement horizontal */}
               <div className="absolute bottom-6 left-0 right-0 flex justify-center">
-                <div className="bg-black/60 p-2 rounded-md flex space-x-2 overflow-x-auto max-w-screen-lg">
-                  {images.map((img, index) => (
+                <div className="bg-black/60 p-2 rounded-md flex space-x-2 overflow-x-auto max-w-screen-lg snap-x">
+                  {galleryImages.map((img, index) => (
                     <div
                       key={index}
-                      className={`relative h-16 w-16 rounded-md overflow-hidden cursor-pointer border transition-transform ${
+                      className={`relative h-16 w-16 flex-shrink-0 rounded-md overflow-hidden cursor-pointer border transition-transform snap-start ${
                         index === selectedImage
                           ? "border-amber-500 scale-105"
                           : "border-transparent opacity-50 hover:opacity-100"
@@ -201,7 +395,7 @@ export default function ImageGallery({ images, marqueNom }: ImageGalleryProps) {
               </div>
 
               <div className="absolute top-4 left-4 bg-black/40 px-3 py-1 rounded-md text-white text-sm">
-                {selectedImage + 1} / {images.length}
+                {selectedImage + 1} / {galleryImages.length}
               </div>
             </div>
           </div>

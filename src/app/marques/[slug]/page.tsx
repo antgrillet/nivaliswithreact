@@ -22,6 +22,7 @@ interface MarqueData {
   website?: string;
   histoire?: string;
   images?: string[];
+  imageFolder?: string;
   produits?: {
     id?: string;
     nom: string;
@@ -192,7 +193,10 @@ export default function MarqueDetailPage() {
 
       {/* Galerie d'images */}
       {marque.images && marque.images.length > 0 && (
-        <ImageGallery images={marque.images} marqueNom={marque.nom} />
+        <ImageGallery
+          imageFolderPath={marque.imageFolder || `/img/${marque.nom}/`}
+          marqueNom={marque.nom}
+        />
       )}
 
       {/* Section histoire et valeurs */}

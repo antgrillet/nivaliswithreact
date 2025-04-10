@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChangeEvent, FormEvent } from "react";
+import ImageGallery from "@/components/ImageGallery";
 
 export default function ArpinPage() {
   const [formData, setFormData] = useState({
@@ -305,6 +306,11 @@ export default function ArpinPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Galerie d'images */}
+      <section className="py-16 bg-amber-50/30">
+        <ImageGallery imageFolderPath="/img/Arpin/" marqueNom="Arpin" />
       </section>
 
       {/* Collections section */}
