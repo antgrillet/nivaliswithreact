@@ -145,18 +145,18 @@ export default function Footer() {
               <p className="mb-2">74260 Les Gets, France</p>
               <p className="mb-2">
                 <a
-                  href="tel:0450801355"
+                  href="tel:0681736647"
                   className="hover:text-white transition-colors"
                 >
-                  04 50 80 13 55
+                  06 81 73 66 47
                 </a>
               </p>
               <p className="mb-4">
                 <a
-                  href="mailto:contact@nivalis.fr"
+                  href="mailto:contact@nivalislesgets.com"
                   className="hover:text-white transition-colors"
                 >
-                  contact@nivalis.fr
+                  contact@nivalislesgets.com
                 </a>
               </p>
               <div className="text-sm">

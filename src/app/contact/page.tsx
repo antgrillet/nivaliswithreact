@@ -110,8 +110,8 @@ export default function ContactPage() {
                       Téléphone
                     </h3>
                     <p className="text-amber-700">
-                      <a href="tel:0450801355" className="hover:text-amber-900">
-                        04 50 80 13 55
+                      <a href="tel:0681736647" className="hover:text-amber-900">
+                        06 81 73 66 47
                       </a>
                     </p>
                   </div>
@@ -122,10 +122,10 @@ export default function ContactPage() {
                     </h3>
                     <p className="text-amber-700">
                       <a
-                        href="mailto:contact@nivalis.fr"
+                        href="mailto:contact@nivalislesgets.com"
                         className="hover:text-amber-900"
                       >
-                        contact@nivalis.fr
+                        contact@nivalislesgets.com
                       </a>
                     </p>
                   </div>
