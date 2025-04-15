@@ -364,26 +364,27 @@ export default function MarquesPage() {
                         .replace(/\s+/g, "-")}`}
                     >
                       <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl h-full border border-amber-100 hover:border-amber-300 hover:-translate-y-1 bg-white group">
-                        <div className="relative h-60 w-full bg-amber-100">
+                        <div className="relative aspect-[4/3] w-full overflow-hidden bg-amber-100">
                           <Image
                             src={marque.mainImage}
                             alt={`Image de ${marque.nom}`}
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="object-cover object-center group-hover:scale-105 transition-transform duration-500 brightness-[1.05]"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           />
-                          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                          <div className="absolute bottom-0 left-0 w-full p-4 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                            <span className="inline-block bg-amber-100 text-amber-900 text-xs px-2 py-1 rounded mb-2">
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-30 group-hover:opacity-70 transition-opacity duration-300"></div>
+                          <div className="absolute bottom-0 left-0 w-full p-4 transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                            <span className="inline-block bg-amber-100/90 backdrop-blur-sm text-amber-900 text-xs px-2.5 py-1 rounded-full mb-2 font-medium">
                               {marque.type}
                             </span>
-                            <p className="text-white text-sm line-clamp-3">
+                            <p className="text-white text-sm line-clamp-3 drop-shadow-md">
                               {marque.description}
                             </p>
                           </div>
                         </div>
 
                         <CardContent className="p-6 relative">
-                          <div className="absolute -top-10 left-4 h-16 w-16 bg-white rounded-full border-4 border-white shadow-md flex items-center justify-center overflow-hidden">
+                          <div className="absolute -top-10 left-4 h-16 w-16 bg-white rounded-full border-4 border-white shadow-md flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300">
                             <Image
                               src={marque.logo}
                               alt={`Logo de ${marque.nom}`}

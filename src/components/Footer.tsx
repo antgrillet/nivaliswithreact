@@ -3,25 +3,54 @@ import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer className="bg-amber-900 text-amber-50 pt-12 pb-6">
+    <footer className="bg-amber-900 text-amber-50 pt-12 pb-8">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          <div className="mb-8">
-            <Image
-              src="/img/logo.png"
-              alt="Logo"
-              width={150}
-              height={50}
-              className="mb-4 invert"
+        {/* Newsletter Signup */}
+        <div className="mb-12 max-w-xl mx-auto text-center">
+          <h3 className="text-xl font-semibold mb-3 text-amber-100">
+            Restez informé
+          </h3>
+          <p className="text-amber-200 text-sm mb-5">
+            Inscrivez-vous à notre newsletter pour découvrir nos nouvelles
+            collections et offres exclusives.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="email"
+              placeholder="Votre email"
+              className="flex-1 px-4 py-2.5 rounded-l-md bg-amber-800/80 border border-amber-700 text-amber-50 placeholder:text-amber-400/70 focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
-            <p className="text-amber-200 text-sm mb-4">
-              Votre destination exclusive pour des marques de qualité et des
-              produits d'exception.
-            </p>
+            <button className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-r-md transition-colors">
+              S'inscrire
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+          {/* Brand and Social */}
+          <div>
+            <div className="mb-6">
+              <Image
+                src="/img/logo.png"
+                alt="Logo Nivalis"
+                width={150}
+                height={50}
+                className="mb-4 brightness-[1.2] drop-shadow-md"
+              />
+              <p className="text-amber-200 text-sm mb-5">
+                Votre destination exclusive pour des marques de qualité et des
+                produits d'exception depuis 2010.
+              </p>
+            </div>
+
+            <h4 className="text-sm font-medium uppercase tracking-wider text-amber-300 mb-3">
+              Suivez-nous
+            </h4>
             <div className="flex gap-4">
               <a
                 href="#"
-                className="text-amber-200 hover:text-white transition-colors"
+                aria-label="Facebook"
+                className="text-amber-200 hover:text-white transition-colors bg-amber-800/60 hover:bg-amber-800 w-9 h-9 rounded-full flex items-center justify-center"
               >
                 <svg
                   className="w-5 h-5"
@@ -38,7 +67,8 @@ export default function Footer() {
               </a>
               <a
                 href="#"
-                className="text-amber-200 hover:text-white transition-colors"
+                aria-label="Instagram"
+                className="text-amber-200 hover:text-white transition-colors bg-amber-800/60 hover:bg-amber-800 w-9 h-9 rounded-full flex items-center justify-center"
               >
                 <svg
                   className="w-5 h-5"
@@ -56,94 +86,152 @@ export default function Footer() {
             </div>
           </div>
 
+          {/* Navigation */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-amber-100">
-              Liens rapides
+            <h3 className="text-lg font-semibold mb-5 text-amber-100">
+              Navigation
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               <li>
                 <Link
                   href="/"
-                  className="text-amber-200 hover:text-white transition-colors"
+                  className="text-amber-200 hover:text-white transition-colors flex items-center"
                 >
-                  Accueil
+                  <span className="text-xs mr-2">›</span> Accueil
                 </Link>
               </li>
               <li>
                 <Link
                   href="/marques"
-                  className="text-amber-200 hover:text-white transition-colors"
+                  className="text-amber-200 hover:text-white transition-colors flex items-center"
                 >
-                  Nos marques
+                  <span className="text-xs mr-2">›</span> Nos marques
                 </Link>
               </li>
               <li>
                 <Link
                   href="/marques/arpin"
-                  className="text-amber-200 hover:text-white transition-colors"
+                  className="text-amber-200 hover:text-white transition-colors flex items-center"
                 >
-                  Arpin
+                  <span className="text-xs mr-2">›</span> Arpin
                 </Link>
               </li>
               <li>
                 <Link
                   href="/contact"
-                  className="text-amber-200 hover:text-white transition-colors"
+                  className="text-amber-200 hover:text-white transition-colors flex items-center"
                 >
-                  Contact
+                  <span className="text-xs mr-2">›</span> Contact
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/a-propos"
+                  className="text-amber-200 hover:text-white transition-colors flex items-center"
+                >
+                  <span className="text-xs mr-2">›</span> À propos
                 </Link>
               </li>
             </ul>
           </div>
 
+          {/* Catégories */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-amber-100">
-              Catégories
+            <h3 className="text-lg font-semibold mb-5 text-amber-100">
+              Nos produits
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               <li>
                 <Link
                   href="/categories/vetements"
-                  className="text-amber-200 hover:text-white transition-colors"
+                  className="text-amber-200 hover:text-white transition-colors flex items-center"
                 >
-                  Vêtements
+                  <span className="text-xs mr-2">›</span> Vêtements
                 </Link>
               </li>
               <li>
                 <Link
                   href="/categories/chaussures"
-                  className="text-amber-200 hover:text-white transition-colors"
+                  className="text-amber-200 hover:text-white transition-colors flex items-center"
                 >
-                  Chaussures
+                  <span className="text-xs mr-2">›</span> Chaussures
                 </Link>
               </li>
               <li>
                 <Link
                   href="/categories/decoration"
-                  className="text-amber-200 hover:text-white transition-colors"
+                  className="text-amber-200 hover:text-white transition-colors flex items-center"
                 >
-                  Décoration
+                  <span className="text-xs mr-2">›</span> Décoration
                 </Link>
               </li>
               <li>
                 <Link
                   href="/categories/accessoires"
-                  className="text-amber-200 hover:text-white transition-colors"
+                  className="text-amber-200 hover:text-white transition-colors flex items-center"
                 >
-                  Accessoires
+                  <span className="text-xs mr-2">›</span> Accessoires
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/categories/nouveautes"
+                  className="text-amber-200 hover:text-white transition-colors flex items-center"
+                >
+                  <span className="text-xs mr-2">›</span> Nouveautés
                 </Link>
               </li>
             </ul>
           </div>
 
+          {/* Contact */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-amber-100">
+            <h3 className="text-lg font-semibold mb-5 text-amber-100">
               Contact
             </h3>
-            <address className="not-italic text-amber-200">
-              <p className="mb-2">21 Rte du Front de Neige</p>
-              <p className="mb-2">74260 Les Gets, France</p>
-              <p className="mb-2">
+            <address className="not-italic text-amber-200 space-y-3">
+              <p className="flex items-start">
+                <svg
+                  className="w-5 h-5 mr-3 mt-0.5 text-amber-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  ></path>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  ></path>
+                </svg>
+                <span>
+                  21 Rte du Front de Neige
+                  <br />
+                  74260 Les Gets, France
+                </span>
+              </p>
+              <p className="flex items-center">
+                <svg
+                  className="w-5 h-5 mr-3 text-amber-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                  ></path>
+                </svg>
                 <a
                   href="tel:0681736647"
                   className="hover:text-white transition-colors"
@@ -151,26 +239,79 @@ export default function Footer() {
                   06 81 73 66 47
                 </a>
               </p>
-              <p className="mb-4">
+              <p className="flex items-center">
+                <svg
+                  className="w-5 h-5 mr-3 text-amber-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  ></path>
+                </svg>
                 <a
                   href="mailto:contact@nivalislesgets.com"
-                  className="hover:text-white transition-colors"
+                  className="hover:text-white transition-colors break-all"
                 >
                   contact@nivalislesgets.com
                 </a>
               </p>
-              <div className="text-sm">
-                <p className="mb-1">
-                  <span className="font-medium">Horaires:</span>
+              <div className="pt-3">
+                <p className="flex items-center mb-2">
+                  <svg
+                    className="w-5 h-5 mr-3 text-amber-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  <span className="font-medium text-amber-100">Horaires:</span>
                 </p>
-                <p className="mb-1">Lun-Dim: 10:00–12:30, 14:30–19:00</p>
+                <p className="ml-8 text-sm">
+                  Lun-Dim: 10:00–12:30, 14:30–19:00
+                </p>
               </div>
             </address>
           </div>
         </div>
 
-        <div className="border-t border-amber-800 mt-12 pt-6 text-center text-amber-400 text-sm">
-          <p>&copy; {new Date().getFullYear()} - Tous droits réservés</p>
+        {/* Bottom footer */}
+        <div className="border-t border-amber-800 pt-8 mt-4">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <p className="text-amber-400 text-sm mb-4 md:mb-0">
+              &copy; {new Date().getFullYear()} Nivalis Les Gets - Tous droits
+              réservés
+            </p>
+            <div className="flex gap-6 text-sm text-amber-400">
+              <Link
+                href="/mentions-legales"
+                className="hover:text-white transition-colors"
+              >
+                Mentions légales
+              </Link>
+              <Link
+                href="/politique-confidentialite"
+                className="hover:text-white transition-colors"
+              >
+                Politique de confidentialité
+              </Link>
+              <Link href="/cgv" className="hover:text-white transition-colors">
+                CGV
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

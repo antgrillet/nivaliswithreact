@@ -39,12 +39,20 @@ export default function HeroSection() {
             <span className="text-amber-200">d'Arpin</span>
           </h1>
 
-          <p className="text-lg md:text-xl mb-10 max-w-2xl mx-auto drop-shadow leading-relaxed text-amber-50/90 animate-fadeSlideUp animation-delay-300">
+          <p className="text-lg md:text-xl mb-6 max-w-2xl mx-auto drop-shadow leading-relaxed text-amber-50/90 animate-fadeSlideUp animation-delay-300">
             Un savoir-faire traditionnel français perpétué au fil des
             générations.
             <br className="hidden md:block" />
             Tissus de laine et confections artisanales de qualité
             exceptionnelle.
+          </p>
+
+          <p className="text-lg md:text-xl mb-10 max-w-2xl mx-auto drop-shadow leading-relaxed text-amber-200 font-medium animate-fadeSlideUp animation-delay-400">
+            Arpin et{" "}
+            <span className="underline decoration-1 underline-offset-4">
+              plusieurs autres marques prestigieuses
+            </span>{" "}
+            disponibles en boutique.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-5 justify-center mb-8 animate-fadeSlideUp animation-delay-500">
@@ -56,7 +64,7 @@ export default function HeroSection() {
             <Link href="/contact">
               <Button
                 variant="outline"
-                className="border-2 border-amber-300/80 text-amber-50 hover:bg-amber-700/50 px-7 py-3 text-base font-medium shadow-xl transition-all duration-300 hover:scale-105 rounded-full"
+                className="border-2 border-amber-300 text-amber-50 bg-amber-800/60 hover:bg-amber-700 px-7 py-3 text-base font-medium shadow-xl transition-all duration-300 hover:scale-105 rounded-full"
               >
                 Nous contacter
               </Button>

@@ -44,7 +44,9 @@ export default function Navbar() {
                 width={140}
                 height={50}
                 className={`object-contain transition-all duration-300 ${
-                  scrolled ? "" : "brightness-[0.85]"
+                  scrolled
+                    ? ""
+                    : "brightness-[1.2] drop-shadow-[0_0_3px_rgba(255,255,255,0.5)]"
                 }`}
               />
               <div className="absolute bottom-0 left-0 w-full h-0.5 bg-amber-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>

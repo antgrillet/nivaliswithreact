@@ -42,7 +42,7 @@ export default function BrandSection({ marques }: BrandSectionProps) {
             choisie pour son excellence et son engagement.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-2 mb-8">
+          {/* <div className="flex flex-wrap justify-center gap-2 mb-8">
             {allTags.map((tag) => (
               <button
                 key={tag}
@@ -56,7 +56,7 @@ export default function BrandSection({ marques }: BrandSectionProps) {
                 {tag}
               </button>
             ))}
-          </div>
+          </div>*/}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">

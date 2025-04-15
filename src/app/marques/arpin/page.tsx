@@ -168,6 +168,27 @@ export default function ArpinPage() {
                   </a>
 
                   <a
+                    href="#catalogue"
+                    className="inline-flex items-center px-6 py-3 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors"
+                  >
+                    Télécharger le catalogue
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-5 h-5 ml-2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+                      />
+                    </svg>
+                  </a>
+
+                  <a
                     href="#histoire"
                     className="inline-flex items-center px-6 py-3 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors"
                   >
@@ -302,6 +323,55 @@ export default function ArpinPage() {
                   fill
                   className="object-cover"
                 />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section Catalogue PDF */}
+      <section id="catalogue" className="py-20 bg-amber-50/80">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold text-amber-900 mb-4">
+                Consultez notre catalogue
+              </h2>
+              <p className="text-amber-700 text-lg mb-6">
+                Explorez notre sélection de produits artisanaux en laine
+              </p>
+              <a
+                href="/Catalogue sur Mesure Arpin 2022.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-6 py-3 bg-amber-700 hover:bg-amber-800 text-white rounded-lg transition-colors shadow-md mb-8"
+              >
+                Télécharger le catalogue
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5 ml-2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+                  />
+                </svg>
+              </a>
+            </div>
+
+            <div className="w-full bg-white rounded-xl shadow-xl overflow-hidden">
+              <div className="relative w-full" style={{ height: "80vh" }}>
+                <iframe
+                  src="/Catalogue sur Mesure Arpin 2022.pdf"
+                  className="w-full h-full"
+                  title="Catalogue Arpin"
+                  allowFullScreen
+                ></iframe>
               </div>
             </div>
           </div>

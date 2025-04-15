@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Image from "next/image";
+import Image from "./Image";
 import { motion } from "framer-motion";
 
 interface ImageGalleryProps {
@@ -7,6 +7,15 @@ interface ImageGalleryProps {
   imageFolderPath: string;
   marqueNom: string;
 }
+
+// Cache avec timestamp d'expiration
+interface CacheEntry {
+  images: string[];
+  timestamp: number;
+}
+
+const imageCache = new Map<string, CacheEntry>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export default function ImageGallery({
   imageFolderPath,
@@ -21,20 +30,27 @@ export default function ImageGallery({
   const imagesPerPage = 12; // Nombre d'images par page
 
   useEffect(() => {
-    // Fonction pour charger les images à partir du dossier
     const loadImagesFromFolder = async () => {
       setIsLoading(true);
       setError(null);
 
       try {
-        // Assurez-vous que le chemin se termine par un slash
+        // Vérifier le cache avec expiration
+        const cached = imageCache.get(imageFolderPath);
+        const now = Date.now();
+
+        if (cached && now - cached.timestamp < CACHE_DURATION) {
+          setGalleryImages(cached.images);
+          setIsLoading(false);
+          return;
+        }
+
         const folder = imageFolderPath.endsWith("/")
           ? imageFolderPath
           : `${imageFolderPath}/`;
 
-        // Appel à l'API pour récupérer la liste des images
         const response = await fetch(
-          `/api/images?folder=${encodeURIComponent(folder)}`
+          `/api/images?folder=${encodeURIComponent(folder)}&_t=${now}`
         );
 
         if (!response.ok) {
@@ -46,6 +62,11 @@ export default function ImageGallery({
         const data = await response.json();
 
         if (data && data.images && Array.isArray(data.images)) {
+          // Mettre en cache avec timestamp
+          imageCache.set(imageFolderPath, {
+            images: data.images,
+            timestamp: now,
+          });
           setGalleryImages(data.images);
         } else {
           setGalleryImages([]);
@@ -199,6 +220,7 @@ export default function ImageGallery({
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                priority={index < 4}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <div className="absolute bottom-3 left-3 text-white text-sm font-medium">
