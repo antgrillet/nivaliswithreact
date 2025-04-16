@@ -6,25 +6,7 @@ export default function Footer() {
     <footer className="bg-amber-900 text-amber-50 pt-12 pb-8">
       <div className="container mx-auto px-4">
         {/* Newsletter Signup */}
-        <div className="mb-12 max-w-xl mx-auto text-center">
-          <h3 className="text-xl font-semibold mb-3 text-amber-100">
-            Restez informé
-          </h3>
-          <p className="text-amber-200 text-sm mb-5">
-            Inscrivez-vous à notre newsletter pour découvrir nos nouvelles
-            collections et offres exclusives.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <input
-              type="email"
-              placeholder="Votre email"
-              className="flex-1 px-4 py-2.5 rounded-l-md bg-amber-800/80 border border-amber-700 text-amber-50 placeholder:text-amber-400/70 focus:outline-none focus:ring-2 focus:ring-amber-500"
-            />
-            <button className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-r-md transition-colors">
-              S'inscrire
-            </button>
-          </div>
-        </div>
+        
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Brand and Social */}

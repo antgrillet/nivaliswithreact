@@ -31,6 +31,8 @@ export async function GET(request: NextRequest) {
     const decodedPath = decodeURIComponent(sanitizedPath);
     let fullPath = path.join(publicDir, decodedPath);
 
+    console.log("Chemin complet initial:", fullPath);
+
     // Vérification que le chemin est contenu dans public pour des raisons de sécurité
     if (!fullPath.startsWith(publicDir)) {
       return NextResponse.json(
@@ -46,6 +48,11 @@ export async function GET(request: NextRequest) {
     if (!directoryExists && !fullPath.endsWith(path.sep)) {
       fullPath += path.sep;
       directoryExists = fs.existsSync(fullPath);
+      console.log(
+        "Tentative avec séparateur de chemin:",
+        fullPath,
+        directoryExists
+      );
     }
 
     // Si le dossier n'existe toujours pas, on tente une recherche insensible à la casse
@@ -53,18 +60,55 @@ export async function GET(request: NextRequest) {
       const parentDir = path.dirname(fullPath);
       const targetDir = path.basename(fullPath);
 
+      console.log("Recherche sans casse:", parentDir, targetDir);
+
       if (fs.existsSync(parentDir)) {
         // Recherche du dossier sans tenir compte de la casse
         const dirEntries = fs.readdirSync(parentDir);
-        const matchingDir = dirEntries.find(
-          (entry) =>
-            entry.toLowerCase() === targetDir.toLowerCase() &&
-            fs.statSync(path.join(parentDir, entry)).isDirectory()
-        );
+        console.log("Entrées de dossier:", dirEntries);
+
+        const matchingDir = dirEntries.find((entry) => {
+          const entryLower = entry.toLowerCase();
+          const targetLower = targetDir.toLowerCase();
+          const isMatch = entryLower === targetLower;
+          const isDir =
+            fs.existsSync(path.join(parentDir, entry)) &&
+            fs.statSync(path.join(parentDir, entry)).isDirectory();
+
+          console.log(
+            `Comparaison: "${entryLower}" vs "${targetLower}" = ${isMatch}, estDossier = ${isDir}`
+          );
+
+          return isMatch && isDir;
+        });
 
         if (matchingDir) {
           fullPath = path.join(parentDir, matchingDir);
           directoryExists = true;
+          console.log("Dossier correspondant trouvé:", fullPath);
+        }
+      }
+    }
+
+    // Essayer une dernière méthode pour trouver le dossier
+    if (!directoryExists) {
+      const imgDir = path.join(publicDir, "img");
+      if (fs.existsSync(imgDir)) {
+        const allDirs = fs.readdirSync(imgDir);
+        const possibleMatch = allDirs.find(
+          (dir) =>
+            dir.toLowerCase() === path.basename(decodedPath).toLowerCase()
+        );
+
+        if (possibleMatch) {
+          fullPath = path.join(imgDir, possibleMatch);
+          directoryExists =
+            fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory();
+          console.log(
+            "Correspondance alternative trouvée:",
+            fullPath,
+            directoryExists
+          );
         }
       }
     }
@@ -96,6 +140,7 @@ export async function GET(request: NextRequest) {
 
     // Lecture du contenu du dossier
     const files = fs.readdirSync(fullPath);
+    console.log("Fichiers trouvés:", files);
 
     // Filtrage des fichiers pour ne garder que les images
     const imageFiles = files.filter((file) => {
@@ -115,8 +160,13 @@ export async function GET(request: NextRequest) {
         ? sanitizedPath
         : `${sanitizedPath}/`;
 
+      // Construire le chemin avec le nom du fichier
+      // Utiliser le nom de fichier tel qu'il est sur le disque, sans l'encoder
+      // car Next.js fera l'encodage au moment d'afficher l'image
       return `${folderPathWithTrailingSlash}${file}`;
     });
+
+    console.log("Chemins d'images finaux:", imagePaths);
 
     // Réponse avec la liste des chemins d'images (triés alphabétiquement)
     return NextResponse.json({
@@ -124,13 +174,15 @@ export async function GET(request: NextRequest) {
       folder: sanitizedPath,
       count: imagePaths.length,
     });
-  } catch (error: any) {
-    console.error("Erreur lors de la récupération des images:", error);
+  } catch (error: unknown) {
+    const apiError = error as { message: string; stack?: string };
+    console.error("Erreur lors de la récupération des images:", apiError);
     return NextResponse.json(
       {
         error: "Erreur serveur lors de la récupération des images",
-        message: error.message,
-        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+        message: apiError.message,
+        stack:
+          process.env.NODE_ENV === "development" ? apiError.stack : undefined,
       },
       { status: 500 }
     );

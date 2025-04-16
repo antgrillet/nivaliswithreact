@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "./Image";
 import { motion } from "framer-motion";
 
@@ -8,13 +8,14 @@ interface ImageGalleryProps {
   marqueNom: string;
 }
 
-// Cache avec timestamp d'expiration
+// Type pour les entrées dans le cache
 interface CacheEntry {
   images: string[];
   timestamp: number;
 }
 
-const imageCache = new Map<string, CacheEntry>();
+// Cache d'images simple pour éviter de recharger les mêmes données à chaque fois
+const imageCache: Record<string, CacheEntry> = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export default function ImageGallery({
@@ -30,54 +31,51 @@ export default function ImageGallery({
   const imagesPerPage = 12; // Nombre d'images par page
 
   useEffect(() => {
+    // Fonction pour charger les images depuis le dossier
     const loadImagesFromFolder = async () => {
-      setIsLoading(true);
-      setError(null);
-
       try {
-        // Vérifier le cache avec expiration
-        const cached = imageCache.get(imageFolderPath);
+        // Vérifie si les données sont dans le cache et si elles sont encore valides
+        const cachedData = imageCache[imageFolderPath];
         const now = Date.now();
 
-        if (cached && now - cached.timestamp < CACHE_DURATION) {
-          setGalleryImages(cached.images);
+        if (
+          cachedData &&
+          cachedData.images.length > 0 &&
+          now - cachedData.timestamp < CACHE_DURATION
+        ) {
+          console.log("Utilisation des images en cache");
+          setGalleryImages(cachedData.images);
           setIsLoading(false);
           return;
         }
 
-        const folder = imageFolderPath.endsWith("/")
-          ? imageFolderPath
-          : `${imageFolderPath}/`;
-
-        const response = await fetch(
-          `/api/images?folder=${encodeURIComponent(folder)}&_t=${now}`
-        );
+        // Si les données ne sont pas dans le cache ou sont expirées, on fait une requête
+        setIsLoading(true);
+        const response = await fetch(`/api/images?folder=${imageFolderPath}`);
 
         if (!response.ok) {
           throw new Error(
-            `Erreur lors de la récupération des images: ${response.status}`
+            `Erreur lors du chargement des images : ${response.status}`
           );
         }
 
         const data = await response.json();
+        // Tri des images par nom pour une présentation cohérente
+        const sortedImages = data.images.sort();
 
-        if (data && data.images && Array.isArray(data.images)) {
-          // Mettre en cache avec timestamp
-          imageCache.set(imageFolderPath, {
-            images: data.images,
-            timestamp: now,
-          });
-          setGalleryImages(data.images);
-        } else {
-          setGalleryImages([]);
-        }
+        // Mise à jour du cache
+        imageCache[imageFolderPath] = {
+          images: sortedImages,
+          timestamp: now,
+        };
+
+        setGalleryImages(sortedImages);
+        setIsLoading(false);
       } catch (error) {
         console.error("Erreur lors du chargement des images:", error);
         setError(
           "Impossible de charger les images. Veuillez réessayer plus tard."
         );
-        setGalleryImages([]);
-      } finally {
         setIsLoading(false);
       }
     };
@@ -85,22 +83,22 @@ export default function ImageGallery({
     loadImagesFromFolder();
   }, [imageFolderPath]);
 
-  // Fonction pour ouvrir le mode plein écran
+  // Fonction pour ouvrir l'image en plein écran
   const openFullscreen = (index: number) => {
     setSelectedImage(index);
     setFullscreen(true);
   };
 
-  // Navigation dans le mode plein écran
-  const nextImage = () => {
+  // Navigation entre les images en mode plein écran
+  const nextImage = useCallback(() => {
     setSelectedImage((prev) => (prev + 1) % galleryImages.length);
-  };
+  }, [galleryImages.length]);
 
-  const prevImage = () => {
+  const prevImage = useCallback(() => {
     setSelectedImage(
       (prev) => (prev - 1 + galleryImages.length) % galleryImages.length
     );
-  };
+  }, [galleryImages.length]);
 
   // Gestion des touches du clavier en mode plein écran
   useEffect(() => {
@@ -122,7 +120,7 @@ export default function ImageGallery({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [fullscreen]);
+  }, [fullscreen, nextImage, prevImage]);
 
   // Calcul pour la pagination
   const totalPages = Math.ceil(galleryImages.length / imagesPerPage);

@@ -130,16 +130,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       images: allImages,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const apiError = error as { message: string; stack?: string };
     console.error(
       "Erreur lors de la récupération des images aléatoires:",
-      error
+      apiError
     );
     return NextResponse.json(
       {
-        error: "Erreur serveur lors de la récupération des images",
-        message: error.message,
-        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+        error: "Erreur serveur lors de la récupération des images aléatoires",
+        message: apiError.message,
+        stack:
+          process.env.NODE_ENV === "development" ? apiError.stack : undefined,
       },
       { status: 500 }
     );

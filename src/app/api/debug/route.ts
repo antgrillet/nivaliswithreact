@@ -6,7 +6,22 @@ import path from "path";
  * API de débogage pour vérifier la structure des dossiers d'images
  * Cela aide à comprendre comment les chemins sont résolus dans l'application
  */
-export async function GET(request: NextRequest) {
+
+// Définition du type pour les dossiers de marques
+interface BrandFolder {
+  name: string;
+  path: string;
+  exists: boolean;
+  imageCount: number;
+}
+
+// Définition du type pour les erreurs
+interface ApiError extends Error {
+  stack?: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function GET(_request: NextRequest) {
   const publicDir = path.join(process.cwd(), "public");
   const imgDir = path.join(publicDir, "img");
 
@@ -16,7 +31,7 @@ export async function GET(request: NextRequest) {
     const imgExists = fs.existsSync(imgDir);
 
     // Récupération des dossiers de marques dans /public/img
-    let brandFolders = [];
+    let brandFolders: BrandFolder[] = [];
     if (imgExists) {
       brandFolders = fs
         .readdirSync(imgDir)
@@ -50,13 +65,15 @@ export async function GET(request: NextRequest) {
       },
       brandFolders,
     });
-  } catch (error) {
-    console.error("Erreur lors du débogage:", error);
+  } catch (error: unknown) {
+    const apiError = error as ApiError;
+    console.error("Erreur lors du débogage:", apiError);
     return NextResponse.json(
       {
         error: "Erreur serveur lors du débogage",
-        message: error.message,
-        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+        message: apiError.message,
+        stack:
+          process.env.NODE_ENV === "development" ? apiError.stack : undefined,
       },
       { status: 500 }
     );

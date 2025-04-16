@@ -91,13 +91,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       results,
     });
-  } catch (error: any) {
-    console.error("Erreur lors de la récupération des images:", error);
+  } catch (error: unknown) {
+    const apiError = error as { message: string; stack?: string };
+    console.error("Erreur lors de la récupération des images:", apiError);
     return NextResponse.json(
       {
         error: "Erreur serveur lors de la récupération des images",
-        message: error.message,
-        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+        message: apiError.message,
+        stack:
+          process.env.NODE_ENV === "development" ? apiError.stack : undefined,
       },
       { status: 500 }
     );

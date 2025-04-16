@@ -8,37 +8,38 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ImageGallery from "@/components/ImageGallery";
 import marqueData from "@/data/marque.json";
+import { MarqueData } from "@/app/utils/types";
 
 // Interface pour la structure des données de marque
-interface MarqueData {
-  nom: string;
-  description: string;
-  description_fr?: string;
-  description_en?: string;
-  mainImage: string;
-  logo: string;
-  tags: string[];
-  type: string;
-  website?: string;
-  histoire?: string;
-  images?: string[];
-  imageFolder?: string;
-  produits?: {
-    id?: string;
-    nom: string;
-    description: string;
-    image: string;
-    prix?: string;
-  }[];
-  contact?: {
-    adresse?: string;
-    address?: string;
-    telephone?: string;
-    phone?: string;
-    email?: string;
-    horaires?: string;
-  };
-}
+// interface MarqueData {
+//   nom: string;
+//   description: string;
+//   description_fr?: string;
+//   description_en?: string;
+//   mainImage: string;
+//   logo: string;
+//   tags: string[];
+//   type: string;
+//   website?: string;
+//   histoire?: string;
+//   images?: string[];
+//   imageFolder?: string;
+//   produits?: {
+//     id?: string;
+//     nom: string;
+//     description: string;
+//     image: string;
+//     prix?: string;
+//   }[];
+//   contact?: {
+//     adresse?: string;
+//     address?: string;
+//     telephone?: string;
+//     phone?: string;
+//     email?: string;
+//     horaires?: string;
+//   };
+// }
 
 export default function MarqueDetailPage() {
   const params = useParams();

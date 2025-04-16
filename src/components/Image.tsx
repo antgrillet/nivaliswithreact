@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import NextImage from "next/image";
+import { encodeImageUrl } from "@/utils/imageUtils";
 
 interface ImageProps {
   src: string;
@@ -45,8 +46,14 @@ export default function Image({
           return;
         }
 
+        // Encoder correctement l'URL pour gérer les espaces et caractères spéciaux
+        const processedSrc = encodeImageUrl(src);
+        console.log(`Traitement de l'URL d'image: ${src} → ${processedSrc}`);
+
         // Ajouter un timestamp pour éviter le cache du navigateur
-        const url = `${src}${src.includes("?") ? "&" : "?"}_t=${now}`;
+        const url = `${processedSrc}${
+          processedSrc.includes("?") ? "&" : "?"
+        }_t=${now}`;
 
         // Vérifier si l'image existe
         const response = await fetch(url, { method: "HEAD" });
@@ -56,11 +63,11 @@ export default function Image({
 
         // Mettre en cache
         imageCache.set(src, {
-          url,
+          url: processedSrc,
           timestamp: now,
         });
 
-        setImageUrl(url);
+        setImageUrl(processedSrc);
       } catch (err) {
         console.error("Erreur de chargement de l'image:", err);
         setError("Impossible de charger l'image");
