@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -12,6 +12,29 @@ import { ChangeEvent, FormEvent } from "react";
 import ImageGallery from "@/components/ImageGallery";
 
 export default function ArpinPage() {
+  const [content, setContent] = useState<any>({
+    hero: {},
+    history: {},
+    catalogue: {},
+    gallery: {},
+    contact: {},
+  });
+
+  // Charger le contenu depuis l'API
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const res = await fetch("/api/cms/content?section=arpin");
+        if (res.ok) {
+          const data = await res.json();
+          setContent(data);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement du contenu:", error);
+      }
+    };
+    fetchContent();
+  }, []);
   const [formData, setFormData] = useState({
     nom: "",
     email: "",
@@ -114,7 +137,9 @@ export default function ArpinPage() {
                 <div className="flex items-center mb-6">
                   <div className="h-20 w-20 bg-white rounded-full shadow-md flex items-center justify-center mr-4 overflow-hidden border border-amber-200">
                     <Image
-                      src="/img/Arpin/IMG_0253.jpg"
+                      src={
+                        content.hero?.logo_image || "/img/Arpin/IMG_0253.jpg"
+                      }
                       alt="Logo Arpin"
                       width={60}
                       height={60}
@@ -122,28 +147,36 @@ export default function ArpinPage() {
                     />
                   </div>
                   <h1 className="text-5xl md:text-6xl font-bold text-amber-900 tracking-tight">
-                    Arpin
+                    {content.hero?.title || "Arpin"}
                   </h1>
                 </div>
 
                 <div className="mb-8">
-                  <span className="inline-block bg-amber-200 text-amber-800 text-sm font-medium px-3 py-1 rounded-full mr-2 shadow-sm">
-                    Tradition
-                  </span>
-                  <span className="inline-block bg-amber-200 text-amber-800 text-sm font-medium px-3 py-1 rounded-full mr-2 shadow-sm">
-                    Artisanat
-                  </span>
-                  <span className="inline-block bg-amber-200 text-amber-800 text-sm font-medium px-3 py-1 rounded-full shadow-sm">
-                    Excellence française
-                  </span>
+                  {content.hero?.tags?.map((tag: string, index: number) => (
+                    <span
+                      key={index}
+                      className="inline-block bg-amber-200 text-amber-800 text-sm font-medium px-3 py-1 rounded-full mr-2 shadow-sm"
+                    >
+                      {tag}
+                    </span>
+                  )) || (
+                    <>
+                      <span className="inline-block bg-amber-200 text-amber-800 text-sm font-medium px-3 py-1 rounded-full mr-2 shadow-sm">
+                        Tradition
+                      </span>
+                      <span className="inline-block bg-amber-200 text-amber-800 text-sm font-medium px-3 py-1 rounded-full mr-2 shadow-sm">
+                        Artisanat
+                      </span>
+                      <span className="inline-block bg-amber-200 text-amber-800 text-sm font-medium px-3 py-1 rounded-full shadow-sm">
+                        Excellence française
+                      </span>
+                    </>
+                  )}
                 </div>
 
                 <p className="text-xl text-amber-800 mb-8 leading-relaxed">
-                  Marque historique française spécialisée dans les tissus de
-                  laine et la confection artisanale de qualité, perpétuant un
-                  savoir-faire traditionnel depuis 1817. Chaque création Arpin
-                  est le fruit d&apos;un travail minutieux respectant des
-                  méthodes ancestrales.
+                  {content.hero?.subtitle ||
+                    "Marque historique française spécialisée dans les tissus de laine et la confection artisanale de qualité, perpétuant un savoir-faire traditionnel depuis 1817. Chaque création Arpin est le fruit d'un travail minutieux respectant des méthodes ancestrales."}
                 </p>
 
                 <div className="flex flex-wrap gap-4">
@@ -207,7 +240,7 @@ export default function ArpinPage() {
             >
               <div className="relative h-[450px] w-full rounded-xl overflow-hidden shadow-xl">
                 <Image
-                  src="/img/Arpin/image4.jpeg"
+                  src={content.hero?.main_image || "/img/Arpin/image4.jpeg"}
                   alt="Textile Arpin"
                   fill
                   className="object-cover"

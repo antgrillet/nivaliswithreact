@@ -1,0 +1,14 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Fichier de Données des Marques
+
+- **Fichier :** [`marque.json`](mdc:src/data/marque.json)
+- **Objectif :** Sert de source de données centralisée pour toutes les informations relatives aux marques utilisées dans l'application.
+- **Structure :**
+    - Contient un objet principal avec une clé `marques`.
+    - `marques` est un tableau d'objets, chaque objet représentant une marque.
+    - Chaque objet marque possède des propriétés comme : `nom`, `description`, `logo` (chemin vers l'image), `mainImage` (chemin vers l'image), `tags` (tableau de chaînes), `type` (chaîne).
+- **Utilisation :** Importé par les composants qui nécessitent d'afficher ou de manipuler des données de marques, par exemple [`HeroSection.tsx`](mdc:src/components/HeroSection.tsx) et [`marques/page.tsx`](mdc:src/app/marques/page.tsx).

@@ -92,11 +92,12 @@ export default function BrandSection({ brands }: BrandSectionProps) {
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-amber-900 mb-4">
-            Découvrez notre sélection de marques
+            Nos marques en boutique
           </h2>
           <p className="text-amber-800/80 max-w-2xl mx-auto text-lg">
-            Nous avons soigneusement sélectionné des marques qui partagent nos
-            valeurs d'authenticité, de qualité et de respect de l'environnement.
+            Venez découvrir en magasin notre sélection exclusive des plus
+            grandes marques outdoor et lifestyle. Notre équipe vous accueille
+            pour vous conseiller et vous faire essayer les produits.
           </p>
         </motion.div>
 
@@ -135,7 +136,7 @@ export default function BrandSection({ brands }: BrandSectionProps) {
               className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex items-center space-x-2"
             >
               <span>
-                {showAllBrands ? "Afficher moins" : "Voir toutes les marques"}
+                {showAllBrands ? "Afficher moins" : "Voir toutes nos marques"}
               </span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -169,15 +170,15 @@ export default function BrandSection({ brands }: BrandSectionProps) {
             <h3 className="text-amber-900 text-4xl font-bold mb-2">
               {brands.length}+
             </h3>
-            <p className="text-amber-700">Marques sélectionnées</p>
+            <p className="text-amber-700">Marques disponibles en magasin</p>
           </div>
           <div className="text-center">
-            <h3 className="text-amber-900 text-4xl font-bold mb-2">95%</h3>
-            <p className="text-amber-700">Satisfaction client</p>
+            <h3 className="text-amber-900 text-4xl font-bold mb-2">50m²</h3>
+            <p className="text-amber-700">D'espace dédié aux marques</p>
           </div>
           <div className="text-center">
-            <h3 className="text-amber-900 text-4xl font-bold mb-2">3.2k</h3>
-            <p className="text-amber-700">Avis positifs</p>
+            <h3 className="text-amber-900 text-4xl font-bold mb-2">7j/7</h3>
+            <p className="text-amber-700">Ouvert toute la semaine</p>
           </div>
         </motion.div>
       </div>

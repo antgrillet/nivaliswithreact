@@ -190,7 +190,7 @@ export default function ArpinFeatureSection() {
                 <span className="text-sm font-medium">
                   Venez découvrir nos produits en boutique -{" "}
                   <span className="underline">
-                    123 Avenue de la Mode, 75001 Paris
+                    21 Rte du Front de Neige, 74260 Les Gets
                   </span>
                 </span>
               </div>

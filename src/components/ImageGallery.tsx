@@ -1,6 +1,10 @@
+"use client";
+
 import { useState, useEffect, useCallback } from "react";
 import Image from "./Image";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 interface ImageGalleryProps {
   // Uniquement le chemin du dossier d'images
@@ -18,6 +22,12 @@ interface CacheEntry {
 const imageCache: Record<string, CacheEntry> = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+interface ImageData {
+  path: string;
+  brand: string;
+  category: string;
+}
+
 export default function ImageGallery({
   imageFolderPath,
   marqueNom,
@@ -29,47 +39,26 @@ export default function ImageGallery({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const imagesPerPage = 12; // Nombre d'images par page
-
   useEffect(() => {
-    // Fonction pour charger les images depuis le dossier
-    const loadImagesFromFolder = async () => {
+    const loadImages = async () => {
       try {
-        // Vérifie si les données sont dans le cache et si elles sont encore valides
-        const cachedData = imageCache[imageFolderPath];
-        const now = Date.now();
-
-        if (
-          cachedData &&
-          cachedData.images.length > 0 &&
-          now - cachedData.timestamp < CACHE_DURATION
-        ) {
-          console.log("Utilisation des images en cache");
-          setGalleryImages(cachedData.images);
-          setIsLoading(false);
-          return;
-        }
-
-        // Si les données ne sont pas dans le cache ou sont expirées, on fait une requête
         setIsLoading(true);
-        const response = await fetch(`/api/images?folder=${imageFolderPath}`);
 
-        if (!response.ok) {
-          throw new Error(
-            `Erreur lors du chargement des images : ${response.status}`
-          );
+        // Utiliser la nouvelle API CMS pour récupérer les marques
+        const response = await fetch("/api/cms/marques");
+        const data = await response.json();
+
+        // Trouver la marque correspondante
+        const marque = data.marques.find(
+          (m: any) => m.nom === marqueNom || m.imageFolder === imageFolderPath
+        );
+
+        if (marque && marque.images) {
+          setGalleryImages(marque.images);
+        } else {
+          setGalleryImages([]);
         }
 
-        const data = await response.json();
-        // Tri des images par nom pour une présentation cohérente
-        const sortedImages = data.images.sort();
-
-        // Mise à jour du cache
-        imageCache[imageFolderPath] = {
-          images: sortedImages,
-          timestamp: now,
-        };
-
-        setGalleryImages(sortedImages);
         setIsLoading(false);
       } catch (error) {
         console.error("Erreur lors du chargement des images:", error);
@@ -80,8 +69,8 @@ export default function ImageGallery({
       }
     };
 
-    loadImagesFromFolder();
-  }, [imageFolderPath]);
+    loadImages();
+  }, [imageFolderPath, marqueNom]);
 
   // Fonction pour ouvrir l'image en plein écran
   const openFullscreen = (index: number) => {
@@ -134,7 +123,7 @@ export default function ImageGallery({
     setCurrentPage(page);
   };
 
-  // On affiche un message de chargement si les images sont en cours de chargement
+  // Loading state
   if (isLoading) {
     return (
       <section className="py-16 bg-amber-50/30">
@@ -150,7 +139,7 @@ export default function ImageGallery({
     );
   }
 
-  // On affiche un message d'erreur si le chargement a échoué
+  // Error state
   if (error) {
     return (
       <section className="py-16 bg-amber-50/30">
@@ -172,7 +161,7 @@ export default function ImageGallery({
     );
   }
 
-  // On affiche un message si aucune image n'est disponible
+  // Empty state
   if (galleryImages.length === 0) {
     return (
       <section className="py-16 bg-amber-50/30">

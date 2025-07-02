@@ -9,15 +9,37 @@ export default function HeroSection() {
   const [currentBrand, setCurrentBrand] = useState(0);
   const [autoplay, setAutoplay] = useState(true);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
+  const [content, setContent] = useState<any>({
+    subtitle: "Multi-marques",
+    description:
+      "Découvrez notre sélection exclusive de marques prestigieuses, chacune choisie pour son excellence et son engagement.",
+  });
+
+  // Charger le contenu depuis l'API
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const res = await fetch(
+          "/api/cms/content?section=homepage&subsection=hero"
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setContent(data);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement du contenu:", error);
+      }
+    };
+    fetchContent();
+  }, []);
 
   // Sélection des marques phares à mettre en avant (5 max)
   const highlightedBrands = [
-    marqueData.marques.find((m) => m.nom === "Arpin"),
-    marqueData.marques.find((m) => m.nom === "The North Face"),
-    marqueData.marques.find((m) => m.nom === "UGG"),
-    marqueData.marques.find((m) => m.nom === "Lola espeleta"),
-    marqueData.marques.find((m) => m.nom === "RH+"),
-  ].filter(Boolean);
+    ...marqueData.marques.filter((m) => m.videos && m.videos.length > 0), // Marques avec vidéos en premier
+    ...marqueData.marques
+      .filter((m) => !m.videos || m.videos.length === 0)
+      .slice(0, 5), // Autres marques jusqu'à 5 max
+  ].slice(0, 5);
 
   // Fonction pour passer à la marque suivante
   const nextBrand = () => {
@@ -75,7 +97,7 @@ export default function HeroSection() {
       {/* Fond décoratif */}
       <div className="absolute inset-0 bg-amber-900/20 z-0"></div>
 
-      {/* Image d'arrière-plan avec effet de panoramique lent */}
+      {/* Image ou vidéo d'arrière-plan */}
       <motion.div
         key={`bg-${currentBrand}`}
         className="absolute inset-0 z-0"
@@ -85,13 +107,25 @@ export default function HeroSection() {
         variants={fadeVariants}
       >
         <div className="relative h-full w-full">
-          <Image
-            src={currentMarque.mainImage}
-            alt={`Image de ${currentMarque.nom}`}
-            fill
-            className="object-cover object-center brightness-[0.75] animate-kenburns"
-            priority
-          />
+          {currentMarque.videos && currentMarque.videos.length > 0 ? (
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover brightness-[0.75]"
+            >
+              <source src={currentMarque.videos[0]} type="video/mp4" />
+            </video>
+          ) : (
+            <Image
+              src={currentMarque.mainImage}
+              alt={`Image de ${currentMarque.nom}`}
+              fill
+              className="object-cover object-center brightness-[0.75] animate-kenburns"
+              priority
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-r from-amber-950/70 via-amber-900/50 to-amber-950/70" />
         </div>
       </motion.div>
@@ -193,107 +227,11 @@ export default function HeroSection() {
 
             <div className="mt-6 glassmorphism rounded-xl p-4">
               <h3 className="text-amber-100 font-medium text-lg mb-2">
-                Nivalis - Multi-marques
+                Nivalis - {content.subtitle}
               </h3>
-              <p className="text-amber-200/80 text-sm">
-                Découvrez notre sélection exclusive de marques prestigieuses,
-                chacune choisie pour son excellence et son engagement.
-              </p>
+              <p className="text-amber-200/80 text-sm">{content.description}</p>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Contrôles du carousel */}
-      <div className="absolute bottom-0 left-0 right-0 flex justify-between items-center p-6 z-30 carousel-transition">
-        <div className="text-amber-200/70 text-sm">
-          <span className="font-medium">{currentBrand + 1}</span> /{" "}
-          {highlightedBrands.length}
-        </div>
-
-        <div className="flex gap-2">
-          <button
-            onClick={prevBrand}
-            className="p-2 rounded-full bg-amber-800/40 hover:bg-amber-700/60 text-amber-100 transition-colors btn-3d"
-            aria-label="Marque précédente"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-              className="w-5 h-5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 19.5L8.25 12l7.5-7.5"
-              />
-            </svg>
-          </button>
-          <button
-            onClick={nextBrand}
-            className="p-2 rounded-full bg-amber-800/40 hover:bg-amber-700/60 text-amber-100 transition-colors btn-3d"
-            aria-label="Marque suivante"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-              className="w-5 h-5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8.25 4.5l7.5 7.5-7.5 7.5"
-              />
-            </svg>
-          </button>
-        </div>
-
-        <div className="flex items-center">
-          <button
-            onClick={() => setAutoplay(!autoplay)}
-            className={`p-2 rounded-full ${
-              autoplay ? "text-amber-400" : "text-amber-200/50"
-            } transition-colors btn-3d`}
-            aria-label={autoplay ? "Pause" : "Play"}
-          >
-            {autoplay ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-                className="w-5 h-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15.75 5.25v13.5m-7.5-13.5v13.5"
-                />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-                className="w-5 h-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"
-                />
-              </svg>
-            )}
-          </button>
         </div>
       </div>
 

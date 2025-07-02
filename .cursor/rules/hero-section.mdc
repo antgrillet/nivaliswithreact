@@ -1,0 +1,15 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Hero Section Component
+
+- **Fichier :** [`HeroSection.tsx`](mdc:src/components/HeroSection.tsx)
+- **Objectif :** Affiche un carrousel animé et interactif des marques phares sur la page d'accueil.
+- **Fonctionnalités clés :**
+    - Carrousel avec lecture automatique et contrôles manuels.
+    - Utilise les données de [`marque.json`](mdc:src/data/marque.json) pour afficher les informations des marques (logo, image principale, description).
+    - Animations réalisées avec `framer-motion`.
+    - Styling basé sur `Tailwind CSS`.
+- **Comportement :** Met en pause la lecture automatique au survol de la souris.

@@ -1,0 +1,23 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+\
+# Page des Marques
+
+- **Fichier :** [`marques/page.tsx`](mdc:src/app/marques/page.tsx)
+- **Objectif :** Affiche la liste complète des marques avec des options de filtrage et de recherche.
+- **Composants utilisés :**
+    - [`Navbar`](mdc:src/components/Navbar.tsx)
+    - [`Footer`](mdc:src/components/Footer.tsx)
+    - [`MarquesHeader`](mdc:src/components/marques/MarquesHeader.tsx)
+    - [`MarquesFilterClient`](mdc:src/components/marques/MarquesFilterClient.tsx) (pour les filtres côté client)
+    - [`MarquesList`](mdc:src/components/marques/MarquesList.tsx) (affiche la liste filtrée)
+    - [`MarquesStatistics`](mdc:src/components/marques/MarquesStatistics.tsx)
+- **Fonctionnalités clés :**
+    - Filtrage côté client par terme de recherche, tags et types.
+    - Utilise `React Suspense` pour le chargement asynchrone des composants.
+    - Chargement progressif des marques ("Voir plus").
+    - Récupère les données depuis [`marque.json`](mdc:src/data/marque.json).
+- **Note :** Marqué comme `'use client'` car il contient des états et des interactions utilisateur.

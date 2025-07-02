@@ -6,16 +6,21 @@
       "description_en": "In our store, discover an exclusive corner dedicated to the brand The North Face. This real space of more than 50 m2 offers a complete selection for the whole family: technical and casual clothing for men, women and children, not forgetting a range of essential accessories. Whether you are looking for the excellence of the SUMMIT SERIES collections for your adventures at altitude or the modern and comfortable style of the LIFESTYLE line, you will find everything you need here. Stock up on equipment for the mountains or everyday life in a warm setting in the heart of the resort.",
       "description": "Marque outdoor réputée pour ses équipements techniques, vêtements et accessoires résistants aux intempéries.",
       "imageFolder": "/img/Thenorthface/",
-      "mainImage": "/img/Thenorthface/image%20tnf%205.avif",
+      "mainImage": "",
       "logo": "/img/Thenorthface/logo.svg",
       "images": [
-        "/img/Thenorthface/image%20tnf1.avif",
-        "/img/Thenorthface/image%20tnf%203.avif",
-        "/img/Thenorthface/image%20tnf%205.avif",
-        "/img/Thenorthface/image%20tnf%206.avif",
-        "/img/Thenorthface/image%20tnf%207.avif"
+        "/img/Thenorthface/IMG_1787.jpeg",
+        "/img/Thenorthface/IMG_1788.jpeg",
+        "/img/Thenorthface/IMG_1789.jpeg",
+        "/img/Thenorthface/Planter sa tente nuit magique.jpg"
       ],
-      "tags": ["Fashion", "Products"],
+      "videos": [
+        "/img/Thenorthface/VECTIV Enduris 4 The North Face.mp4"
+      ],
+      "tags": [
+        "Fashion",
+        "Products"
+      ],
       "type": "Vêtements outdoor"
     },
     {
@@ -26,8 +31,14 @@
       "imageFolder": "/img/ICEBREAKER/",
       "mainImage": "/img/ICEBREAKER/image (1).png",
       "logo": "/img/ICEBREAKER/img.svg",
-      "images": ["/img/ICEBREAKER/image (1).png", "/img/ICEBREAKER/image.png"],
-      "tags": ["Fashion", "Products"],
+      "images": [
+        "/img/ICEBREAKER/image (1).png",
+        "/img/ICEBREAKER/image.png"
+      ],
+      "tags": [
+        "Fashion",
+        "Products"
+      ],
       "type": "Vêtements techniques"
     },
     {
@@ -44,13 +55,19 @@
         "/img/Savetheduck/IMG_1224.jpg",
         "/img/Savetheduck/IMG_1225.jpg"
       ],
-      "tags": ["Fashion", "Products"],
+      "videos": [
+        "/img/Savetheduck/Campagne Recyclage LOVE.mp4"
+      ],
+      "tags": [
+        "Fashion",
+        "Products"
+      ],
       "type": "Vêtements éco-responsables"
     },
     {
       "nom": "Timberland",
-      "description_fr": "Lola Espeleta, une marque française, rayonne dans l'univers de la mode féminine avec des collections empreintes de fraîcheur et d'originalité. célébrant l'individualité, elle se distingue par son indépendance et son engagement envers les détaillants multimarques. Chaque piece, au style intemporel et au prix raissonable, offre une invitation subtile a chaque femme pour exprimer sa propre histoire à tarvers sa garde robe.",
-      "description_en": "Lola Espeleta, a French brand, shines in the world of women's fashion with collections full of freshness and originality. Celebrating individuality, it stands out for its independence and commitment to multi-brand retailers. Each piece, with its timeless style and reasonable price, offers a subtle invitation to each woman to express her own story through her wardrobe.",
+      "description_fr": "Timberland, marque emblématique américaine, incarne l'esprit outdoor avec ses chaussures et vêtements robustes et stylés. Depuis 1973, la marque s'engage pour la durabilité et l'innovation, proposant des produits conçus pour résister aux éléments tout en restant tendance. Que ce soit pour la ville ou la nature, Timberland offre une gamme complète de chaussures, bottes, vêtements et accessoires qui allient performance technique et style intemporel.",
+      "description_en": "Timberland, an iconic American brand, embodies the outdoor spirit with its sturdy and stylish shoes and clothing. Since 1973, the brand has been committed to sustainability and innovation, offering products designed to withstand the elements while remaining trendy. Whether for the city or nature, Timberland offers a complete range of shoes, boots, clothing and accessories that combine technical performance and timeless style.",
       "description": "Marque emblématique de chaussures et vêtements outdoor, axée sur durabilité et style.",
       "imageFolder": "/img/Timberland/",
       "mainImage": "/img/Timberland/IMG_1221.jpg",
@@ -61,7 +78,10 @@
         "/img/Timberland/IMG_1220.jpg",
         "/img/Timberland/IMG_1221.jpg"
       ],
-      "tags": ["Fashion", "Products"],
+      "tags": [
+        "Fashion",
+        "Products"
+      ],
       "type": "Chaussures et vêtements"
     },
     {
@@ -73,14 +93,21 @@
       "mainImage": "/img/Ugg/IMG_1212.jpeg",
       "logo": "/img/Ugg/logo.svg",
       "images": [
-        "/img/Ugg/ugg%20image%201.jpg",
-        "/img/Ugg/ugg%20image%202.jpg",
-        "/img/Ugg/ugg%20image%203.jpg",
+        "/img/Ugg/ugg image 1.jpg",
+        "/img/Ugg/image ugg 2.jpg",
+        "/img/Ugg/ugg image 3.jpg",
         "/img/Ugg/IMG_1212.jpeg",
         "/img/Ugg/IMG_1215.jpeg",
-        "/img/Ugg/IMG_1216.jpeg"
+        "/img/Ugg/IMG_1216.jpeg",
+        "/img/Ugg/Color-UGG-Logo-500x300.jpg"
       ],
-      "tags": ["Fashion", "Products"],
+      "videos": [
+        "/img/Ugg/Goldenstar Hi Clog HANNI.mp4"
+      ],
+      "tags": [
+        "Fashion",
+        "Products"
+      ],
       "type": "Chaussures"
     },
     {
@@ -99,24 +126,30 @@
         "/img/Lola espeleta/DB320S25 + PA310S25 (3).jpg",
         "/img/Lola espeleta/CH140S25 + SH111S25 (5).jpg"
       ],
-      "tags": ["Fashion", "Products"],
+      "tags": [
+        "Fashion",
+        "Products"
+      ],
       "type": "Vêtements féminins"
     },
     {
-      "nom": "La fee maraboutée",
+      "nom": "La fee maraboute",
       "description_fr": "La Fée Maraboutée puise sa créativité dans le goût des voyages, les mélanges des cultures, et les rencontres. Elle propose un style qui traverse les modes en s'affranchissant des tendances. Elle change le regard sur le vêtement et sur les corps en valorisant toutes les morphologies. La marque honore toutes les féminités et invite à se connecter au plaisir de se sentir belle et bien au quotidien. Éclectiques, généreuses, inattendues, ses collections se déclinent dans des palettes de couleurs naturelles et chaleureuses. Nous commercialisons également la ligne \"La Fée Atelier\" que vous trouverez uniquement dans les commerces indépendants. La fée maraboutée veille au respect de ses valeurs éthiques dans l'ensemble des étapes de confection en étroite collaboration avec ses partenaires fabricants.",
       "description_en": "La Fée Maraboutée draws its creativity from a taste for travel, the blending of cultures, and encounters. It offers a style that transcends fashions by freeing itself from trends. It changes the way we look at clothing and bodies by enhancing all body types. The brand honors all femininities and invites us to connect with the pleasure of feeling beautiful and good every day. Eclectic, generous, unexpected, its collections come in palettes of natural and warm colors. We also market the \"La Fée Atelier\" line that you will find only in independent stores. La fée maraboutée ensures that its ethical values are respected throughout all stages of production in close collaboration with its manufacturing partners.",
       "description": "Marque française de prêt-à-porter féminin, mêlant créativité, élégance et originalité.",
       "imageFolder": "/img/La fee maraboute/",
       "mainImage": "/img/La fee maraboute/image.png",
-      "logo": "/img/La%20fee%20maraboute/logo.png",
+      "logo": "/img/La fee maraboute/logo.png",
       "images": [
         "/img/La fee maraboute/image.png",
         "/img/La fee maraboute/image (1).png",
         "/img/La fee maraboute/image (2).png",
         "/img/La fee maraboute/image (3).png"
       ],
-      "tags": ["Fashion", "Products"],
+      "tags": [
+        "Fashion",
+        "Products"
+      ],
       "type": "Prêt-à-porter féminin"
     },
     {
@@ -133,7 +166,10 @@
         "/img/lorenacanals/image (2).png",
         "/img/lorenacanals/image (4).png"
       ],
-      "tags": ["Home", "Decor"],
+      "tags": [
+        "Home",
+        "Decor"
+      ],
       "type": "Décoration intérieure"
     },
     {
@@ -150,7 +186,10 @@
         "/img/RH+/image (2).png",
         "/img/RH+/image (3).png"
       ],
-      "tags": ["Sport", "Performance"],
+      "tags": [
+        "Sport",
+        "Performance"
+      ],
       "type": "Équipements sportifs"
     },
     {
@@ -166,7 +205,10 @@
         "/img/maisonpechavy/image (1).png",
         "/img/maisonpechavy/image (3).png"
       ],
-      "tags": ["Home", "Luxury"],
+      "tags": [
+        "Home",
+        "Luxury"
+      ],
       "type": "Art de vivre"
     },
     {
@@ -183,7 +225,10 @@
         "/img/sportdepoque/surchemise-brand.jpg",
         "/img/sportdepoque/sweat-great-althea.jpg"
       ],
-      "tags": ["Fashion", "Vintage"],
+      "tags": [
+        "Fashion",
+        "Vintage"
+      ],
       "type": "Vêtements sportswear"
     },
     {
@@ -192,14 +237,17 @@
       "description_en": "Come and discover French authenticity with Benson&Cherry. For over 15 years, Benson has been committed to offering sustainable clothing, carefully designed in their own factories in Turkey and accessible to all. Inspired by the diversity of the world around us, their collections combine trends and elegance, while promoting a more responsible and ethical fashion. Let yourself be seduced by their creations.",
       "description": "Benson & Cherry est une marque de prêt-à-porter française qui propose des vêtements masculins intemporels et de qualité dans un style européen classique.",
       "imageFolder": "/img/B&C/",
-      "mainImage": "/img/B&C/image%20benson%203.jpg",
-      "logo": "/img/B&C/Logo%20Benson.png",
+      "mainImage": "/img/B&C/image benson 3.jpg",
+      "logo": "/img/B&C/Logo Benson.png",
       "images": [
-        "/img/B&C/benson%20image%202.jpg",
-        "/img/B&C/image%20benson.webp",
-        "/img/B&C/image%20benson%203.jpg"
+        "/img/B&C/benson image 2.jpg",
+        "/img/B&C/image benson.webp",
+        "/img/B&C/image benson 3.jpg"
       ],
-      "tags": ["Fashion", "Men"],
+      "tags": [
+        "Fashion",
+        "Men"
+      ],
       "type": "Prêt-à-porter masculin"
     },
     {
@@ -215,7 +263,11 @@
         "/img/Arpin/image003.jpg",
         "/img/Arpin/IMG_0253.jpg"
       ],
-      "tags": ["Home", "Fashion", "Tradition"],
+      "tags": [
+        "Home",
+        "Fashion",
+        "Tradition"
+      ],
       "type": "Textile et décoration"
     }
   ]
