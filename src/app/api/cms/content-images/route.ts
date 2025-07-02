@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const fileName = `${Date.now()}-${file.name}`;
-    
+
     // Déterminer le dossier de destination
     let uploadDir: string;
     if (section === "homepage" && subsection === "team") {
@@ -46,7 +46,13 @@ export async function POST(request: NextRequest) {
     } else if (section === "arpin") {
       uploadDir = path.join(process.cwd(), "public", "img", "Arpin");
     } else {
-      uploadDir = path.join(process.cwd(), "public", "img", section, subsection);
+      uploadDir = path.join(
+        process.cwd(),
+        "public",
+        "img",
+        section,
+        subsection
+      );
     }
 
     // Créer le dossier si nécessaire
@@ -57,20 +63,22 @@ export async function POST(request: NextRequest) {
     await writeFile(filePath, buffer);
 
     // Construire l'URL relative
-    const imageUrl = filePath.replace(path.join(process.cwd(), "public"), "").replace(/\\/g, "/");
+    const imageUrl = filePath
+      .replace(path.join(process.cwd(), "public"), "")
+      .replace(/\\/g, "/");
 
     // Mettre à jour les données selon le type d'image
     const currentData = jsonData[section][subsection];
-    
+
     if (imageKey.includes(".")) {
       // Gestion des objets imbriqués (ex: "members.0.image")
       const keys = imageKey.split(".");
       let target = currentData;
-      
+
       for (let i = 0; i < keys.length - 1; i++) {
         const key = keys[i];
         const nextKey = keys[i + 1];
-        
+
         if (!isNaN(parseInt(nextKey))) {
           // C'est un index de tableau
           target = target[key][parseInt(nextKey)];
@@ -79,23 +87,31 @@ export async function POST(request: NextRequest) {
           target = target[key];
         }
       }
-      
+
       // Supprimer l'ancienne image si elle existe
       const lastKey = keys[keys.length - 1];
       if (target[lastKey]) {
-        const oldImagePath = path.join(process.cwd(), "public", target[lastKey]);
+        const oldImagePath = path.join(
+          process.cwd(),
+          "public",
+          target[lastKey]
+        );
         try {
           await unlink(oldImagePath);
         } catch (e) {
           console.error("Erreur suppression ancienne image:", e);
         }
       }
-      
+
       target[lastKey] = imageUrl;
     } else {
       // Gestion simple
       if (currentData[imageKey]) {
-        const oldImagePath = path.join(process.cwd(), "public", currentData[imageKey]);
+        const oldImagePath = path.join(
+          process.cwd(),
+          "public",
+          currentData[imageKey]
+        );
         try {
           await unlink(oldImagePath);
         } catch (e) {
@@ -150,16 +166,16 @@ export async function DELETE(request: NextRequest) {
     }
 
     const currentData = jsonData[section][subsection];
-    
+
     if (imageKey.includes(".")) {
       // Gestion des objets imbriqués
       const keys = imageKey.split(".");
       let target = currentData;
-      
+
       for (let i = 0; i < keys.length - 1; i++) {
         const key = keys[i];
         const nextKey = keys[i + 1];
-        
+
         if (!isNaN(parseInt(nextKey))) {
           target = target[key][parseInt(nextKey)];
           i++;
@@ -167,7 +183,7 @@ export async function DELETE(request: NextRequest) {
           target = target[key];
         }
       }
-      
+
       const lastKey = keys[keys.length - 1];
       if (target[lastKey]) {
         const imagePath = path.join(process.cwd(), "public", target[lastKey]);
@@ -181,7 +197,11 @@ export async function DELETE(request: NextRequest) {
     } else {
       // Gestion simple
       if (currentData[imageKey]) {
-        const imagePath = path.join(process.cwd(), "public", currentData[imageKey]);
+        const imagePath = path.join(
+          process.cwd(),
+          "public",
+          currentData[imageKey]
+        );
         try {
           await unlink(imagePath);
         } catch (e) {
@@ -205,4 +225,4 @@ export async function DELETE(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

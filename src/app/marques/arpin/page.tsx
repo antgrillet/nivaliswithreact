@@ -390,9 +390,8 @@ export default function ArpinPage() {
                 d'exception
               </p>
               <a
-                href="/Catalogue sur Mesure Arpin 2022.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/api/download?file=Catalogue sur Mesure Arpin 2022.pdf"
+                download="Catalogue sur Mesure Arpin 2022.pdf"
                 className="inline-flex items-center px-8 py-4 bg-amber-700 hover:bg-amber-800 text-white rounded-lg transition-colors shadow-md mb-12 text-lg"
               >
                 Télécharger le catalogue complet
@@ -417,12 +416,11 @@ export default function ArpinPage() {
               <div className="absolute inset-0 bg-amber-50/30 -z-10"></div>
               <div className="absolute top-4 right-4 z-20">
                 <a
-                  href="/Catalogue sur Mesure Arpin 2022.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/api/download?file=Catalogue sur Mesure Arpin 2022.pdf"
+                  download="Catalogue sur Mesure Arpin 2022.pdf"
                   className="inline-flex items-center px-4 py-2 bg-amber-700 hover:bg-amber-800 text-white rounded-lg transition-colors shadow-md text-sm"
                 >
-                  Ouvrir en plein écran
+                  Télécharger le PDF
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"

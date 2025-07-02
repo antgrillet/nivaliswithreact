@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Téléchargements - Nivalis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .download-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #d97706;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px 10px 10px 0;
+            transition: background-color 0.3s;
+        }
+        .download-btn:hover {
+            background-color: #b45309;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background-color: #d1fae5; color: #065f46; }
+        .error { background-color: #fee2e2; color: #991b1b; }
+        .info { background-color: #dbeafe; color: #1e40af; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test des Téléchargements - Nivalis</h1>
+    
+    <div class="test-section">
+        <h2>📄 Catalogue Arpin PDF</h2>
+        <p>Test du téléchargement du catalogue Arpin via différentes méthodes :</p>
+        
+        <a href="/Catalogue sur Mesure Arpin 2022.pdf" 
+           target="_blank" 
+           class="download-btn">
+            📁 Accès Direct PDF
+        </a>
+        
+        <a href="/api/download?file=Catalogue sur Mesure Arpin 2022.pdf" 
+           download="Catalogue sur Mesure Arpin 2022.pdf"
+           class="download-btn">
+            ⬇️ Via API Download
+        </a>
+        
+        <button onclick="testApiDownload()" class="download-btn">
+            🔧 Test API avec Fetch
+        </button>
+    </div>
+
+    <div class="test-section">
+        <h2>🖼️ Test Images</h2>
+        <p>Vérification de l'accès aux images :</p>
+        
+        <a href="/img/Arpin/image4.jpeg" 
+           target="_blank" 
+           class="download-btn">
+            🖼️ Image Arpin
+        </a>
+        
+        <a href="/api/download?file=img/Arpin/image4.jpeg" 
+           download="arpin-image.jpeg"
+           class="download-btn">
+            ⬇️ Image via API
+        </a>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Résultats des Tests</h2>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `${new Date().toLocaleTimeString()} - ${message}`;
+            results.appendChild(div);
+        }
+
+        async function testApiDownload() {
+            addResult('🔄 Test du téléchargement via API...', 'info');
+            
+            try {
+                const response = await fetch('/api/download?file=Catalogue sur Mesure Arpin 2022.pdf');
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'Catalogue-Arpin-Test.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    addResult(`✅ Téléchargement réussi via API (${blob.size} bytes)`, 'success');
+                } else {
+                    addResult(`❌ Erreur API: ${response.status} - ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Erreur réseau: ${error.message}`, 'error');
+            }
+        }
+
+        // Test automatique au chargement
+        window.addEventListener('load', () => {
+            addResult('🚀 Page de test chargée', 'success');
+            
+            // Test de l'existence du PDF
+            fetch('/Catalogue sur Mesure Arpin 2022.pdf', { method: 'HEAD' })
+                .then(response => {
+                    if (response.ok) {
+                        addResult('✅ PDF accessible en direct', 'success');
+                    } else {
+                        addResult('❌ PDF non accessible en direct', 'error');
+                    }
+                })
+                .catch(error => {
+                    addResult('❌ Erreur lors du test PDF direct', 'error');
+                });
+                
+            // Test de l'API
+            fetch('/api/download?file=Catalogue sur Mesure Arpin 2022.pdf', { method: 'HEAD' })
+                .then(response => {
+                    if (response.ok) {
+                        addResult('✅ API de téléchargement accessible', 'success');
+                    } else {
+                        addResult('❌ API de téléchargement non accessible', 'error');
+                    }
+                })
+                .catch(error => {
+                    addResult('❌ Erreur lors du test API', 'error');
+                });
+        });
+    </script>
+</body>
+</html> 
