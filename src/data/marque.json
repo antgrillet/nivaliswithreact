@@ -2,11 +2,11 @@
   "marques": [
     {
       "nom": "The North Face",
-      "description_fr": "Dans notre magasin, découvrez un corner exclusif dédié à la marque The North Face. Ce veritable espace de plus de 50m2 propose une selection complete pour toute la famille : vetements tcehniques et decontractés pour homme, femme et enfants, sans oublier une gamme d'accesoires indispensables. Que vous recherchiez l'excellence des collections SUMMIT SERIES pour vos aventures en altitude ou le style moderne et confortable de la ligne LIFESTYLE, vous trouverez ici tout ce qu'il vous faut. Faites le plein d'équipement pour la montagne ou le quotidien dans un cadre chaleureux au cœur de la station.",
-      "description_en": "In our store, discover an exclusive corner dedicated to the brand The North Face. This real space of more than 50 m2 offers a complete selection for the whole family: technical and casual clothing for men, women and children, not forgetting a range of essential accessories. Whether you are looking for the excellence of the SUMMIT SERIES collections for your adventures at altitude or the modern and comfortable style of the LIFESTYLE line, you will find everything you need here. Stock up on equipment for the mountains or everyday life in a warm setting in the heart of the resort.",
-      "description": "Marque outdoor réputée pour ses équipements techniques, vêtements et accessoires résistants aux intempéries. test",
+      "description_fr": "Dans notre magasin, découvrez un corner exclusif dédié à la marque The North Face. Ce veritable espace de plus de 50m2 propose une selection complete pour toute la famille : vetements tcehniques et decontractés pour homme, femme et enfants, sans oublier une gamme d'accesoires indispensables. Que vous recherchiez l'excellence des collections SUMMIT SERIES pour vos aventures en altitude ou le style moderne et confortable de la ligne LIFESTYLE, vous trouverez ici tout ce qu'il vous faut. Faites le plein d'équipement pour la montagne ou le quotidien dans un cadre chaleureux au cœur de la station. test",
+      "description_en": "In our store, discover an exclusive corner dedicated to the brand The North Face. This real space of more than 50 m2 offers a complete selection for the whole family: technical and casual clothing for men, women and children, not forgetting a range of essential accessories. Whether you are looking for the excellence of the SUMMIT SERIES collections for your adventures at altitude or the modern and comfortable style of the LIFESTYLE line, you will find everything you need here. Stock up on equipment for the mountains or everyday life in a warm setting in the heart of the resort. test",
+      "description": "Marque outdoor réputée pour ses équipements techniques, vêtements et accessoires résistants aux intempéries.",
       "imageFolder": "/img/Thenorthface/",
-      "mainImage": "",
+      "mainImage": "/img/Thenorthface/1752779637168-chauss_vtt.jpg",
       "logo": "/img/Thenorthface/logo.svg",
       "images": [
         "/img/Thenorthface/IMG_1787.jpeg",
@@ -21,7 +21,7 @@
         "Fashion",
         "Products"
       ],
-      "type": "Vêtements outdoor"
+      "type": "Vêtements outdoors"
     },
     {
       "nom": "ICEBREAKER",

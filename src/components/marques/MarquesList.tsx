@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { MarqueData } from "@/app/utils/types";
+import { getImageUrl } from "@/utils/imageUtils";
 
 interface MarquesListProps {
   marques: MarqueData[];
@@ -169,7 +170,7 @@ export default function MarquesList({ marques }: MarquesListProps) {
               <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl h-full border border-amber-100 hover:border-amber-300 hover:-translate-y-1 bg-white group">
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-amber-100">
                   <Image
-                    src={marque.mainImage}
+                    src={getImageUrl(marque.mainImage)}
                     alt={`Image de ${marque.nom}`}
                     fill
                     className="object-cover object-center group-hover:scale-105 transition-transform duration-500 brightness-[1.05]"
@@ -224,7 +225,7 @@ export default function MarquesList({ marques }: MarquesListProps) {
                 <CardContent className="p-6 relative">
                   <div className="absolute -top-10 left-4 h-16 w-16 bg-white rounded-full border-4 border-white shadow-md flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300">
                     <Image
-                      src={marque.logo}
+                      src={getImageUrl(marque.logo)}
                       alt={`Logo de ${marque.nom}`}
                       width={50}
                       height={50}

@@ -5,6 +5,7 @@ import Image from "./Image";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { getImageUrl } from "@/utils/imageUtils";
 
 interface ImageGalleryProps {
   // Uniquement le chemin du dossier d'images
@@ -200,7 +201,7 @@ export default function ImageGallery({
               }
             >
               <Image
-                src={img}
+                src={getImageUrl(img)}
                 alt={`Image ${
                   (currentPage - 1) * imagesPerPage + index + 1
                 } de ${marqueNom}`}
@@ -299,7 +300,7 @@ export default function ImageGallery({
           >
             <div className="relative h-full w-full p-10 flex items-center justify-center">
               <Image
-                src={galleryImages[selectedImage]}
+                src={getImageUrl(galleryImages[selectedImage])}
                 alt={`Image ${selectedImage + 1} de ${marqueNom}`}
                 fill
                 className="object-contain"
@@ -392,7 +393,7 @@ export default function ImageGallery({
                       }}
                     >
                       <Image
-                        src={img}
+                        src={getImageUrl(img)}
                         alt={`Miniature ${index + 1}`}
                         fill
                         className="object-cover"

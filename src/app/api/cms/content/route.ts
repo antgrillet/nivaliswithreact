@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(content);
   } catch (error) {
+    console.error("Erreur lecture contenu:", error);
     return NextResponse.json(
       { error: "Erreur lors de la lecture du contenu" },
       { status: 500 }

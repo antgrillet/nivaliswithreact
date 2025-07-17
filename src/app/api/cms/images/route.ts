@@ -3,6 +3,20 @@ import fs from "fs/promises";
 import path from "path";
 import { writeFile, unlink } from "fs/promises";
 
+interface Marque {
+  nom: string;
+  description: string;
+  description_fr?: string;
+  description_en?: string;
+  imageFolder: string;
+  mainImage?: string;
+  logo?: string;
+  images?: string[];
+  videos?: string[];
+  tags?: string[];
+  type?: string;
+}
+
 const DATA_FILE = path.join(process.cwd(), "src/data/marque.json");
 
 // POST - Ajouter une image à une marque
@@ -27,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     // Trouver la marque
     const marqueIndex = jsonData.marques.findIndex(
-      (m: any) => m.nom === marqueName
+      (m: Marque) => m.nom === marqueName
     );
     if (marqueIndex === -1) {
       return NextResponse.json(
@@ -76,7 +90,7 @@ export async function POST(request: NextRequest) {
             const oldImagePath = path.join(process.cwd(), "public", oldImage);
             try {
               await unlink(oldImagePath);
-            } catch (e) {
+            } catch {
               // L'image n'existe peut-être plus
             }
             jsonData.marques[marqueIndex].images[index] = imageUrl;
@@ -94,7 +108,7 @@ export async function POST(request: NextRequest) {
           );
           try {
             await unlink(oldMainPath);
-          } catch (e) {
+          } catch {
             // L'image n'existe peut-être plus
           }
         }
@@ -111,7 +125,7 @@ export async function POST(request: NextRequest) {
           );
           try {
             await unlink(oldLogoPath);
-          } catch (e) {
+          } catch {
             // Le logo n'existe peut-être plus
           }
         }
@@ -157,7 +171,7 @@ export async function DELETE(request: NextRequest) {
 
     // Trouver la marque
     const marqueIndex = jsonData.marques.findIndex(
-      (m: any) => m.nom === marqueName
+      (m: Marque) => m.nom === marqueName
     );
     if (marqueIndex === -1) {
       return NextResponse.json(
@@ -271,7 +285,7 @@ export async function GET(request: NextRequest) {
     const jsonData = JSON.parse(data);
 
     // Trouver la marque
-    const marque = jsonData.marques.find((m: any) => m.nom === marqueName);
+    const marque = jsonData.marques.find((m: Marque) => m.nom === marqueName);
     if (!marque) {
       return NextResponse.json(
         { error: "Marque non trouvée" },

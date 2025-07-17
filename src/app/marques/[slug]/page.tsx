@@ -7,8 +7,8 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ImageGallery from "@/components/ImageGallery";
-import marqueData from "@/data/marque.json";
-import { MarqueData } from "@/app/utils/types";
+import { MarqueData, MarquesData } from "@/app/utils/types";
+import { getImageUrl } from "@/utils/imageUtils";
 
 // Interface pour la structure des données de marque
 // interface MarqueData {
@@ -45,24 +45,47 @@ export default function MarqueDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
   const [marque, setMarque] = useState<MarqueData | null>(null);
+  const [similarMarques, setSimilarMarques] = useState<MarqueData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Convertir le slug en nom de marque (inversant le processus de slugification)
-    const slugToNom = (slug: string) => {
-      return slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+    const fetchMarqueData = async () => {
+      try {
+        // Charger les données depuis l'API
+        const response = await fetch('/api/cms/marques');
+        const data: MarquesData = await response.json();
+
+        // Convertir le slug en nom de marque (inversant le processus de slugification)
+        const slugToNom = (slug: string) => {
+          return slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+        };
+
+        // Chercher la marque correspondante
+        const foundMarque = data.marques.find(
+          (m) => m.nom.toLowerCase() === slugToNom(slug).toLowerCase()
+        );
+
+        if (foundMarque) {
+          setMarque(foundMarque as MarqueData);
+          
+          // Calculer les marques similaires
+          const similar = data.marques
+            .filter(
+              (m) =>
+                m.nom !== foundMarque.nom &&
+                m.tags.some((tag) => foundMarque.tags.includes(tag))
+            )
+            .slice(0, 3);
+          setSimilarMarques(similar as MarqueData[]);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des données:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    // Chercher la marque correspondante
-    const foundMarque = marqueData.marques.find(
-      (m) => m.nom.toLowerCase() === slugToNom(slug).toLowerCase()
-    );
-
-    if (foundMarque) {
-      setMarque(foundMarque as MarqueData);
-    }
-
-    setLoading(false);
+    fetchMarqueData();
   }, [slug]);
 
   // Si la marque n'est pas trouvée, afficher une page 404
@@ -123,7 +146,7 @@ export default function MarqueDetailPage() {
               <div className="flex items-center mb-4">
                 <div className="h-16 w-16 bg-white rounded-full shadow-md flex items-center justify-center mr-4 overflow-hidden">
                   <Image
-                    src={marque.logo}
+                    src={getImageUrl(marque.logo)}
                     alt={`Logo de ${marque.nom}`}
                     width={50}
                     height={50}
@@ -180,7 +203,7 @@ export default function MarqueDetailPage() {
             <div className="w-full md:w-1/2 md:pl-8">
               <div className="relative h-80 md:h-96 w-full rounded-xl overflow-hidden shadow-xl">
                 <Image
-                  src={marque.mainImage}
+                  src={getImageUrl(marque.mainImage)}
                   alt={`Image principale de ${marque.nom}`}
                   fill
                   className="object-cover"
@@ -414,14 +437,7 @@ export default function MarqueDetailPage() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {marqueData.marques
-              .filter(
-                (m) =>
-                  m.nom !== marque.nom &&
-                  m.tags.some((tag) => marque.tags.includes(tag))
-              )
-              .slice(0, 3)
-              .map((similarMarque, index) => (
+            {similarMarques.map((similarMarque, index) => (
                 <Link
                   href={`/marques/${similarMarque.nom
                     .toLowerCase()
@@ -431,7 +447,7 @@ export default function MarqueDetailPage() {
                 >
                   <div className="h-12 w-12 bg-white rounded-full shadow-sm flex items-center justify-center mr-4 overflow-hidden">
                     <Image
-                      src={similarMarque.logo}
+                      src={getImageUrl(similarMarque.logo)}
                       alt={`Logo de ${similarMarque.nom}`}
                       width={35}
                       height={35}

@@ -1,13 +1,8 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import marqueData from "@/data/marque.json";
-import { motion, AnimatePresence } from "framer-motion";
 import MarquesList from "@/components/marques/MarquesList";
 import MarquesHeader from "@/components/marques/MarquesHeader";
 import MarquesStatistics from "@/components/marques/MarquesStatistics";
@@ -15,26 +10,35 @@ import MarquesFilterClient from "@/components/marques/MarquesFilterClient";
 import { MarquesData } from "@/app/utils/types";
 
 export default function MarquesPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeFilter, setActiveFilter] = useState("Toutes");
-  const [filteredMarques, setFilteredMarques] = useState(marqueData.marques);
+  const [searchTerm] = useState("");
+  const [activeFilter] = useState("Toutes");
+  const [marqueData, setMarqueData] = useState<MarquesData | null>(null);
+  const [filteredMarques, setFilteredMarques] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [visibleCount, setVisibleCount] = useState(6);
-  const [filtersVisible, setFiltersVisible] = useState(false);
+  const [activeType] = useState("Tous types");
 
-  // Extraire tous les tags et types uniques
-  const allTags = [
-    "Toutes",
-    ...new Set(marqueData.marques.flatMap((marque) => marque.tags)),
-  ];
-  const allTypes = [
-    "Tous types",
-    ...new Set(marqueData.marques.map((marque) => marque.type)),
-  ];
-  const [activeType, setActiveType] = useState("Tous types");
+  // Charger les données depuis l'API
+  useEffect(() => {
+    const fetchMarques = async () => {
+      try {
+        const response = await fetch('/api/cms/marques');
+        const data = await response.json();
+        setMarqueData(data);
+        setFilteredMarques(data.marques);
+      } catch (error) {
+        console.error('Erreur lors du chargement des marques:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMarques();
+  }, []);
 
   // Filtrer les marques en fonction des filtres et de la recherche
   useEffect(() => {
+    if (!marqueData) return;
+    
     let results = marqueData.marques;
 
     // Filtrer par tag
@@ -59,15 +63,14 @@ export default function MarquesPage() {
     }
 
     setFilteredMarques(results);
-    setIsLoading(false);
-  }, [searchTerm, activeFilter, activeType]);
+  }, [searchTerm, activeFilter, activeType, marqueData]);
 
-  // Gérer le chargement des éléments supplémentaires
+  // Fonction loadMore pour usage futur
   const loadMore = () => {
-    setVisibleCount((prev) => prev + 6);
+    // Future implementation
   };
 
-  // Animation variants
+  // Animation variants pour usage futur
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -83,8 +86,39 @@ export default function MarquesPage() {
     show: { y: 0, opacity: 1, transition: { duration: 0.5 } },
   };
 
-  // Type casting pour assurer la cohérence des types
-  const typedMarqueData = marqueData as MarquesData;
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-amber-50/60 to-white">
+        <Navbar />
+        <MarquesHeader />
+        <div className="container mx-auto px-4 py-8 text-center">
+          <div className="animate-pulse">
+            <div className="h-8 w-1/2 mx-auto bg-amber-200 rounded-lg mb-4"></div>
+            <div className="h-4 w-2/3 mx-auto bg-amber-100 rounded-lg mb-8"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="animate-pulse bg-white rounded-xl h-80 shadow-md"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
+
+  if (!marqueData) {
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-amber-50/60 to-white">
+        <Navbar />
+        <MarquesHeader />
+        <div className="container mx-auto px-4 py-8 text-center">
+          <p className="text-red-600">Erreur lors du chargement des marques</p>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-amber-50/60 to-white">
@@ -98,7 +132,7 @@ export default function MarquesPage() {
           </div>
         }
       >
-        <MarquesFilterClient marques={typedMarqueData.marques} />
+        <MarquesFilterClient marques={marqueData.marques} />
       </Suspense>
 
       <section className="py-16">
@@ -115,12 +149,12 @@ export default function MarquesPage() {
               </div>
             }
           >
-            <MarquesList marques={typedMarqueData.marques} />
+            <MarquesList marques={marqueData.marques} />
           </Suspense>
         </div>
       </section>
 
-      <MarquesStatistics marquesData={typedMarqueData} />
+      <MarquesStatistics marquesData={marqueData} />
       <Footer />
     </main>
   );

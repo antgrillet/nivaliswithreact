@@ -2,18 +2,33 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   eslint: {
-    // Désactiver les vérifications d'ESLint pendant la compilation
+    // Désactiver temporairement ESLint pour tester le build
     ignoreDuringBuilds: true,
   },
   images: {
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    remotePatterns: [],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'example.com',
+        port: '',
+        pathname: '/**',
+        search: '',
+      },
+    ],
+    localPatterns: [
+      {
+        pathname: '/img/**',
+        search: '',
+      },
+    ],
     formats: ["image/avif", "image/webp"],
-    unoptimized: true, // Désactiver l'optimisation des images pour éviter les problèmes avec les caractères spéciaux
+    unoptimized: true, // Désactiver l'optimisation pour les images uploadées dynamiquement
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 2678400, // 31 jours comme recommandé
   },
   typescript: {
     // Conserver les vérifications de TypeScript
@@ -44,7 +59,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
+            value: "public, max-age=0, must-revalidate",
           },
         ],
       },

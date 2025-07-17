@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     const section = formData.get("section") as string;
     const subsection = formData.get("subsection") as string;
     const imageKey = formData.get("imageKey") as string; // "main_image", "logo_image", "members.0.image", etc.
-    const arrayIndex = formData.get("arrayIndex") as string;
+    // const arrayIndex = formData.get("arrayIndex") as string; // Unused for now
 
     if (!file || !section || !subsection || !imageKey) {
       return NextResponse.json(

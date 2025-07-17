@@ -2,7 +2,7 @@
   "homepage": {
     "hero": {
       "subtitle": "Multi-marques",
-      "description": "Découvrez notre sélection exclusive de marques prestigieuses, chacune choisie pour son excellence et son engagement. Test"
+      "description": "Découvrez notre sélection exclusive de marques prestigieuses, chacune choisie pour son excellence et son engagement. Test test"
     },
     "introduction": {
       "title": "Bienvenue à Nivalis",
@@ -55,7 +55,11 @@
     "hero": {
       "title": "Arpin",
       "subtitle": "Marque historique française spécialisée dans les tissus de laine et la confection artisanale de qualité, perpétuant un savoir-faire traditionnel depuis 1817. Chaque création Arpin est le fruit d'un travail minutieux respectant des méthodes ancestrales.",
-      "tags": ["Tradition", "Artisanat", "Excellence française"],
+      "tags": [
+        "Tradition",
+        "Artisanat",
+        "Excellence française"
+      ],
       "logo_image": "/img/Arpin/IMG_0253.jpg",
       "main_image": "/img/Arpin/image4.jpeg"
     },

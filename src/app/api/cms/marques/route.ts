@@ -2,6 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
 
+interface Marque {
+  nom: string;
+  description: string;
+  description_fr?: string;
+  description_en?: string;
+  imageFolder: string;
+  mainImage?: string;
+  logo?: string;
+  images?: string[];
+  videos?: string[];
+  tags?: string[];
+  type?: string;
+}
+
 const DATA_FILE = path.join(process.cwd(), "src/data/marque.json");
 
 // GET - Récupérer toutes les marques ou une marque spécifique
@@ -14,7 +28,7 @@ export async function GET(request: NextRequest) {
     const { marques } = JSON.parse(data);
 
     if (nom) {
-      const marque = marques.find((m: any) => m.nom === nom);
+      const marque = marques.find((m: Marque) => m.nom === nom);
       if (!marque) {
         return NextResponse.json(
           { error: "Marque non trouvée" },
@@ -42,7 +56,7 @@ export async function POST(request: NextRequest) {
     const jsonData = JSON.parse(data);
 
     // Vérifier si la marque existe déjà
-    if (jsonData.marques.find((m: any) => m.nom === newMarque.nom)) {
+    if (jsonData.marques.find((m: Marque) => m.nom === newMarque.nom)) {
       return NextResponse.json(
         { error: "Cette marque existe déjà" },
         { status: 400 }
@@ -71,7 +85,7 @@ export async function PUT(request: NextRequest) {
     const jsonData = JSON.parse(data);
 
     const index = jsonData.marques.findIndex(
-      (m: any) => m.nom === updatedMarque.nom
+      (m: Marque) => m.nom === updatedMarque.nom
     );
 
     if (index === -1) {
@@ -117,7 +131,7 @@ export async function DELETE(request: NextRequest) {
     const data = await fs.readFile(DATA_FILE, "utf-8");
     const jsonData = JSON.parse(data);
 
-    const index = jsonData.marques.findIndex((m: any) => m.nom === nom);
+    const index = jsonData.marques.findIndex((m: Marque) => m.nom === nom);
 
     if (index === -1) {
       return NextResponse.json(

@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getImageUrlWithCacheBusting } from "@/utils/imageUtils";
 
 interface Marque {
   nom: string;
@@ -26,10 +28,10 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [activeTab, setActiveTab] = useState<"marques" | "content">("marques");
-  const [contentData, setContentData] = useState<any>({});
+  const [contentData, setContentData] = useState<Record<string, any>>({});
   const [selectedSection, setSelectedSection] = useState<string>("homepage");
   const [selectedSubsection, setSelectedSubsection] = useState<string>("hero");
-  const [editingContent, setEditingContent] = useState<any>({});
+  const [editingContent, setEditingContent] = useState<Record<string, any>>({});
   const [showAddMarque, setShowAddMarque] = useState(false);
   const [newMarque, setNewMarque] = useState<Partial<Marque>>({
     nom: "",
@@ -51,39 +53,8 @@ export default function AdminPage() {
     fetchContent();
   }, []);
 
-  // Auto-refresh toutes les 5 secondes si activé
-  useEffect(() => {
-    if (!autoRefresh) return;
-
-    const interval = setInterval(() => {
-      forceRefreshMarques();
-      fetchContent();
-
-      // Notification discrète
-      setShowUpdateNotification(true);
-      setTimeout(() => setShowUpdateNotification(false), 2000);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [autoRefresh]);
-
-  const fetchMarques = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/cms/marques");
-      const data = await res.json();
-      setMarques(data.marques);
-      return data.marques;
-    } catch (error) {
-      console.error("Erreur:", error);
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Fonction pour forcer la mise à jour complète
-  const forceRefreshMarques = async () => {
+  const forceRefreshMarques = useCallback(async () => {
     try {
       const res = await fetch("/api/cms/marques");
       const data = await res.json();
@@ -105,7 +76,39 @@ export default function AdminPage() {
       console.error("Erreur:", error);
       return [];
     }
+  }, [selectedMarque]);
+
+  // Auto-refresh toutes les 5 secondes si activé
+  useEffect(() => {
+    if (!autoRefresh) return;
+
+    const interval = setInterval(() => {
+      forceRefreshMarques();
+      fetchContent();
+
+      // Notification discrète
+      setShowUpdateNotification(true);
+      setTimeout(() => setShowUpdateNotification(false), 2000);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [autoRefresh, forceRefreshMarques]);
+
+  const fetchMarques = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/cms/marques");
+      const data = await res.json();
+      setMarques(data.marques);
+      return data.marques;
+    } catch (error) {
+      console.error("Erreur lors de la lecture:", error);
+      return [];
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   const fetchContent = async () => {
     try {
@@ -692,10 +695,13 @@ export default function AdminPage() {
                       </div>
                       {selectedMarque.logo ? (
                         <div className="flex items-center gap-4 p-4 border rounded-lg">
-                          <img
-                            src={selectedMarque.logo}
+                          <Image
+                            src={getImageUrlWithCacheBusting(selectedMarque.logo)}
                             alt="Logo"
+                            width={80}
+                            height={80}
                             className="h-20 w-auto"
+                            unoptimized // Nécessaire pour les images uploadées dynamiquement
                           />
                           <Button
                             variant="destructive"
@@ -711,7 +717,7 @@ export default function AdminPage() {
                         <div className="text-center py-8 text-gray-500 border-2 border-dashed rounded-lg">
                           <p>Aucun logo</p>
                           <p className="text-sm">
-                            Cliquez sur "Ajouter" pour en ajouter un
+                            Cliquez sur &quot;Ajouter&quot; pour en ajouter un
                           </p>
                         </div>
                       )}
@@ -741,10 +747,13 @@ export default function AdminPage() {
                       </div>
                       {selectedMarque.mainImage ? (
                         <div className="p-4 border rounded-lg">
-                          <img
-                            src={selectedMarque.mainImage}
+                          <Image
+                            src={getImageUrlWithCacheBusting(selectedMarque.mainImage)}
                             alt="Main"
+                            width={160}
+                            height={160}
                             className="h-40 w-auto rounded mb-3"
+                            unoptimized // Nécessaire pour les images uploadées dynamiquement
                           />
                           <Button
                             variant="destructive"
@@ -760,7 +769,7 @@ export default function AdminPage() {
                         <div className="text-center py-8 text-gray-500 border-2 border-dashed rounded-lg">
                           <p>Aucune image principale</p>
                           <p className="text-sm">
-                            Cliquez sur "Ajouter" pour en ajouter une
+                            Cliquez sur &quot;Ajouter&quot; pour en ajouter une
                           </p>
                         </div>
                       )}
@@ -791,10 +800,13 @@ export default function AdminPage() {
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                         {selectedMarque.images?.map((img, index) => (
                           <div key={index} className="relative group">
-                            <img
-                              src={img}
+                            <Image
+                              src={getImageUrlWithCacheBusting(img)}
                               alt={`Image ${index + 1}`}
+                              width={200}
+                              height={128}
                               className="w-full h-32 object-cover rounded"
+                              unoptimized // Nécessaire pour les images uploadées dynamiquement
                             />
                             <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                               <Button
@@ -831,7 +843,7 @@ export default function AdminPage() {
                         <div className="text-center py-8 text-gray-500">
                           <p>Aucune image dans la galerie</p>
                           <p className="text-sm">
-                            Cliquez sur "Ajouter Image" pour commencer
+                            Cliquez sur &quot;Ajouter Image&quot; pour commencer
                           </p>
                         </div>
                       )}
@@ -869,7 +881,7 @@ export default function AdminPage() {
                         setSelectedSubsection("hero");
                       }}
                     >
-                      Page d'accueil
+                      Page d&apos;accueil
                     </Button>
                     <Button
                       variant={
@@ -965,10 +977,13 @@ export default function AdminPage() {
                               <div className="space-y-2">
                                 {value ? (
                                   <div className="flex items-center gap-4 p-4 border rounded-lg">
-                                    <img
+                                    <Image
                                       src={value}
                                       alt={key}
+                                      width={80}
+                                      height={80}
                                       className="h-20 w-20 object-cover rounded"
+                                      unoptimized // Nécessaire pour les images uploadées dynamiquement
                                     />
                                     <div className="flex gap-2">
                                       <Button
@@ -1112,10 +1127,13 @@ export default function AdminPage() {
                                                 <div className="space-y-2">
                                                   {objValue ? (
                                                     <div className="flex items-center gap-2 p-2 border rounded">
-                                                      <img
+                                                      <Image
                                                         src={objValue}
                                                         alt={objKey}
+                                                        width={48}
+                                                        height={48}
                                                         className="h-12 w-12 object-cover rounded"
+                                                        unoptimized // Nécessaire pour les images uploadées dynamiquement
                                                       />
                                                       <div className="flex gap-1">
                                                         <Button
@@ -1261,7 +1279,7 @@ export default function AdminPage() {
                                   <div className="text-center py-4 text-gray-500 border-2 border-dashed rounded">
                                     <p>Aucun élément</p>
                                     <p className="text-sm">
-                                      Cliquez sur "Ajouter" pour commencer
+                                      Cliquez sur &quot;Ajouter&quot; pour commencer
                                     </p>
                                   </div>
                                 )}
@@ -1296,10 +1314,13 @@ export default function AdminPage() {
                                         <div className="space-y-2">
                                           {subValue ? (
                                             <div className="flex items-center gap-4 p-2 border rounded">
-                                              <img
+                                              <Image
                                                 src={subValue}
                                                 alt={subKey}
+                                                width={64}
+                                                height={64}
                                                 className="h-16 w-16 object-cover rounded"
+                                                unoptimized // Nécessaire pour les images uploadées dynamiquement
                                               />
                                               <div className="flex gap-2">
                                                 <Button
