@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
     // Désactiver temporairement ESLint pour tester le build
     ignoreDuringBuilds: true,
   },
+  // Configuration pour les uploads
+  experimental: {
+    // Augmenter la limite de taille des uploads (50MB)
+    bodySizeLimit: '50mb',
+  },
   images: {
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
