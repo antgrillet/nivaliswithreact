@@ -488,6 +488,85 @@ export default function ArpinPage() {
                 </div>
               ))}
             </div>
+            
+            {/* Section catalogue mobilier */}
+            <div className="mt-16 bg-gradient-to-br from-amber-100/50 to-amber-50/50 rounded-xl p-8">
+              <div className="text-center mb-8">
+                <span className="inline-block bg-amber-200 text-amber-800 text-sm font-medium px-3 py-1 rounded-full mb-4">
+                  Nouveauté 2023
+                </span>
+                <h3 className="text-3xl font-bold text-amber-900 mb-4">
+                  Catalogue Mobilier
+                </h3>
+                <p className="text-amber-700 text-lg mb-6 max-w-2xl mx-auto">
+                  Découvrez notre nouvelle collection de mobilier artisanal en laine, 
+                  alliant tradition et design contemporain
+                </p>
+                <div className="flex flex-wrap gap-4 justify-center">
+                  <a
+                    href="/api/download?file=ML 2023 Novedades News Nouveautes.pdf"
+                    download="ML 2023 Novedades News Nouveautes.pdf"
+                    className="inline-flex items-center px-6 py-3 bg-amber-700 hover:bg-amber-800 text-white rounded-lg transition-colors shadow-md"
+                  >
+                    Télécharger le catalogue mobilier 2023
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-5 h-5 ml-2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+                      />
+                    </svg>
+                  </a>
+                  <a
+                    href="#devis"
+                    className="inline-flex items-center px-6 py-3 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors shadow-sm"
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, produit: "Mobilier - Collection 2023" }))
+                    }
+                  >
+                    Demander un devis mobilier
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-5 h-5 ml-2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                      />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+              
+              {/* Aperçu du PDF mobilier */}
+              <div className="mt-8 bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="relative w-full" style={{ height: "400px" }}>
+                  <iframe
+                    src="/ML 2023 Novedades News Nouveautes.pdf"
+                    className="w-full h-full"
+                    title="Catalogue Mobilier Arpin 2023"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+                <div className="p-4 bg-amber-50 border-t border-amber-200">
+                  <p className="text-amber-800 text-sm text-center">
+                    Cliquez sur le bouton de téléchargement pour consulter le catalogue complet
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -838,10 +917,10 @@ export default function ArpinPage() {
                       </div>
                       <div>
                         <p className="text-amber-900 font-medium text-lg">
-                          +33 (0)4 56 78 90 12
+                          +33 (0)6 81 73 66 47
                         </p>
                         <p className="text-amber-700">
-                          Du lundi au vendredi, 9h-18h
+                          Du lundi au Dimanche, 10h-19h
                         </p>
                       </div>
                     </div>

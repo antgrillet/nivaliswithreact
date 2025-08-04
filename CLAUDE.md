@@ -6,10 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **IMPORTANT: Always use pnpm for package management in this project**
 
-- `pnpm run dev` - Start development server with turbopack
-- `pnpm run build` - Build for production
-- `pnpm run start` - Start production server
-- `pnpm run lint` - Run ESLint checks
+- `pnpm dev` - Start development server with turbopack
+- `pnpm build` - Build for production
+- `pnpm start` - Start production server
+- `pnpm lint` - Run ESLint checks
 - `pnpm install` - Install dependencies
 - `pnpm add <package>` - Add new package
 
@@ -49,21 +49,24 @@ The application includes a comprehensive image API system:
 ### Technology Stack
 
 - **Framework**: Next.js 15 with App Router
+- **Language**: TypeScript with strict mode enabled
 - **Styling**: Tailwind CSS 4
-- **UI Components**: Radix UI primitives
+- **UI Components**: Radix UI primitives (@radix-ui/react-*)
 - **Animations**: Framer Motion
 - **Icons**: Lucide React, React Icons
 - **Fonts**: Work Sans, Playfair Display (Google Fonts)
+- **Notifications**: Sonner for toast messages
 
 ### Configuration Notes
 
-- ESLint checks are disabled during builds (`ignoreDuringBuilds: true`) but can be run manually with `pnpm run lint`
+- ESLint checks are disabled during builds (`ignoreDuringBuilds: true`) but should be run manually with `pnpm lint`
 - ESLint rules configured to allow unused variables and any types for development flexibility
 - Image optimization is disabled (`unoptimized: true`) to support dynamic image uploads from admin
 - SVG images are allowed with security policies
-- Custom headers configured for PDF downloads and static assets with long cache TTL
-- TypeScript strict mode enabled
-- pnpm is the preferred package manager
+- Custom headers configured for PDF downloads and static assets
+- TypeScript strict mode enabled (`strict: true`)
+- Path alias configured: `@/*` maps to `./src/*`
+- Turbopack enabled for faster development builds
 
 ### Admin Panel (`/admin`)
 
@@ -97,11 +100,12 @@ Complete content management system with the following features:
 ### Development Notes
 
 - The application is primarily in French with English translations
-- Brand pages use dynamic routing with slug-based URLs
+- Brand pages use dynamic routing with slug-based URLs (`/marques/[slug]`)
 - Image galleries support caching and lazy loading
 - The CMS API provides content management capabilities
-- File downloads are handled through dedicated API routes
+- File downloads are handled through `/api/download` route
 - Always use pnpm for package management
+- Git repository initialized with uncommitted files in public directory
 
 ### Image Upload and Cache Management
 
@@ -137,6 +141,15 @@ Complete content management system with the following features:
 
 **Testing**: Both `pnpm dev` and `pnpm build && pnpm start` work correctly with image uploads now visible immediately in production mode.
 
+### API Endpoints Summary
+
+- `/api/cms/marques` - GET/POST/PUT/DELETE - Manage brand data
+- `/api/cms/images` - POST/DELETE - Upload and delete brand images
+- `/api/cms/content` - GET/POST - Manage general content
+- `/api/cms/content-images` - POST/DELETE - Upload and delete content images
+- `/api/download` - GET - Handle file downloads (PDFs, catalogs)
+- `/api/serve-image/[...path]` - GET - Serve images with proper headers
+
 ### Data Synchronization Issue & Solution
 
 **Problem**: Initially, uploaded images were visible in the admin but not on public pages because they used different data sources:
@@ -168,18 +181,19 @@ Complete content management system with the following features:
 
 ### Development vs Production
 
-**Development Mode (`pnpm run dev`):**
-- Uses Turbopack for fast builds
+**Development Mode (`pnpm dev`):**
+- Uses Turbopack for fast builds (--turbopack flag)
 - Hot reloading enabled
 - ESLint runs on-demand
 - Unoptimized images for faster development
+- Runs on http://localhost:3000
 
-**Production Mode (`pnpm run build && pnpm start`):**
+**Production Mode (`pnpm build && pnpm start`):**
 - Uses Webpack for optimized builds
-- Static page generation
+- Static page generation where possible
 - ESLint disabled during builds for faster compilation
 - Images served unoptimized to support dynamic admin uploads
-- Long cache TTL for static assets
+- Custom cache headers for different asset types
 
 ### Troubleshooting
 
@@ -192,3 +206,7 @@ Complete content management system with the following features:
 - Clear browser cache if images don't update after admin changes
 - Hard refresh with Ctrl+F5 (Windows) or Cmd+Shift+R (Mac)
 - Check that image files exist in `/public/img/[BrandName]/` directory
+
+**Build Issues:**
+- If ESLint errors occur, run `pnpm lint` to identify issues (ESLint is disabled during builds)
+- TypeScript errors will still fail the build as `ignoreBuildErrors: false`

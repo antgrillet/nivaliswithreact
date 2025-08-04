@@ -55,6 +55,23 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        source: "/ML 2023 Novedades News Nouveautes.pdf",
+        headers: [
+          {
+            key: "Content-Type",
+            value: "application/pdf",
+          },
+          {
+            key: "Content-Disposition",
+            value: 'attachment; filename="ML 2023 Novedades News Nouveautes.pdf"',
+          },
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
         source: "/img/:path*",
         headers: [
           {
