@@ -19,22 +19,16 @@
       "description": "Rencontrez notre équipe de professionnels passionnés, toujours prêts à vous conseiller et vous accompagner dans vos choix.",
       "members": [
         {
-          "name": "Antonin",
+          "name": "Myriam",
           "role": "Gérant",
-          "description": "Passionné par la montagne et le commerce, Antonin vous accueille avec chaleur et expertise pour vous conseiller au mieux.",
-          "image": "/img/team/antonin.jpg"
+          "description": "Passionné par la montagne et le commerce, Myriam vous accueille avec chaleur et expertise pour vous conseiller au mieux.",
+          "image": ""
         },
         {
-          "name": "Marie",
+          "name": "Eva",
           "role": "Vendeuse",
-          "description": "Spécialiste en vêtements techniques, Marie saura vous guider dans vos choix pour vos activités outdoor.",
-          "image": "/img/team/marie.jpg"
-        },
-        {
-          "name": "Thomas",
-          "role": "Vendeur",
-          "description": "Expert en équipement de montagne, Thomas vous conseillera pour trouver l'équipement parfait pour vos aventures.",
-          "image": "/img/team/thomas.jpg"
+          "description": "Eva saura vous guider dans vos choix pour vos activités outdoor.",
+          "image": ""
         }
       ]
     },
