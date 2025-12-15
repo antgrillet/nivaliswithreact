@@ -112,7 +112,7 @@ export default function TeamSection() {
               >
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 border-2 border-amber-100 hover:border-amber-300">
                   <div className="relative h-72 md:h-96 overflow-hidden">
-                    {imageErrors[index] ? (
+                    {imageErrors[index] || !member.image ? (
                       <div className="w-full h-full bg-gradient-to-br from-amber-200 to-amber-400 flex items-center justify-center">
                         <span className="text-amber-800 text-4xl font-bold">{member.name.charAt(0)}</span>
                       </div>
