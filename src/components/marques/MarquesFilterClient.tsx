@@ -133,6 +133,7 @@ export default function MarquesFilterClient({
                 strokeWidth={1.5}
                 stroke="currentColor"
                 className="w-5 h-5"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -184,6 +185,7 @@ export default function MarquesFilterClient({
                         viewBox="0 0 20 20"
                         fill="currentColor"
                         className="w-5 h-5 text-amber-500"
+                        aria-hidden="true"
                       >
                         <path
                           fillRule="evenodd"
@@ -261,6 +263,7 @@ export default function MarquesFilterClient({
                       viewBox="0 0 20 20"
                       fill="currentColor"
                       className="w-4 h-4 mr-1"
+                      aria-hidden="true"
                     >
                       <path
                         fillRule="evenodd"

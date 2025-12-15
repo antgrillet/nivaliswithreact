@@ -1,19 +1,23 @@
+import { put, del } from '@vercel/blob';
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
-import { writeFile, unlink } from "fs/promises";
 
 const CONTENT_FILE = path.join(process.cwd(), "src/data/content.json");
 
-// POST - Ajouter/Modifier une image de contenu
+// Helper pour verifier si une URL est une URL Vercel Blob
+function isBlobUrl(url: string): boolean {
+  return url.includes('blob.vercel-storage.com');
+}
+
+// POST - Ajouter/Modifier une image de contenu vers Vercel Blob
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File;
     const section = formData.get("section") as string;
     const subsection = formData.get("subsection") as string;
-    const imageKey = formData.get("imageKey") as string; // "main_image", "logo_image", "members.0.image", etc.
-    // const arrayIndex = formData.get("arrayIndex") as string; // Unused for now
+    const imageKey = formData.get("imageKey") as string;
 
     if (!file || !section || !subsection || !imageKey) {
       return NextResponse.json(
@@ -22,56 +26,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Lire les données actuelles
+    // Lire les donnees actuelles
     const data = await fs.readFile(CONTENT_FILE, "utf-8");
     const jsonData = JSON.parse(data);
 
-    // Vérifier que la section/subsection existe
+    // Verifier que la section/subsection existe
     if (!jsonData[section] || !jsonData[section][subsection]) {
       return NextResponse.json(
-        { error: "Section ou subsection non trouvée" },
+        { error: "Section ou subsection non trouvee" },
         { status: 404 }
       );
     }
 
-    // Préparer le fichier
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const fileName = `${Date.now()}-${file.name}`;
+    // Upload vers Vercel Blob
+    const blob = await put(
+      `content/${section}/${subsection}/${file.name}`,
+      file,
+      {
+        access: 'public',
+        addRandomSuffix: true,
+      }
+    );
 
-    // Déterminer le dossier de destination
-    let uploadDir: string;
-    if (section === "homepage" && subsection === "team") {
-      uploadDir = path.join(process.cwd(), "public", "img", "team");
-    } else if (section === "arpin") {
-      uploadDir = path.join(process.cwd(), "public", "img", "Arpin");
-    } else {
-      uploadDir = path.join(
-        process.cwd(),
-        "public",
-        "img",
-        section,
-        subsection
-      );
-    }
-
-    // Créer le dossier si nécessaire
-    await fs.mkdir(uploadDir, { recursive: true });
-
-    // Sauvegarder le fichier
-    const filePath = path.join(uploadDir, fileName);
-    await writeFile(filePath, buffer);
-
-    // Construire l'URL relative
-    const imageUrl = filePath
-      .replace(path.join(process.cwd(), "public"), "")
-      .replace(/\\/g, "/");
-
-    // Mettre à jour les données selon le type d'image
+    const imageUrl = blob.url;
     const currentData = jsonData[section][subsection];
 
     if (imageKey.includes(".")) {
-      // Gestion des objets imbriqués (ex: "members.0.image")
+      // Gestion des objets imbriques (ex: "members.0.image")
       const keys = imageKey.split(".");
       let target = currentData;
 
@@ -80,42 +61,31 @@ export async function POST(request: NextRequest) {
         const nextKey = keys[i + 1];
 
         if (!isNaN(parseInt(nextKey))) {
-          // C'est un index de tableau
           target = target[key][parseInt(nextKey)];
-          i++; // Skip next iteration
+          i++;
         } else {
           target = target[key];
         }
       }
 
-      // Supprimer l'ancienne image si elle existe
+      // Supprimer l'ancienne image si elle existe sur Vercel Blob
       const lastKey = keys[keys.length - 1];
-      if (target[lastKey]) {
-        const oldImagePath = path.join(
-          process.cwd(),
-          "public",
-          target[lastKey]
-        );
+      if (target[lastKey] && isBlobUrl(target[lastKey])) {
         try {
-          await unlink(oldImagePath);
+          await del(target[lastKey]);
         } catch (e) {
-          console.error("Erreur suppression ancienne image:", e);
+          console.warn("Could not delete old blob:", target[lastKey], e);
         }
       }
 
       target[lastKey] = imageUrl;
     } else {
       // Gestion simple
-      if (currentData[imageKey]) {
-        const oldImagePath = path.join(
-          process.cwd(),
-          "public",
-          currentData[imageKey]
-        );
+      if (currentData[imageKey] && isBlobUrl(currentData[imageKey])) {
         try {
-          await unlink(oldImagePath);
+          await del(currentData[imageKey]);
         } catch (e) {
-          console.error("Erreur suppression ancienne image:", e);
+          console.warn("Could not delete old blob:", currentData[imageKey], e);
         }
       }
       currentData[imageKey] = imageUrl;
@@ -153,14 +123,14 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Lire les données actuelles
+    // Lire les donnees actuelles
     const data = await fs.readFile(CONTENT_FILE, "utf-8");
     const jsonData = JSON.parse(data);
 
-    // Vérifier que la section/subsection existe
+    // Verifier que la section/subsection existe
     if (!jsonData[section] || !jsonData[section][subsection]) {
       return NextResponse.json(
-        { error: "Section ou subsection non trouvée" },
+        { error: "Section ou subsection non trouvee" },
         { status: 404 }
       );
     }
@@ -168,7 +138,7 @@ export async function DELETE(request: NextRequest) {
     const currentData = jsonData[section][subsection];
 
     if (imageKey.includes(".")) {
-      // Gestion des objets imbriqués
+      // Gestion des objets imbriques
       const keys = imageKey.split(".");
       let target = currentData;
 
@@ -185,30 +155,24 @@ export async function DELETE(request: NextRequest) {
       }
 
       const lastKey = keys[keys.length - 1];
-      if (target[lastKey]) {
-        const imagePath = path.join(process.cwd(), "public", target[lastKey]);
+      if (target[lastKey] && isBlobUrl(target[lastKey])) {
         try {
-          await unlink(imagePath);
+          await del(target[lastKey]);
         } catch (e) {
-          console.error("Erreur suppression fichier:", e);
+          console.warn("Could not delete blob:", e);
         }
-        target[lastKey] = "";
       }
+      target[lastKey] = "";
     } else {
       // Gestion simple
-      if (currentData[imageKey]) {
-        const imagePath = path.join(
-          process.cwd(),
-          "public",
-          currentData[imageKey]
-        );
+      if (currentData[imageKey] && isBlobUrl(currentData[imageKey])) {
         try {
-          await unlink(imagePath);
+          await del(currentData[imageKey]);
         } catch (e) {
-          console.error("Erreur suppression fichier:", e);
+          console.warn("Could not delete blob:", e);
         }
-        currentData[imageKey] = "";
       }
+      currentData[imageKey] = "";
     }
 
     // Sauvegarder les changements

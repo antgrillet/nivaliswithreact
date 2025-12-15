@@ -11,37 +11,6 @@ import ImageGallery from "@/components/ImageGallery";
 import { MarqueData, MarquesData } from "@/app/utils/types";
 import { getImageUrl } from "@/utils/imageUtils";
 
-// Interface pour la structure des données de marque
-// interface MarqueData {
-//   nom: string;
-//   description: string;
-//   description_fr?: string;
-//   description_en?: string;
-//   mainImage: string;
-//   logo: string;
-//   tags: string[];
-//   type: string;
-//   website?: string;
-//   histoire?: string;
-//   images?: string[];
-//   imageFolder?: string;
-//   produits?: {
-//     id?: string;
-//     nom: string;
-//     description: string;
-//     image: string;
-//     prix?: string;
-//   }[];
-//   contact?: {
-//     adresse?: string;
-//     address?: string;
-//     telephone?: string;
-//     phone?: string;
-//     email?: string;
-//     horaires?: string;
-//   };
-// }
-
 export default function MarqueDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
@@ -153,6 +122,7 @@ export default function MarqueDetailPage() {
                   viewBox="0 0 20 20"
                   fill="currentColor"
                   className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform duration-300"
+                  aria-hidden="true"
                 >
                   <path
                     fillRule="evenodd"
@@ -241,6 +211,7 @@ export default function MarqueDetailPage() {
                     viewBox="0 0 20 20"
                     fill="currentColor"
                     className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300"
+                    aria-hidden="true"
                   >
                     <path
                       fillRule="evenodd"
@@ -372,6 +343,7 @@ export default function MarqueDetailPage() {
                           viewBox="0 0 20 20"
                           fill="currentColor"
                           className="w-6 h-6 text-amber-700"
+                          aria-hidden="true"
                         >
                           <path
                             fillRule="evenodd"
@@ -399,6 +371,7 @@ export default function MarqueDetailPage() {
                           viewBox="0 0 20 20"
                           fill="currentColor"
                           className="w-6 h-6 text-amber-700"
+                          aria-hidden="true"
                         >
                           <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
                           <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
@@ -426,6 +399,7 @@ export default function MarqueDetailPage() {
                           viewBox="0 0 20 20"
                           fill="currentColor"
                           className="w-6 h-6 text-amber-700"
+                          aria-hidden="true"
                         >
                           <path
                             fillRule="evenodd"
@@ -456,6 +430,7 @@ export default function MarqueDetailPage() {
                           viewBox="0 0 20 20"
                           fill="currentColor"
                           className="w-6 h-6 text-amber-700"
+                          aria-hidden="true"
                         >
                           <path
                             fillRule="evenodd"
@@ -535,7 +510,7 @@ export default function MarqueDetailPage() {
                       {similarMarque.type}
                     </p>
                   </div>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-600 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-600 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>
@@ -560,6 +535,7 @@ export default function MarqueDetailPage() {
                 viewBox="0 0 20 20"
                 fill="currentColor"
                 className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300"
+                aria-hidden="true"
               >
                 <path
                   fillRule="evenodd"

@@ -1,7 +1,7 @@
+import { put, del, list } from '@vercel/blob';
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
-import { writeFile, unlink } from "fs/promises";
 
 interface Marque {
   nom: string;
@@ -19,291 +19,220 @@ interface Marque {
 
 const DATA_FILE = path.join(process.cwd(), "src/data/marque.json");
 
-// POST - Ajouter une image à une marque
+// Helper pour lire/ecrire JSON
+async function readMarques() {
+  const data = await fs.readFile(DATA_FILE, "utf-8");
+  return JSON.parse(data);
+}
+
+async function writeMarques(data: { marques: Marque[] }) {
+  await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
+}
+
+// Helper pour verifier si une URL est une URL Vercel Blob
+function isBlobUrl(url: string): boolean {
+  return url.includes('blob.vercel-storage.com');
+}
+
+// POST - Upload image vers Vercel Blob
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const file = formData.get("file") as File;
-    const marqueName = formData.get("marque") as string;
-    const action = formData.get("action") as string; // "add", "replace", "mainImage", "logo"
-    const replaceIndex = formData.get("replaceIndex") as string;
+    const file = formData.get('file') as File;
+    const marque = formData.get('marque') as string;
+    const action = formData.get('action') as string; // logo, mainImage, add, replace
+    const replaceIndex = formData.get('replaceIndex');
 
-    if (!file || !marqueName || !action) {
+    if (!file || !marque || !action) {
       return NextResponse.json(
-        { error: "Fichier, marque et action requis" },
+        { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    // Lire les données actuelles
-    const data = await fs.readFile(DATA_FILE, "utf-8");
-    const jsonData = JSON.parse(data);
-
-    // Trouver la marque
-    const marqueIndex = jsonData.marques.findIndex(
-      (m: Marque) => m.nom === marqueName
+    // Upload vers Vercel Blob
+    const blob = await put(
+      `marques/${marque}/${action}/${file.name}`,
+      file,
+      {
+        access: 'public',
+        addRandomSuffix: true,
+      }
     );
+
+    // Mettre a jour le JSON
+    const data = await readMarques();
+    const marqueIndex = data.marques.findIndex((m: Marque) => m.nom === marque);
+
     if (marqueIndex === -1) {
-      return NextResponse.json(
-        { error: "Marque non trouvée" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Marque not found' }, { status: 404 });
     }
 
-    // Préparer le fichier
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const fileName = `${Date.now()}-${file.name}`;
-    const uploadDir = path.join(
-      process.cwd(),
-      "public",
-      jsonData.marques[marqueIndex].imageFolder
-    );
+    const marqueData = data.marques[marqueIndex];
+    let oldUrl: string | null = null;
 
-    // Créer le dossier si nécessaire
-    await fs.mkdir(uploadDir, { recursive: true });
-
-    // Sauvegarder le fichier
-    const filePath = path.join(uploadDir, fileName);
-    await writeFile(filePath, buffer);
-
-    const imageUrl = `${jsonData.marques[marqueIndex].imageFolder}${fileName}`;
-
-    // Mettre à jour les données selon l'action
     switch (action) {
-      case "add":
-        if (!jsonData.marques[marqueIndex].images) {
-          jsonData.marques[marqueIndex].images = [];
-        }
-        jsonData.marques[marqueIndex].images.push(imageUrl);
+      case 'logo':
+        oldUrl = marqueData.logo || null;
+        marqueData.logo = blob.url;
         break;
-
-      case "replace":
-        if (replaceIndex && jsonData.marques[marqueIndex].images) {
-          const index = parseInt(replaceIndex);
-          if (
-            index >= 0 &&
-            index < jsonData.marques[marqueIndex].images.length
-          ) {
-            // Supprimer l'ancienne image
-            const oldImage = jsonData.marques[marqueIndex].images[index];
-            const oldImagePath = path.join(process.cwd(), "public", oldImage);
-            try {
-              await unlink(oldImagePath);
-            } catch {
-              // L'image n'existe peut-être plus
-            }
-            jsonData.marques[marqueIndex].images[index] = imageUrl;
-          }
-        }
+      case 'mainImage':
+        oldUrl = marqueData.mainImage || null;
+        marqueData.mainImage = blob.url;
         break;
-
-      case "mainImage":
-        // Supprimer l'ancienne image principale si elle existe
-        if (jsonData.marques[marqueIndex].mainImage) {
-          const oldMainPath = path.join(
-            process.cwd(),
-            "public",
-            jsonData.marques[marqueIndex].mainImage
-          );
-          try {
-            await unlink(oldMainPath);
-          } catch {
-            // L'image n'existe peut-être plus
-          }
-        }
-        jsonData.marques[marqueIndex].mainImage = imageUrl;
+      case 'add':
+        if (!marqueData.images) marqueData.images = [];
+        marqueData.images.push(blob.url);
         break;
-
-      case "logo":
-        // Supprimer l'ancien logo si il existe
-        if (jsonData.marques[marqueIndex].logo) {
-          const oldLogoPath = path.join(
-            process.cwd(),
-            "public",
-            jsonData.marques[marqueIndex].logo
-          );
-          try {
-            await unlink(oldLogoPath);
-          } catch {
-            // Le logo n'existe peut-être plus
-          }
+      case 'replace':
+        const idx = parseInt(replaceIndex as string);
+        if (marqueData.images && marqueData.images[idx]) {
+          oldUrl = marqueData.images[idx];
+          marqueData.images[idx] = blob.url;
         }
-        jsonData.marques[marqueIndex].logo = imageUrl;
         break;
     }
 
-    // Sauvegarder les changements
-    await fs.writeFile(DATA_FILE, JSON.stringify(jsonData, null, 2));
+    // Supprimer l'ancienne image si elle existe sur Vercel Blob
+    if (oldUrl && isBlobUrl(oldUrl)) {
+      try {
+        await del(oldUrl);
+      } catch (e) {
+        console.warn('Could not delete old blob:', oldUrl, e);
+      }
+    }
+
+    await writeMarques(data);
 
     return NextResponse.json({
       success: true,
-      imageUrl,
-      marque: jsonData.marques[marqueIndex],
+      url: blob.url,
+      pathname: blob.pathname,
+      marque: marqueData,
     });
   } catch (error) {
-    console.error("Erreur:", error);
+    console.error('Upload error:', error);
     return NextResponse.json(
-      { error: "Erreur lors de l'upload de l'image" },
+      { error: (error as Error).message },
       { status: 500 }
     );
   }
 }
 
-// DELETE - Supprimer une image d'une marque
+// DELETE - Supprimer image de Vercel Blob
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const marqueName = searchParams.get("marque");
-    const imageUrl = searchParams.get("imageUrl");
-    const imageType = searchParams.get("type"); // "gallery", "main", "logo"
+    const marqueName = searchParams.get('marque');
+    const imageUrl = searchParams.get('imageUrl');
+    const type = searchParams.get('type'); // gallery, main, logo
 
-    if (!marqueName || (!imageUrl && imageType !== "all")) {
+    if (!marqueName || !imageUrl || !type) {
       return NextResponse.json(
-        { error: "Marque et URL de l'image requis" },
+        { error: 'Missing required params' },
         { status: 400 }
       );
     }
 
-    // Lire les données actuelles
-    const data = await fs.readFile(DATA_FILE, "utf-8");
-    const jsonData = JSON.parse(data);
+    // Supprimer de Vercel Blob si c'est une URL Blob
+    if (isBlobUrl(imageUrl)) {
+      try {
+        await del(imageUrl);
+      } catch (e) {
+        console.warn('Could not delete blob:', imageUrl, e);
+      }
+    }
 
-    // Trouver la marque
-    const marqueIndex = jsonData.marques.findIndex(
-      (m: Marque) => m.nom === marqueName
-    );
+    // Mettre a jour le JSON
+    const data = await readMarques();
+    const marqueIndex = data.marques.findIndex((m: Marque) => m.nom === marqueName);
+
     if (marqueIndex === -1) {
-      return NextResponse.json(
-        { error: "Marque non trouvée" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Marque not found' }, { status: 404 });
     }
 
-    const marque = jsonData.marques[marqueIndex];
+    const marqueData = data.marques[marqueIndex];
 
-    // Supprimer selon le type
-    switch (imageType) {
-      case "gallery":
-        if (marque.images && imageUrl) {
-          const imageIndex = marque.images.indexOf(imageUrl);
-          if (imageIndex > -1) {
-            marque.images.splice(imageIndex, 1);
-            // Supprimer le fichier physique
-            const imagePath = path.join(process.cwd(), "public", imageUrl);
-            try {
-              await unlink(imagePath);
-            } catch (e) {
-              console.error("Erreur suppression fichier:", e);
-            }
-          }
-        }
+    switch (type) {
+      case 'gallery':
+        marqueData.images = marqueData.images?.filter((img: string) => img !== imageUrl) || [];
         break;
-
-      case "main":
-        if (marque.mainImage) {
-          const imagePath = path.join(
-            process.cwd(),
-            "public",
-            marque.mainImage
-          );
-          try {
-            await unlink(imagePath);
-          } catch (e) {
-            console.error("Erreur suppression fichier:", e);
-          }
-          marque.mainImage = "";
-        }
+      case 'main':
+        marqueData.mainImage = '';
         break;
-
-      case "logo":
-        if (marque.logo) {
-          const logoPath = path.join(process.cwd(), "public", marque.logo);
-          try {
-            await unlink(logoPath);
-          } catch (e) {
-            console.error("Erreur suppression fichier:", e);
-          }
-          marque.logo = "";
-        }
-        break;
-
-      case "all":
-        // Supprimer toutes les images
-        const allImages = [
-          ...(marque.images || []),
-          marque.mainImage,
-          marque.logo,
-        ].filter((img) => img);
-
-        for (const img of allImages) {
-          const imgPath = path.join(process.cwd(), "public", img);
-          try {
-            await unlink(imgPath);
-          } catch (e) {
-            console.error("Erreur suppression fichier:", e);
-          }
-        }
-
-        marque.images = [];
-        marque.mainImage = "";
-        marque.logo = "";
+      case 'logo':
+        marqueData.logo = '';
         break;
     }
 
-    // Sauvegarder les changements
-    await fs.writeFile(DATA_FILE, JSON.stringify(jsonData, null, 2));
+    await writeMarques(data);
 
-    return NextResponse.json({
-      success: true,
-      marque: jsonData.marques[marqueIndex],
-    });
+    return NextResponse.json({ success: true, marque: marqueData });
   } catch (error) {
-    console.error("Erreur:", error);
+    console.error('Delete error:', error);
     return NextResponse.json(
-      { error: "Erreur lors de la suppression de l'image" },
+      { error: (error as Error).message },
       { status: 500 }
     );
   }
 }
 
-// GET - Lister toutes les images d'une marque
+// GET - Lister images d'une marque (depuis JSON et optionnellement depuis Blob)
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const marqueName = searchParams.get("marque");
+    const marqueName = searchParams.get('marque');
+    const listBlobs = searchParams.get('listBlobs') === 'true';
 
     if (!marqueName) {
-      return NextResponse.json(
-        { error: "Nom de la marque requis" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Marque required' }, { status: 400 });
     }
 
-    // Lire les données
-    const data = await fs.readFile(DATA_FILE, "utf-8");
-    const jsonData = JSON.parse(data);
+    // Lire les donnees JSON
+    const data = await readMarques();
+    const marque = data.marques.find((m: Marque) => m.nom === marqueName);
 
-    // Trouver la marque
-    const marque = jsonData.marques.find((m: Marque) => m.nom === marqueName);
     if (!marque) {
-      return NextResponse.json(
-        { error: "Marque non trouvée" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Marque not found' }, { status: 404 });
     }
 
-    return NextResponse.json({
+    const response: {
+      marque: string;
+      logo: string | null;
+      mainImage: string | null;
+      images: string[];
+      videos: string[];
+      blobs?: { url: string; pathname: string; size: number; uploadedAt: Date }[];
+    } = {
       marque: marque.nom,
       logo: marque.logo || null,
       mainImage: marque.mainImage || null,
       images: marque.images || [],
       videos: marque.videos || [],
-    });
+    };
+
+    // Optionnel: lister depuis Vercel Blob avec prefix
+    if (listBlobs) {
+      try {
+        const result = await list({
+          prefix: `marques/${marqueName}/`,
+        });
+        response.blobs = result.blobs.map(blob => ({
+          url: blob.url,
+          pathname: blob.pathname,
+          size: blob.size,
+          uploadedAt: blob.uploadedAt,
+        }));
+      } catch (e) {
+        console.warn('Could not list blobs:', e);
+      }
+    }
+
+    return NextResponse.json(response);
   } catch (error) {
-    console.error("Erreur:", error);
+    console.error('Get error:', error);
     return NextResponse.json(
-      { error: "Erreur lors de la récupération des images" },
+      { error: (error as Error).message },
       { status: 500 }
     );
   }

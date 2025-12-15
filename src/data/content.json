@@ -54,8 +54,8 @@
         "Artisanat",
         "Excellence française"
       ],
-      "logo_image": "/img/Arpin/IMG_0253.jpg",
-      "main_image": "/img/Arpin/image4.jpeg"
+      "logo_image": "https://tejdhax5lwsthnfb.public.blob.vercel-storage.com/marques/Arpin/IMG_0253-tpflvR4cge4zbIEYN2UNyWvLHH7mZN.jpg",
+      "main_image": "https://tejdhax5lwsthnfb.public.blob.vercel-storage.com/marques/Arpin/image4-PmLJVK6ZSX6t6MZlPUSxURyyCkLYmn.jpeg"
     },
     "history": {
       "title": "Un savoir-faire transmis depuis des générations",
@@ -66,10 +66,10 @@
       "paragraph3": "L'entreprise a su évoluer avec son temps tout en conservant l'essence de son savoir-faire. Aujourd'hui, Arpin propose des collections pour l'habitat et le vêtement qui allient tradition et modernité, perpétuant l'excellence d'un artisanat d'exception.",
       "highlight": "Le patrimoine vivant d'un savoir-faire unique, classé au titre des monuments historiques depuis 2005.",
       "images": [
-        "/img/Arpin/image4.jpeg",
-        "/img/Arpin/image003.jpg",
-        "/img/Arpin/IMG_0253.jpg",
-        "/img/Arpin/image4.jpeg"
+        "https://tejdhax5lwsthnfb.public.blob.vercel-storage.com/marques/Arpin/image4-PmLJVK6ZSX6t6MZlPUSxURyyCkLYmn.jpeg",
+        "https://tejdhax5lwsthnfb.public.blob.vercel-storage.com/marques/Arpin/image003-bRyrXUkaDSpfsitoZS3Spc28s0wDap.jpg",
+        "https://tejdhax5lwsthnfb.public.blob.vercel-storage.com/marques/Arpin/IMG_0253-tpflvR4cge4zbIEYN2UNyWvLHH7mZN.jpg",
+        "https://tejdhax5lwsthnfb.public.blob.vercel-storage.com/marques/Arpin/image4-PmLJVK6ZSX6t6MZlPUSxURyyCkLYmn.jpeg"
       ]
     },
     "catalogue": {
@@ -82,22 +82,22 @@
         {
           "id": "couvertures",
           "nom": "Couvertures traditionnelles",
-          "image": "/img/Arpin/image4.jpeg"
+          "image": "https://tejdhax5lwsthnfb.public.blob.vercel-storage.com/marques/Arpin/image4-PmLJVK6ZSX6t6MZlPUSxURyyCkLYmn.jpeg"
         },
         {
           "id": "plaids",
           "nom": "Plaids et jetés",
-          "image": "/img/Arpin/image003.jpg"
+          "image": "https://tejdhax5lwsthnfb.public.blob.vercel-storage.com/marques/Arpin/image003-bRyrXUkaDSpfsitoZS3Spc28s0wDap.jpg"
         },
         {
           "id": "decoration",
           "nom": "Articles de décoration",
-          "image": "/img/Arpin/IMG_0253.jpg"
+          "image": "https://tejdhax5lwsthnfb.public.blob.vercel-storage.com/marques/Arpin/IMG_0253-tpflvR4cge4zbIEYN2UNyWvLHH7mZN.jpg"
         },
         {
           "id": "vetements",
           "nom": "Vêtements en laine",
-          "image": "/img/Arpin/image4.jpeg"
+          "image": "https://tejdhax5lwsthnfb.public.blob.vercel-storage.com/marques/Arpin/image4-PmLJVK6ZSX6t6MZlPUSxURyyCkLYmn.jpeg"
         }
       ]
     },

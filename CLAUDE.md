@@ -12,6 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `pnpm lint` - Run ESLint checks (disabled during builds but should be run manually)
 - `pnpm install` - Install dependencies
 - `pnpm add <package>` - Add new package
+- `pnpm migrate:blob` - Migrate local images to Vercel Blob Storage
 
 ## Project Architecture
 
@@ -97,6 +98,37 @@ Images are organized in `/public/img/[BrandName]/` directories. Dynamically uplo
 - **Fonts**: Work Sans, Playfair Display (via next/font)
 - **Notifications**: Sonner for toast messages
 - **Utilities**: lodash.debounce for input debouncing
+- **Storage**: Vercel Blob for persistent image storage
+
+### Vercel Blob Storage
+
+The application uses **Vercel Blob Storage** for persistent cloud storage of uploaded images. This replaces the previous local file storage which was lost on each deployment.
+
+**Key Benefits:**
+- Images persist across deployments
+- Global CDN distribution
+- Automatic unique URLs (random suffix)
+- No cache-busting needed for Blob URLs
+
+**Configuration:**
+- Environment variable: `BLOB_READ_WRITE_TOKEN` in `.env.local`
+- Remote patterns configured in `next.config.ts` for `*.blob.vercel-storage.com`
+
+**API Routes:**
+- `/api/blob/upload` - Client upload handler with `handleUpload`
+- `/api/blob/delete` - Delete single or multiple blobs
+- `/api/blob/list` - List blobs with prefix filtering
+
+**Image URL Detection:**
+- `isBlobUrl()` in `imageUtils.ts` checks for `blob.vercel-storage.com`
+- Blob URLs are used directly (no API routing needed)
+- Legacy local images still supported via `/api/serve-image/`
+
+**Migration:**
+- Run `pnpm migrate:blob` to migrate existing local images
+- Script uploads all `/public/img/` images to Blob
+- Updates `marque.json` and `content.json` with new URLs
+- Generates `url-mapping.json` for reference
 
 ### Critical Configuration Details
 
@@ -148,22 +180,29 @@ Complete content management system accessible at `/admin` with no authentication
 
 ### Image Upload System
 
-**Key Concept:** The app distinguishes between static and dynamically uploaded images.
+**Key Concept:** The app supports three types of images:
 
-**Static Images:**
+**1. Vercel Blob Images (NEW - Recommended):**
+- Stored in Vercel Blob Storage (cloud)
+- URLs contain `blob.vercel-storage.com`
+- Automatic CDN, persistent across deployments
+- No cache-busting needed (unique random suffix)
+- Detection: `isBlobUrl()` in `imageUtils.ts`
+
+**2. Static Images (Legacy):**
 - Original images committed to the repo
 - Served directly from `/img/` paths
 - Example: `/img/Arpin/image4.jpeg`
 
-**Dynamically Uploaded Images (via admin):**
+**3. Legacy Uploaded Images (Deprecated):**
 - Prefixed with 13-digit timestamp: `1752770423550-filename.jpg`
 - Detection: `isUploadedImage()` in `imageUtils.ts` checks for `^\d{13}-` pattern
 - Serving: Routed through `/api/serve-image/[...path]` for proper headers
-- URL Generation: Use `getImageUrl()` which automatically routes timestamped images to API
+- Note: New uploads now go to Vercel Blob instead
 
 **Cache Busting:**
-- Admin uses `getImageUrlWithCacheBusting()` to append `?t=${Date.now()}`
-- Public pages use `getImageUrl()` without cache-busting
+- Blob URLs: No cache-busting needed (unique URLs)
+- Legacy local images: Admin uses `getImageUrlWithCacheBusting()`
 - `/img/*` directory has `max-age=0, must-revalidate` headers
 
 ### Routing and Pages

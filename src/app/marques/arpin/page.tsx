@@ -7,12 +7,26 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { ChangeEvent, FormEvent } from "react";
 import ImageGallery from "@/components/ImageGallery";
+import { getImageUrl } from "@/utils/imageUtils";
+
+interface ArpinContent {
+  hero: {
+    title?: string;
+    subtitle?: string;
+    logo_image?: string;
+    main_image?: string;
+    tags?: string[];
+  };
+  history: Record<string, unknown>;
+  catalogue: Record<string, unknown>;
+  gallery: Record<string, unknown>;
+  contact: Record<string, unknown>;
+}
 
 export default function ArpinPage() {
-  const [content, setContent] = useState<any>({
+  const [content, setContent] = useState<ArpinContent>({
     hero: {},
     history: {},
     catalogue: {},
@@ -124,6 +138,7 @@ export default function ArpinPage() {
                     viewBox="0 0 20 20"
                     fill="currentColor"
                     className="w-5 h-5 mr-1"
+                    aria-hidden="true"
                   >
                     <path
                       fillRule="evenodd"
@@ -137,9 +152,9 @@ export default function ArpinPage() {
                 <div className="flex items-center mb-6">
                   <div className="h-20 w-20 bg-white rounded-full shadow-md flex items-center justify-center mr-4 overflow-hidden border border-amber-200">
                     <Image
-                      src={
+                      src={getImageUrl(
                         content.hero?.logo_image || "/img/Arpin/IMG_0253.jpg"
-                      }
+                      )}
                       alt="Logo Arpin"
                       width={60}
                       height={60}
@@ -192,6 +207,7 @@ export default function ArpinPage() {
                       strokeWidth={1.5}
                       stroke="currentColor"
                       className="w-5 h-5 ml-2"
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
@@ -213,6 +229,7 @@ export default function ArpinPage() {
                       strokeWidth={1.5}
                       stroke="currentColor"
                       className="w-5 h-5 ml-2"
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
@@ -240,7 +257,7 @@ export default function ArpinPage() {
             >
               <div className="relative h-[450px] w-full rounded-xl overflow-hidden shadow-xl">
                 <Image
-                  src={content.hero?.main_image || "/img/Arpin/image4.jpeg"}
+                  src={getImageUrl(content.hero?.main_image || "/img/Arpin/image4.jpeg")}
                   alt="Textile Arpin"
                   fill
                   className="object-cover"
@@ -317,6 +334,7 @@ export default function ArpinPage() {
                     strokeWidth={1.5}
                     stroke="currentColor"
                     className="w-6 h-6"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -335,7 +353,7 @@ export default function ArpinPage() {
             <div className="grid grid-cols-2 gap-5">
               <div className="relative h-72 w-full rounded-lg overflow-hidden shadow-lg">
                 <Image
-                  src="/img/Arpin/image4.jpeg"
+                  src={getImageUrl("/img/Arpin/image4.jpeg")}
                   alt="Tissage Arpin"
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-700"
@@ -343,7 +361,7 @@ export default function ArpinPage() {
               </div>
               <div className="relative h-72 w-full rounded-lg overflow-hidden shadow-lg mt-10">
                 <Image
-                  src="/img/Arpin/image003.jpg"
+                  src={getImageUrl("/img/Arpin/image003.jpg")}
                   alt="Atelier Arpin"
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-700"
@@ -351,7 +369,7 @@ export default function ArpinPage() {
               </div>
               <div className="relative h-72 w-full rounded-lg overflow-hidden shadow-lg">
                 <Image
-                  src="/img/Arpin/IMG_0253.jpg"
+                  src={getImageUrl("/img/Arpin/IMG_0253.jpg")}
                   alt="Détail tissu Arpin"
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-700"
@@ -359,7 +377,7 @@ export default function ArpinPage() {
               </div>
               <div className="relative h-72 w-full rounded-lg overflow-hidden shadow-lg mt-10">
                 <Image
-                  src="/img/Arpin/image4.jpeg"
+                  src={getImageUrl("/img/Arpin/image4.jpeg")}
                   alt="Collection Arpin"
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-700"
@@ -402,6 +420,7 @@ export default function ArpinPage() {
                   strokeWidth={1.5}
                   stroke="currentColor"
                   className="w-5 h-5 ml-2"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -428,6 +447,7 @@ export default function ArpinPage() {
                     strokeWidth={1.5}
                     stroke="currentColor"
                     className="w-4 h-4 ml-2"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -441,7 +461,7 @@ export default function ArpinPage() {
                 <iframe
                   src="/Catalogue sur Mesure Arpin 2022.pdf"
                   className="w-full h-full"
-                  title="Catalogue Arpin"
+                  title="Catalogue sur Mesure Arpin 2022"
                   allowFullScreen
                 ></iframe>
               </div>
@@ -455,7 +475,7 @@ export default function ArpinPage() {
                 >
                   <div className="relative h-40 w-full mb-4 rounded-md overflow-hidden">
                     <Image
-                      src={produit.image}
+                      src={getImageUrl(produit.image)}
                       alt={produit.nom}
                       fill
                       className="object-cover"
@@ -477,6 +497,7 @@ export default function ArpinPage() {
                       viewBox="0 0 20 20"
                       fill="currentColor"
                       className="w-5 h-5 ml-1"
+                      aria-hidden="true"
                     >
                       <path
                         fillRule="evenodd"
@@ -488,7 +509,7 @@ export default function ArpinPage() {
                 </div>
               ))}
             </div>
-            
+
             {/* Section catalogue mobilier */}
             <div className="mt-16 bg-gradient-to-br from-amber-100/50 to-amber-50/50 rounded-xl p-8">
               <div className="text-center mb-8">
@@ -516,6 +537,7 @@ export default function ArpinPage() {
                       strokeWidth={1.5}
                       stroke="currentColor"
                       className="w-5 h-5 ml-2"
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
@@ -539,6 +561,7 @@ export default function ArpinPage() {
                       strokeWidth={1.5}
                       stroke="currentColor"
                       className="w-5 h-5 ml-2"
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
@@ -549,14 +572,14 @@ export default function ArpinPage() {
                   </a>
                 </div>
               </div>
-              
+
               {/* Aperçu du PDF mobilier */}
               <div className="mt-8 bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="relative w-full" style={{ height: "400px" }}>
                   <iframe
                     src="/ML 2023 Novedades News Nouveautes.pdf"
                     className="w-full h-full"
-                    title="Catalogue Mobilier Arpin 2023"
+                    title="Catalogue Mobilier Arpin - Nouveautés 2023"
                     allowFullScreen
                   ></iframe>
                 </div>
@@ -618,6 +641,7 @@ export default function ArpinPage() {
                       strokeWidth={1.5}
                       stroke="currentColor"
                       className="w-16 h-16 text-green-500 mx-auto mb-4"
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
@@ -813,6 +837,7 @@ export default function ArpinPage() {
                           strokeWidth={1.5}
                           stroke="currentColor"
                           className="w-7 h-7"
+                          aria-hidden="true"
                         >
                           <path
                             strokeLinecap="round"
@@ -842,6 +867,7 @@ export default function ArpinPage() {
                           strokeWidth={1.5}
                           stroke="currentColor"
                           className="w-7 h-7"
+                          aria-hidden="true"
                         >
                           <path
                             strokeLinecap="round"
@@ -870,6 +896,7 @@ export default function ArpinPage() {
                           strokeWidth={1.5}
                           stroke="currentColor"
                           className="w-7 h-7"
+                          aria-hidden="true"
                         >
                           <path
                             strokeLinecap="round"
@@ -907,6 +934,7 @@ export default function ArpinPage() {
                           strokeWidth={1.5}
                           stroke="currentColor"
                           className="w-6 h-6"
+                          aria-hidden="true"
                         >
                           <path
                             strokeLinecap="round"

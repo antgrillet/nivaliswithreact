@@ -136,7 +136,7 @@ export default function ContactPage() {
                     <h3 className="font-semibold text-lg text-amber-800 mb-3">
                       Horaires d'ouverture
                     </h3>
-                    <table className="text-amber-700 w-full">
+                    <table className="text-amber-700 w-full" aria-label="Horaires d'ouverture de la boutique">
                       <tbody>
                         <tr className="border-b border-amber-200">
                           <td className="py-2 font-medium">Lundi</td>
@@ -199,6 +199,7 @@ export default function ContactPage() {
                       allowFullScreen={true}
                       loading="lazy"
                       referrerPolicy="no-referrer-when-downgrade"
+                      title="Localisation de la boutique Nivalis aux Gets"
                     ></iframe>
                   </div>
                 </div>

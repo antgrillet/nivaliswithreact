@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MarquesList from "@/components/marques/MarquesList";
@@ -13,7 +14,7 @@ export default function MarquesPage() {
   const [searchTerm] = useState("");
   const [activeFilter] = useState("Toutes");
   const [marqueData, setMarqueData] = useState<MarquesData | null>(null);
-  const [filteredMarques, setFilteredMarques] = useState<any[]>([]);
+  const [filteredMarques, setFilteredMarques] = useState<MarquesData["marques"]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeType] = useState("Tous types");
 
@@ -65,41 +66,27 @@ export default function MarquesPage() {
     setFilteredMarques(results);
   }, [searchTerm, activeFilter, activeType, marqueData]);
 
-  // Fonction loadMore pour usage futur
-  const loadMore = () => {
-    // Future implementation
-  };
-
-  // Animation variants pour usage futur
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const item = {
-    hidden: { y: 20, opacity: 0 },
-    show: { y: 0, opacity: 1, transition: { duration: 0.5 } },
-  };
-
   if (isLoading) {
     return (
       <main className="min-h-screen bg-gradient-to-b from-amber-50/60 to-white">
         <Navbar />
         <MarquesHeader />
-        <div className="container mx-auto px-4 py-8 text-center">
-          <div className="animate-pulse">
-            <div className="h-8 w-1/2 mx-auto bg-amber-200 rounded-lg mb-4"></div>
-            <div className="h-4 w-2/3 mx-auto bg-amber-100 rounded-lg mb-8"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="animate-pulse bg-white rounded-xl h-80 shadow-md"></div>
-              ))}
-            </div>
+        <div className="container mx-auto px-4 py-8">
+          <div className="space-y-4 mb-8">
+            <Skeleton className="h-8 w-1/2 mx-auto" />
+            <Skeleton className="h-4 w-2/3 mx-auto" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-white rounded-xl shadow-md overflow-hidden">
+                <Skeleton className="h-48 w-full" />
+                <div className="p-6 space-y-3">
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
         <Footer />
@@ -127,8 +114,8 @@ export default function MarquesPage() {
 
       <Suspense
         fallback={
-          <div className="container mx-auto px-4 py-8 text-center">
-            Chargement des filtres...
+          <div className="container mx-auto px-4 py-4">
+            <Skeleton className="h-12 w-full" />
           </div>
         }
       >
@@ -141,10 +128,13 @@ export default function MarquesPage() {
             fallback={
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="animate-pulse bg-white rounded-xl h-80 shadow-md"
-                  ></div>
+                  <div key={i} className="bg-white rounded-xl shadow-md overflow-hidden">
+                    <Skeleton className="h-48 w-full" />
+                    <div className="p-6 space-y-3">
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
+                    </div>
+                  </div>
                 ))}
               </div>
             }
