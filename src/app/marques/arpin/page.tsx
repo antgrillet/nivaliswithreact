@@ -1,15 +1,61 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { ChangeEvent, FormEvent } from "react";
 import ImageGallery from "@/components/ImageGallery";
 import { getImageUrl } from "@/utils/imageUtils";
+
+// Composant Breadcrumb accessible
+function Breadcrumb() {
+  return (
+    <nav aria-label="Fil d'Ariane" className="bg-amber-50/80 border-b border-amber-100">
+      <div className="container mx-auto px-4 py-3">
+        <ol className="flex items-center space-x-2 text-sm" itemScope itemType="https://schema.org/BreadcrumbList">
+          <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+            <Link
+              href="/"
+              itemProp="item"
+              className="text-amber-600 hover:text-amber-800 transition-colors"
+            >
+              <span itemProp="name">Accueil</span>
+            </Link>
+            <meta itemProp="position" content="1" />
+          </li>
+          <li aria-hidden="true" className="text-amber-400">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+            </svg>
+          </li>
+          <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+            <Link
+              href="/marques"
+              itemProp="item"
+              className="text-amber-600 hover:text-amber-800 transition-colors"
+            >
+              <span itemProp="name">Nos Marques</span>
+            </Link>
+            <meta itemProp="position" content="2" />
+          </li>
+          <li aria-hidden="true" className="text-amber-400">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+            </svg>
+          </li>
+          <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem" aria-current="page">
+            <span itemProp="name" className="text-amber-900 font-medium">Arpin</span>
+            <meta itemProp="position" content="3" />
+          </li>
+        </ol>
+      </div>
+    </nav>
+  );
+}
 
 interface ArpinContent {
   hero: {
@@ -97,32 +143,70 @@ export default function ArpinPage() {
       id: "couvertures",
       nom: "Couvertures traditionnelles",
       image: "/img/Arpin/image4.jpeg",
+      alt: "Couverture traditionnelle en laine Arpin - Drap de Bonneval tissé à la main",
     },
-    { id: "plaids", nom: "Plaids et jetés", image: "/img/Arpin/image003.jpg" },
+    {
+      id: "plaids",
+      nom: "Plaids et jetés",
+      image: "/img/Arpin/image003.jpg",
+      alt: "Plaid Arpin en laine de Savoie - Confort et chaleur pour votre intérieur",
+    },
     {
       id: "decoration",
       nom: "Articles de décoration",
       image: "/img/Arpin/IMG_0253.jpg",
+      alt: "Décoration intérieure Arpin - Textiles artisanaux pour chalet et maison",
     },
     {
       id: "vetements",
       nom: "Vêtements en laine",
       image: "/img/Arpin/image4.jpeg",
+      alt: "Vêtements en laine Arpin - Mode montagne et artisanat savoyard",
     },
   ];
+
+  // Ref et hooks pour le parallax du Hero
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+
+  // Transformations parallax
+  const heroImageY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const heroTextY = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const decorScale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
 
   return (
     <main className="min-h-screen bg-amber-50/60">
       <Navbar />
+      <Breadcrumb />
 
-      {/* Hero section améliorée */}
-      <section className="pt-32 pb-16 bg-gradient-to-b from-amber-100/80 to-amber-50/60 relative overflow-hidden">
-        <div className="absolute top-0 right-0 -mr-64 -mt-32 w-96 h-96 bg-amber-300/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 -ml-40 -mb-16 w-80 h-80 bg-amber-200/30 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/4 w-72 h-72 bg-amber-100/20 rounded-full blur-3xl"></div>
+      {/* Hero section avec parallax */}
+      <section
+        ref={heroRef}
+        className="pt-16 pb-16 bg-gradient-to-b from-amber-100/80 to-amber-50/60 relative overflow-hidden"
+      >
+        {/* Éléments décoratifs avec parallax */}
+        <motion.div
+          style={{ scale: decorScale }}
+          className="absolute top-0 right-0 -mr-64 -mt-32 w-96 h-96 bg-amber-300/20 rounded-full blur-3xl"
+        />
+        <motion.div
+          style={{ scale: decorScale }}
+          className="absolute bottom-0 left-0 -ml-40 -mb-16 w-80 h-80 bg-amber-200/30 rounded-full blur-3xl"
+        />
+        <motion.div
+          style={{ scale: decorScale }}
+          className="absolute top-1/2 left-1/4 w-72 h-72 bg-amber-100/20 rounded-full blur-3xl"
+        />
 
         <div className="container mx-auto px-4 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center gap-10">
+          <motion.div
+            style={{ y: heroTextY, opacity: heroOpacity }}
+            className="flex flex-col lg:flex-row items-center gap-10"
+          >
             <div className="w-full lg:w-1/2">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -255,10 +339,13 @@ export default function ArpinPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="w-full lg:w-1/2"
             >
-              <div className="relative h-[450px] w-full rounded-xl overflow-hidden shadow-xl">
+              <motion.div
+                style={{ y: heroImageY }}
+                className="relative h-[450px] w-full rounded-xl overflow-hidden shadow-xl"
+              >
                 <Image
                   src={getImageUrl(content.hero?.main_image || "/img/Arpin/image4.jpeg")}
-                  alt="Textile Arpin"
+                  alt="Collection Arpin - Plaids et textiles en laine de Savoie tissés artisanalement depuis 1817"
                   fill
                   className="object-cover"
                   priority
@@ -276,9 +363,9 @@ export default function ArpinPage() {
                     artisanales
                   </p>
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -354,7 +441,7 @@ export default function ArpinPage() {
               <div className="relative h-72 w-full rounded-lg overflow-hidden shadow-lg">
                 <Image
                   src={getImageUrl("/img/Arpin/image4.jpeg")}
-                  alt="Tissage Arpin"
+                  alt="Métier à tisser traditionnel de la filature Arpin - Savoir-faire artisanal savoyard depuis 1817"
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-700"
                 />
@@ -362,7 +449,7 @@ export default function ArpinPage() {
               <div className="relative h-72 w-full rounded-lg overflow-hidden shadow-lg mt-10">
                 <Image
                   src={getImageUrl("/img/Arpin/image003.jpg")}
-                  alt="Atelier Arpin"
+                  alt="Atelier de fabrication Arpin à Séez en Savoie - Transformation artisanale de la laine"
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-700"
                 />
@@ -370,7 +457,7 @@ export default function ArpinPage() {
               <div className="relative h-72 w-full rounded-lg overflow-hidden shadow-lg">
                 <Image
                   src={getImageUrl("/img/Arpin/IMG_0253.jpg")}
-                  alt="Détail tissu Arpin"
+                  alt="Détail du drap de Bonneval Arpin - Texture unique de la laine feutrée savoyarde"
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-700"
                 />
@@ -378,12 +465,136 @@ export default function ArpinPage() {
               <div className="relative h-72 w-full rounded-lg overflow-hidden shadow-lg mt-10">
                 <Image
                   src={getImageUrl("/img/Arpin/image4.jpeg")}
-                  alt="Collection Arpin"
+                  alt="Collection de plaids et couvertures Arpin - Textiles de montagne en laine naturelle"
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-700"
                 />
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section Processus de Fabrication - Timeline */}
+      <section className="py-24 bg-gradient-to-b from-white to-amber-50/50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <span className="inline-block bg-amber-100 text-amber-800 text-sm font-medium px-3 py-1 rounded-full mb-4">
+              Notre savoir-faire
+            </span>
+            <h2 className="text-4xl font-bold text-amber-900 mb-6">
+              Le processus de fabrication Arpin
+            </h2>
+            <p className="text-amber-700 text-xl">
+              De la laine brute au produit fini, découvrez les étapes ancestrales
+              qui font l'excellence de nos textiles
+            </p>
+          </div>
+
+          {/* Timeline verticale */}
+          <div className="relative max-w-4xl mx-auto">
+            {/* Ligne centrale */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-amber-200 via-amber-400 to-amber-200 rounded-full" aria-hidden="true" />
+
+            {/* Étapes */}
+            {[
+              {
+                step: 1,
+                title: "Sélection de la laine",
+                description:
+                  "Choix minutieux des toisons de moutons des Alpes pour leur qualité et leur finesse exceptionnelles.",
+                icon: (
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                ),
+              },
+              {
+                step: 2,
+                title: "Lavage et cardage",
+                description:
+                  "Nettoyage délicat de la laine brute puis démêlage des fibres pour les préparer au filage.",
+                icon: (
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                ),
+              },
+              {
+                step: 3,
+                title: "Filage artisanal",
+                description:
+                  "Transformation des fibres en fils solides sur nos métiers historiques, perpétuant un geste centenaire.",
+                icon: (
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                ),
+              },
+              {
+                step: 4,
+                title: "Tissage traditionnel",
+                description:
+                  "Création du tissu sur métiers à navette selon les techniques du Drap de Bonneval.",
+                icon: (
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                  </svg>
+                ),
+              },
+              {
+                step: 5,
+                title: "Foulonnage",
+                description:
+                  "Feutrage du tissu dans nos foulons à eau pour lui donner sa densité et sa résistance caractéristiques.",
+                icon: (
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                ),
+              },
+              {
+                step: 6,
+                title: "Finitions",
+                description:
+                  "Brossage, tonte et contrôle qualité rigoureux pour des produits d'exception prêts à traverser le temps.",
+                icon: (
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                  </svg>
+                ),
+              },
+            ].map((item, index) => (
+              <motion.div
+                key={item.step}
+                initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className={`relative flex items-center mb-12 ${
+                  index % 2 === 0 ? "flex-row" : "flex-row-reverse"
+                }`}
+              >
+                {/* Contenu */}
+                <div className={`w-5/12 ${index % 2 === 0 ? "text-right pr-8" : "text-left pl-8"}`}>
+                  <div className={`bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow ${
+                    index % 2 === 0 ? "ml-auto" : "mr-auto"
+                  }`}>
+                    <span className="text-amber-600 font-bold text-sm">Étape {item.step}</span>
+                    <h3 className="text-xl font-bold text-amber-900 mt-1 mb-2">{item.title}</h3>
+                    <p className="text-amber-700">{item.description}</p>
+                  </div>
+                </div>
+
+                {/* Point central */}
+                <div className="absolute left-1/2 transform -translate-x-1/2 w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center text-white shadow-lg z-10">
+                  {item.icon}
+                </div>
+
+                {/* Espace vide */}
+                <div className="w-5/12" />
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -476,7 +687,7 @@ export default function ArpinPage() {
                   <div className="relative h-40 w-full mb-4 rounded-md overflow-hidden">
                     <Image
                       src={getImageUrl(produit.image)}
-                      alt={produit.nom}
+                      alt={produit.alt}
                       fill
                       className="object-cover"
                     />

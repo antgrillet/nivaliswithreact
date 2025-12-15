@@ -32,10 +32,19 @@ export default function ContactPage() {
     setSubmitError("");
 
     try {
-      // Simulation d'un envoi de formulaire
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
-      console.log("Formulaire soumis:", formData);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Erreur lors de l'envoi");
+      }
 
       // Réinitialisation du formulaire
       setFormData({
@@ -49,7 +58,11 @@ export default function ContactPage() {
       setTimeout(() => setSubmitSuccess(false), 5000);
     } catch (error) {
       console.error("Erreur lors de l'envoi du formulaire:", error);
-      setSubmitError("Une erreur est survenue. Veuillez réessayer plus tard.");
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "Une erreur est survenue. Veuillez réessayer plus tard."
+      );
     } finally {
       setIsSubmitting(false);
     }
