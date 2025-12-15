@@ -55,24 +55,24 @@ const textVariants = {
 export default function BrandSection({ brands }: BrandSectionProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [showAllBrands, setShowAllBrands] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState<string>("Tous");
 
-  // Debugging
-  console.log("BrandSection: brands.length =", brands?.length);
-  console.log("BrandSection: showAllBrands =", showAllBrands);
+  const allTags = ["Tous", ...new Set(brands.flatMap(brand => brand.tags || []))];
 
-  // Limiter à 8 marques initialement
+  const filteredBrands = selectedFilter === "Tous"
+    ? brands
+    : brands.filter(brand => brand.tags?.includes(selectedFilter));
+
   const displayedBrands =
-    showAllBrands || !Array.isArray(brands)
-      ? Array.isArray(brands)
-        ? brands
+    showAllBrands || !Array.isArray(filteredBrands)
+      ? Array.isArray(filteredBrands)
+        ? filteredBrands
         : []
-      : brands.slice(0, 8);
+      : filteredBrands.slice(0, 8);
 
-  // Debugging
-  console.log(
-    "BrandSection: displayedBrands.length =",
-    displayedBrands?.length
-  );
+  const featuredBrands = ["The North Face", "Arpin", "UGG"];
+
+  const isFeatured = (brandName: string) => featuredBrands.includes(brandName);
 
   return (
     <section className="py-24 relative overflow-hidden">
@@ -89,12 +89,12 @@ export default function BrandSection({ brands }: BrandSectionProps) {
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
           variants={textVariants}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-amber-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-amber-950 mb-4">
             Nos marques en boutique
           </h2>
-          <p className="text-amber-800/80 max-w-2xl mx-auto text-lg">
+          <p className="text-amber-900/80 max-w-2xl mx-auto text-lg leading-relaxed">
             Venez découvrir en magasin notre sélection exclusive des plus
             grandes marques outdoor et lifestyle. Notre équipe vous accueille
             pour vous conseiller et vous faire essayer les produits.
@@ -102,11 +102,33 @@ export default function BrandSection({ brands }: BrandSectionProps) {
         </motion.div>
 
         <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="flex flex-wrap justify-center gap-3 mb-16"
+        >
+          {allTags.map((tag) => (
+            <button
+              key={tag}
+              onClick={() => setSelectedFilter(tag)}
+              className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
+                selectedFilter === tag
+                  ? "bg-amber-700 text-white shadow-lg scale-105"
+                  : "bg-white text-amber-800 hover:bg-amber-100 border-2 border-amber-200"
+              }`}
+            >
+              {tag}
+            </button>
+          ))}
+        </motion.div>
+
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 auto-rows-fr"
         >
           {displayedBrands.map((brand, index) => (
             <motion.div
@@ -114,7 +136,9 @@ export default function BrandSection({ brands }: BrandSectionProps) {
               variants={itemVariants}
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
-              className="h-full"
+              className={`h-full ${
+                isFeatured(brand.nom) ? "lg:col-span-2 lg:row-span-1" : ""
+              }`}
             >
               <BrandCard
                 nom={brand.nom}
@@ -123,24 +147,25 @@ export default function BrandSection({ brands }: BrandSectionProps) {
                 logo={brand.logo}
                 mainImage={brand.mainImage}
                 isHovered={hoveredIndex === index}
+                isFeatured={isFeatured(brand.nom)}
               />
             </motion.div>
           ))}
         </motion.div>
 
         {/* Condition pour afficher le bouton "Voir toutes les marques" */}
-        {Array.isArray(brands) && brands.length > 8 && (
+        {Array.isArray(filteredBrands) && filteredBrands.length > 8 && (
           <div className="flex justify-center">
             <Button
               onClick={() => setShowAllBrands(!showAllBrands)}
-              className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex items-center space-x-2"
+              className="bg-amber-700 hover:bg-amber-800 text-white px-8 py-4 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center space-x-3 font-semibold text-base group"
             >
               <span>
                 {showAllBrands ? "Afficher moins" : "Voir toutes nos marques"}
               </span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className={`h-5 w-5 transition-transform duration-300 ${
+                className={`h-5 w-5 transition-transform duration-300 group-hover:translate-y-1 ${
                   showAllBrands ? "rotate-180" : ""
                 }`}
                 fill="none"
@@ -158,28 +183,55 @@ export default function BrandSection({ brands }: BrandSectionProps) {
           </div>
         )}
 
-        {/* Section des statistiques */}
+        {/* Section des statistiques améliorée */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="mt-24 bg-white rounded-2xl shadow-xl border border-amber-100 p-8 grid grid-cols-1 md:grid-cols-3 gap-8"
+          className="mt-24 bg-gradient-to-br from-white to-amber-50/30 rounded-3xl shadow-2xl border-2 border-amber-200/50 p-12 grid grid-cols-1 md:grid-cols-3 gap-12"
         >
-          <div className="text-center">
-            <h3 className="text-amber-900 text-4xl font-bold mb-2">
+          <motion.div
+            className="text-center group"
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-full mb-4 group-hover:bg-amber-200 transition-colors duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-amber-700" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+              </svg>
+            </div>
+            <h3 className="text-amber-950 text-5xl font-bold mb-3">
               {brands.length}+
             </h3>
-            <p className="text-amber-700">Marques disponibles en magasin</p>
-          </div>
-          <div className="text-center">
-            <h3 className="text-amber-900 text-4xl font-bold mb-2">50m²</h3>
-            <p className="text-amber-700">D'espace dédié aux marques</p>
-          </div>
-          <div className="text-center">
-            <h3 className="text-amber-900 text-4xl font-bold mb-2">7j/7</h3>
-            <p className="text-amber-700">Ouvert toute la semaine</p>
-          </div>
+            <p className="text-amber-800 font-medium text-lg">Marques disponibles en magasin</p>
+          </motion.div>
+          <motion.div
+            className="text-center group"
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-full mb-4 group-hover:bg-amber-200 transition-colors duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-amber-700" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <h3 className="text-amber-950 text-5xl font-bold mb-3">50m²</h3>
+            <p className="text-amber-800 font-medium text-lg">D'espace dédié aux marques</p>
+          </motion.div>
+          <motion.div
+            className="text-center group"
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-full mb-4 group-hover:bg-amber-200 transition-colors duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-amber-700" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <h3 className="text-amber-950 text-5xl font-bold mb-3">7j/7</h3>
+            <p className="text-amber-800 font-medium text-lg">Ouvert toute la semaine</p>
+          </motion.div>
         </motion.div>
       </div>
     </section>

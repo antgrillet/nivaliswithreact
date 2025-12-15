@@ -1,6 +1,8 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 export default function ArpinFeatureSection() {
   return (
@@ -8,7 +10,13 @@ export default function ArpinFeatureSection() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center gap-12">
           {/* Images gallery */}
-          <div className="w-full lg:w-1/2 relative">
+          <motion.div
+            className="w-full lg:w-1/2 relative"
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
             <div className="relative h-[400px] md:h-[500px] w-full overflow-hidden rounded-xl shadow-xl">
               <Image
                 src="/img/Arpin/image4.jpeg"
@@ -31,27 +39,47 @@ export default function ArpinFeatureSection() {
               </div>
             </div>
 
-            <div className="absolute -bottom-8 -right-8 md:bottom-auto md:right-auto md:top-32 md:-left-6 lg:-left-8 w-40 h-40 md:w-44 md:h-44 lg:w-48 lg:h-48 rounded-lg shadow-lg overflow-hidden border-4 border-white transform rotate-3 md:-rotate-6">
+            <motion.div
+              className="absolute -bottom-8 -right-8 md:bottom-auto md:right-auto md:top-32 md:-left-6 lg:-left-8 w-40 h-40 md:w-44 md:h-44 lg:w-48 lg:h-48 rounded-lg shadow-lg overflow-hidden border-4 border-white transform rotate-3 md:-rotate-6"
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              whileHover={{ scale: 1.1, rotate: -3 }}
+            >
               <Image
                 src="/img/Arpin/image003.jpg"
                 alt="Artisanat Arpin"
                 fill
                 className="object-cover"
               />
-            </div>
+            </motion.div>
 
-            <div className="hidden md:block absolute -bottom-10 right-10 w-32 h-32 lg:w-36 lg:h-36 rounded-lg shadow-lg overflow-hidden border-4 border-white transform -rotate-3">
+            <motion.div
+              className="hidden md:block absolute -bottom-10 right-10 w-32 h-32 lg:w-36 lg:h-36 rounded-lg shadow-lg overflow-hidden border-4 border-white transform -rotate-3"
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              whileHover={{ scale: 1.1, rotate: 3 }}
+            >
               <Image
                 src="/img/Arpin/IMG_0253.jpg"
                 alt="Détail textile Arpin"
                 fill
                 className="object-cover"
               />
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Text content */}
-          <div className="w-full lg:w-1/2 lg:pr-8 relative">
+          <motion.div
+            className="w-full lg:w-1/2 lg:pr-8 relative"
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
             <div className="max-w-lg">
               <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">
                 Découvrez l'excellence d'Arpin, un savoir-faire inégalé depuis
@@ -195,7 +223,7 @@ export default function ArpinFeatureSection() {
                 </span>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
 

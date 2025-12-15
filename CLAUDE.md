@@ -6,207 +6,270 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **IMPORTANT: Always use pnpm for package management in this project**
 
-- `pnpm dev` - Start development server with turbopack
+- `pnpm dev` - Start development server with Turbopack (http://localhost:3000)
 - `pnpm build` - Build for production
 - `pnpm start` - Start production server
-- `pnpm lint` - Run ESLint checks
+- `pnpm lint` - Run ESLint checks (disabled during builds but should be run manually)
 - `pnpm install` - Install dependencies
 - `pnpm add <package>` - Add new package
 
 ## Project Architecture
 
-This is a Next.js 15 application using the App Router architecture for a fashion/retail brand showcase website called "Nivalis". The application presents multiple fashion brands with their images, descriptions, and product catalogs.
+This is a Next.js 15 application using the App Router architecture for a fashion/retail brand showcase website called "Nivalis". The application presents multiple fashion brands with images, descriptions, and product catalogs in both French and English.
 
 ### Key Directories
 
 - **`src/app/`** - Next.js App Router pages and API routes
-  - `marques/` - Brand showcase pages with dynamic routing
-  - `api/` - API endpoints for images, downloads, and CMS functionality
+  - `page.tsx` - Homepage with hero section, brand showcase, team section
+  - `marques/page.tsx` - Brand listing page with filtering
+  - `marques/[slug]/page.tsx` - Dynamic brand detail pages
+  - `marques/arpin/page.tsx` - Custom Arpin brand page with catalog download
+  - `admin/page.tsx` - Admin panel for content management
+  - `contact/page.tsx` - Contact page
+  - `api/` - API routes (see API Architecture section below)
 - **`src/components/`** - Reusable React components
   - `marques/` - Brand-specific components (filtering, lists, statistics)
-  - `ui/` - UI components (buttons, cards, inputs)
-- **`src/data/`** - JSON data files
-  - `marque.json` - Brand data with descriptions, images, and metadata
-  - `content.json` - General content data
-- **`public/img/`** - Static image assets organized by brand folders
+  - `ui/` - Radix UI components (buttons, cards, inputs, labels, selects, hover-cards)
+  - Core components: Navbar, Footer, HeroSection, ImageGallery, BrandCard, etc.
+- **`src/data/`** - JSON data files (source of truth)
+  - `marque.json` - Brand data with bilingual descriptions, images, tags, types
+  - `content.json` - Site content data (homepage, team, etc.)
+- **`src/utils/`** - Utility functions
+  - `imageUtils.ts` - Image URL handling, cache-busting, uploaded image detection
+- **`public/img/`** - Static image assets organized by brand folders (e.g., `/img/Arpin/`, `/img/Ugg/`)
+
+### API Architecture
+
+The application uses a dual data access pattern:
+
+**Public Pages** - Fetch data dynamically via API:
+- Homepage, brand listing, and brand detail pages all use `fetch('/api/cms/marques')`
+- This ensures real-time synchronization with admin panel changes
+- No static imports of JSON files to avoid stale data
+
+**Admin Panel** - Directly modifies JSON files:
+- All changes write to `src/data/marque.json` and `src/data/content.json`
+- Auto-refresh every 5 seconds to stay synchronized
+
+**API Endpoints:**
+- `/api/cms/marques` - GET/POST/PUT/DELETE - Manage brand data (CRUD operations)
+- `/api/cms/images` - POST/DELETE - Upload and delete brand images (logo, mainImage, gallery)
+- `/api/cms/content` - GET/POST - Manage site content (homepage, Arpin page, team)
+- `/api/cms/content-images` - POST/DELETE - Upload and delete content images
+- `/api/images` - GET - Fetch images from specific brand folders
+- `/api/images/bulk` - GET - Batch image retrieval for multiple brands
+- `/api/images/random` - GET - Random image selection
+- `/api/download` - GET - Handle file downloads (PDFs, catalogs)
+- `/api/serve-image/[...path]` - GET - Serve dynamically uploaded images with proper headers
+
+See `src/app/api/README.md` and `src/app/api/cms/README.md` for detailed endpoint documentation.
 
 ### Data Structure
 
-Brand data is stored in `src/data/marque.json` with the following structure:
-- Each brand has French/English descriptions, image folder paths, logos, and categorization
-- Images are organized in `/public/img/[BrandName]/` directories
-- Supports videos, PDFs, and multi-language content
+Brand data is stored in `src/data/marque.json`:
+```typescript
+{
+  "nom": string,                    // Brand name (used as identifier)
+  "description": string,            // Short description
+  "description_fr": string,         // Full French description
+  "description_en": string,         // Full English description
+  "imageFolder": string,            // Path like "/img/BrandName/"
+  "mainImage": string,              // Hero image path
+  "logo": string,                   // Logo path (SVG or PNG)
+  "images": string[],               // Gallery images
+  "videos": string[],               // Optional video files
+  "tags": string[],                 // Categories like "Fashion", "Home", "Sport"
+  "type": string                    // Product type description
+}
+```
 
-### API Design
-
-The application includes a comprehensive image API system:
-- `/api/images` - Fetch images from specific brand folders
-- `/api/images/bulk` - Batch image retrieval for multiple brands
-- `/api/images/random` - Random image selection
-- `/api/download` - Handle file downloads (PDFs, catalogs)
-- `/api/cms/` - Content management endpoints
+Images are organized in `/public/img/[BrandName]/` directories. Dynamically uploaded images (via admin) are prefixed with timestamps (e.g., `1752770423550-image.jpg`).
 
 ### Technology Stack
 
-- **Framework**: Next.js 15 with App Router
+- **Framework**: Next.js 15 with App Router (React 19)
 - **Language**: TypeScript with strict mode enabled
-- **Styling**: Tailwind CSS 4
-- **UI Components**: Radix UI primitives (@radix-ui/react-*)
+- **Styling**: Tailwind CSS 4 with PostCSS
+- **UI Components**: Radix UI primitives (@radix-ui/react-dialog, hover-card, label, select, slot)
+- **UI Utilities**: class-variance-authority, clsx, tailwind-merge, tw-animate-css
 - **Animations**: Framer Motion
 - **Icons**: Lucide React, React Icons
-- **Fonts**: Work Sans, Playfair Display (Google Fonts)
+- **Fonts**: Work Sans, Playfair Display (via next/font)
 - **Notifications**: Sonner for toast messages
+- **Utilities**: lodash.debounce for input debouncing
 
-### Configuration Notes
+### Critical Configuration Details
 
-- ESLint checks are disabled during builds (`ignoreDuringBuilds: true`) but should be run manually with `pnpm lint`
-- ESLint rules configured to allow unused variables and any types for development flexibility
-- Image optimization is disabled (`unoptimized: true`) to support dynamic image uploads from admin
-- SVG images are allowed with security policies
-- Custom headers configured for PDF downloads and static assets
-- TypeScript strict mode enabled (`strict: true`)
-- Path alias configured: `@/*` maps to `./src/*`
-- Turbopack enabled for faster development builds
+**Image Handling** (`next.config.ts`):
+- `unoptimized: true` - Disables Next.js image optimization to support dynamic admin uploads
+- Images with timestamps (e.g., `1752770423550-image.jpg`) served via `/api/serve-image/[...path]`
+- Static images served directly from `/img/` with `max-age=0, must-revalidate` headers
+- SVG images allowed with security policies
+- Use `getImageUrl()` from `imageUtils.ts` to get correct image URLs
+
+**Build Configuration**:
+- ESLint disabled during builds (`ignoreDuringBuilds: true`) but should be run with `pnpm lint`
+- TypeScript errors still fail builds (`ignoreBuildErrors: false`)
+- Turbopack enabled in dev mode (`--turbopack` flag)
+- Path alias: `@/*` maps to `./src/*`
+
+**Static File Headers** (configured in `next.config.ts`):
+- PDF files: `Content-Disposition: attachment` for downloads
+- `/img/*` directory: No caching to support dynamic uploads
+- Image formats: AVIF and WebP supported
 
 ### Admin Panel (`/admin`)
 
-Complete content management system with the following features:
+Complete content management system accessible at `/admin` with no authentication (internal tool).
 
-**Brand Management:**
-- Create, update, and delete brands (`/api/cms/marques`)
-- Upload brand logos, main images, and gallery images (`/api/cms/images`)
-- Manage brand descriptions (French/English), types, and tags
-- Auto-refresh functionality every 5 seconds
+**Features:**
+- Two-tab interface: "Marques" and "Contenu du Site"
+- Auto-refresh every 5 seconds to stay synchronized
+- Real-time updates reflected immediately on public pages
 
-**Content Management:**
-- Edit homepage content sections (`/api/cms/content`)
-- Manage team member information and images
-- Upload and manage content images (`/api/cms/content-images`)
-- Support for nested content structures and arrays
-
-**Image Management:**
+**Brand Management Tab:**
+- Create, update, and delete brands
+- Edit bilingual descriptions (French/English), types, and tags
+- Upload/replace/delete brand logos, main images, and gallery images
 - Drag & drop image uploads with preview
-- Automatic image optimization (AVIF/WebP)
-- Image replacement and deletion
-- Support for special characters in filenames
-- Organized storage in `/public/img/[BrandName]/`
+- Images timestamped on upload (e.g., `1752770423550-image.jpg`)
 
-**Security & Performance:**
-- No authentication required (internal tool)
-- Real-time data synchronization
-- Optimized image serving with caching
-- Error handling and user feedback
+**Site Content Tab:**
+- Edit homepage sections (hero, introduction, team, etc.)
+- Edit Arpin page content
+- Manage team member information
+- Upload and manage content images
 
-### Development Notes
+**Important Implementation Details:**
+- All changes write directly to JSON files in `src/data/`
+- Uses `getImageUrlWithCacheBusting()` from `imageUtils.ts` for image display
+- Uploaded images are timestamped to avoid naming conflicts
+- Image deletions also remove physical files from `/public/img/` directories
 
-- The application is primarily in French with English translations
-- Brand pages use dynamic routing with slug-based URLs (`/marques/[slug]`)
-- Image galleries support caching and lazy loading
-- The CMS API provides content management capabilities
-- File downloads are handled through `/api/download` route
-- Always use pnpm for package management
-- Git repository initialized with uncommitted files in public directory
+### Image Upload System
 
-### Image Upload and Cache Management
+**Key Concept:** The app distinguishes between static and dynamically uploaded images.
 
-**Problem**: In production mode, uploaded images were showing 404 errors because Next.js serves static files differently than in development mode.
+**Static Images:**
+- Original images committed to the repo
+- Served directly from `/img/` paths
+- Example: `/img/Arpin/image4.jpeg`
 
-**Solution**: Implemented cache-busting for dynamically uploaded images:
+**Dynamically Uploaded Images (via admin):**
+- Prefixed with 13-digit timestamp: `1752770423550-filename.jpg`
+- Detection: `isUploadedImage()` in `imageUtils.ts` checks for `^\d{13}-` pattern
+- Serving: Routed through `/api/serve-image/[...path]` for proper headers
+- URL Generation: Use `getImageUrl()` which automatically routes timestamped images to API
 
-1. **Configuration**: Modified `next.config.ts` to disable caching for `/img` directory:
-   ```typescript
-   {
-     source: "/img/:path*",
-     headers: [
-       {
-         key: "Cache-Control",
-         value: "public, max-age=0, must-revalidate",
-       },
-     ],
-   }
-   ```
+**Cache Busting:**
+- Admin uses `getImageUrlWithCacheBusting()` to append `?t=${Date.now()}`
+- Public pages use `getImageUrl()` without cache-busting
+- `/img/*` directory has `max-age=0, must-revalidate` headers
 
-2. **Cache-busting**: Added timestamp parameters to all image URLs:
-   - Admin panel: `src={`${imagePath}?t=${Date.now()}`}`
-   - Brand pages: `src={`${imagePath}?t=${Date.now()}`}`
-   - Image gallery: `src={`${imagePath}?t=${Date.now()}`}`
+### Routing and Pages
 
-3. **Image Optimization**: Set `unoptimized: true` for uploaded images in Next.js Image component
+**Dynamic Routing:**
+- `/marques/[slug]` - Converts slug to brand name (e.g., `the-north-face` → `The North Face`)
+- Slug matching is case-insensitive with space/dash normalization
+- 404 returned if brand not found
 
-**Files Modified**:
-- `next.config.ts` - Cache headers configuration
-- `src/app/admin/page.tsx` - Admin panel image displays
-- `src/app/marques/[slug]/page.tsx` - Brand page image displays
-- `src/components/ImageGallery.tsx` - Gallery component image displays
+**Special Pages:**
+- `/marques/arpin` - Custom page with PDF catalog download functionality
+- PDF served via `/api/download` route with proper `Content-Disposition` headers
 
-**Testing**: Both `pnpm dev` and `pnpm build && pnpm start` work correctly with image uploads now visible immediately in production mode.
+**Navigation:**
+- Navbar component used across all pages
+- Footer component with brand information
+- Responsive design with mobile navigation
 
-### API Endpoints Summary
+## Key Implementation Patterns
 
-- `/api/cms/marques` - GET/POST/PUT/DELETE - Manage brand data
-- `/api/cms/images` - POST/DELETE - Upload and delete brand images
-- `/api/cms/content` - GET/POST - Manage general content
-- `/api/cms/content-images` - POST/DELETE - Upload and delete content images
-- `/api/download` - GET - Handle file downloads (PDFs, catalogs)
-- `/api/serve-image/[...path]` - GET - Serve images with proper headers
+### Data Synchronization Pattern
 
-### Data Synchronization Issue & Solution
+**Critical:** All public pages fetch data dynamically to stay synchronized with admin changes.
 
-**Problem**: Initially, uploaded images were visible in the admin but not on public pages because they used different data sources:
-- Admin used `/api/cms/marques` (dynamic API) → saw updates in real-time
-- Public pages used `import marqueData from "@/data/marque.json"` (static import) → data frozen at build time
+```typescript
+// ❌ WRONG - Static import causes stale data
+import marqueData from "@/data/marque.json"
 
-**Solution**: Replaced static imports with dynamic API calls across all public pages:
+// ✅ CORRECT - Dynamic fetch ensures real-time sync
+const [marques, setMarques] = useState<MarqueData[]>([])
+useEffect(() => {
+  fetch('/api/cms/marques')
+    .then(res => res.json())
+    .then(data => setMarques(data.marques))
+}, [])
+```
 
-1. **Page d'accueil** (`/src/app/page.tsx`):
-   - Replaced static import with `useEffect` and `fetch('/api/cms/marques')`
-   - Added loading states and error handling
-   - Passes dynamic data to `BrandSection` component
+**Why:** The admin panel writes directly to JSON files. Static imports are frozen at build time, but dynamic API calls read the current file state.
 
-2. **Liste des marques** (`/src/app/marques/page.tsx`):
-   - Replaced static import with dynamic API call
-   - Added loading skeleton and error states
-   - Maintains existing filtering logic with dynamic data
+**Affected Files:**
+- `src/app/page.tsx` - Homepage
+- `src/app/marques/page.tsx` - Brand listing
+- `src/app/marques/[slug]/page.tsx` - Brand detail pages
 
-3. **Détail d'une marque** (`/src/app/marques/[slug]/page.tsx`):
-   - Replaced static import with dynamic API call
-   - Calculates similar brands from dynamic data
-   - Maintains slug-to-brand-name conversion logic
+### Image URL Pattern
 
-**Result**: 
-- ✅ Admin and public pages now synchronized in real-time
-- ✅ Images uploaded via admin appear immediately on public pages
-- ✅ All data changes reflect across the entire application
-- ✅ Both `pnpm dev` and `pnpm build && pnpm start` work correctly
+**Critical:** Always use `getImageUrl()` from `imageUtils.ts` to handle both static and uploaded images correctly.
 
-### Development vs Production
+```typescript
+import { getImageUrl, getImageUrlWithCacheBusting } from "@/utils/imageUtils"
 
-**Development Mode (`pnpm dev`):**
-- Uses Turbopack for fast builds (--turbopack flag)
-- Hot reloading enabled
-- ESLint runs on-demand
-- Unoptimized images for faster development
-- Runs on http://localhost:3000
+// Public pages - no cache busting needed
+<Image src={getImageUrl(marque.mainImage)} alt={marque.nom} />
 
-**Production Mode (`pnpm build && pnpm start`):**
-- Uses Webpack for optimized builds
-- Static page generation where possible
-- ESLint disabled during builds for faster compilation
-- Images served unoptimized to support dynamic admin uploads
-- Custom cache headers for different asset types
+// Admin panel - cache busting to see changes immediately
+<Image src={getImageUrlWithCacheBusting(marque.mainImage)} alt={marque.nom} />
+```
 
-### Troubleshooting
+**How it works:**
+1. `isUploadedImage()` detects timestamp prefix (`^\d{13}-`)
+2. If uploaded: routes to `/api/serve-image/[...path]`
+3. If static: uses direct `/img/` path
+4. Cache busting adds `?t=${Date.now()}` for admin only
 
-**Image Upload Issues:**
-- If you get `400 Bad Request` errors for images uploaded via admin, ensure `unoptimized: true` is set in `next.config.ts`
-- Dynamic image uploads from admin are not compatible with Next.js image optimization
-- This affects images with timestamps in their names (e.g., `1752768804363-boutique_hero.jpg`)
+### Component Patterns
 
-**Cache Issues:**
-- Clear browser cache if images don't update after admin changes
-- Hard refresh with Ctrl+F5 (Windows) or Cmd+Shift+R (Mac)
-- Check that image files exist in `/public/img/[BrandName]/` directory
+**Client Components:** Most components are client components (`"use client"`) for interactivity:
+- Admin panel (all state management)
+- Brand filtering and search
+- Image galleries with lazy loading
+- Navigation with mobile menu
 
-**Build Issues:**
-- If ESLint errors occur, run `pnpm lint` to identify issues (ESLint is disabled during builds)
-- TypeScript errors will still fail the build as `ignoreBuildErrors: false`
+**Server Components:** Minimal use due to dynamic data requirements
+- Layout components
+- Static wrapper pages
+
+## Troubleshooting
+
+### Image Upload Issues
+
+**Symptom:** Images uploaded via admin show 404 errors
+
+**Causes & Solutions:**
+1. Check `unoptimized: true` is set in `next.config.ts`
+2. Verify image file exists in `/public/img/[BrandName]/` directory
+3. Ensure using `getImageUrl()` not hardcoded paths
+4. For timestamped images, verify `/api/serve-image/[...path]` is working
+
+### Cache Issues
+
+**Symptom:** Changes in admin not appearing on public pages
+
+**Solutions:**
+1. Hard refresh browser: Cmd+Shift+R (Mac) or Ctrl+F5 (Windows)
+2. Check auto-refresh is enabled in admin (5-second interval)
+3. Verify public pages use `fetch('/api/cms/marques')` not static imports
+4. Clear Next.js cache: `rm -rf .next && pnpm build`
+
+### Build Issues
+
+**ESLint Errors:**
+- ESLint is disabled during builds (`ignoreDuringBuilds: true`)
+- Run `pnpm lint` manually to check for issues
+- TypeScript errors still fail builds (`ignoreBuildErrors: false`)
+
+**Production Build:**
+- Run `pnpm build` to test production build locally
+- Run `pnpm start` to test production server
+- Dynamic data fetching works in both dev and production modes

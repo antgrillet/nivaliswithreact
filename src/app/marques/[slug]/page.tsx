@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { notFound, useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ImageGallery from "@/components/ImageGallery";
@@ -119,20 +120,39 @@ export default function MarqueDetailPage() {
       <Navbar />
 
       {/* Hero de la page marque */}
-      <section className="relative pt-24 pb-16 bg-gradient-to-b from-amber-100/50 to-amber-50/30">
+      <section className="relative pt-24 pb-20 bg-gradient-to-b from-amber-100/60 via-amber-50/40 to-white overflow-hidden">
         <div className="absolute inset-0 opacity-5 pattern-dots"></div>
+        {/* Éléments décoratifs */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1 }}
+          className="absolute -top-20 -right-20 w-96 h-96 bg-amber-200/20 rounded-full blur-3xl"
+        />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, delay: 0.2 }}
+          className="absolute -bottom-20 -left-20 w-96 h-96 bg-amber-300/15 rounded-full blur-3xl"
+        />
+
         <div className="container mx-auto px-4 relative z-10">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="mb-8 md:mb-0 md:w-1/2">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-12">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              className="mb-8 md:mb-0 md:w-1/2"
+            >
               <Link
                 href="/marques"
-                className="inline-flex items-center text-amber-700 hover:text-amber-900 mb-6 transition-colors"
+                className="inline-flex items-center text-amber-700 hover:text-amber-900 mb-8 transition-colors group"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
-                  className="w-5 h-5 mr-1"
+                  className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform duration-300"
                 >
                   <path
                     fillRule="evenodd"
@@ -140,55 +160,87 @@ export default function MarqueDetailPage() {
                     clipRule="evenodd"
                   />
                 </svg>
-                Retour aux marques
+                <span className="font-medium">Retour aux marques</span>
               </Link>
 
-              <div className="flex items-center mb-4">
-                <div className="h-16 w-16 bg-white rounded-full shadow-md flex items-center justify-center mr-4 overflow-hidden">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="flex items-center mb-6"
+              >
+                <motion.div
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ duration: 0.3 }}
+                  className="h-20 w-20 bg-white rounded-full shadow-xl flex items-center justify-center mr-5 overflow-hidden ring-4 ring-amber-100"
+                >
                   <Image
                     src={getImageUrl(marque.logo)}
                     alt={`Logo de ${marque.nom}`}
-                    width={50}
-                    height={50}
+                    width={60}
+                    height={60}
                     className="object-contain"
                   />
-                </div>
-                <h1 className="text-3xl md:text-4xl font-bold text-amber-900">
+                </motion.div>
+                <h1 className="text-3xl md:text-5xl font-bold text-amber-950 drop-shadow-sm">
                   {marque.nom}
                 </h1>
-              </div>
+              </motion.div>
 
-              <div className="flex flex-wrap gap-2 mb-6">
-                {marque.tags.map((tag: string) => (
-                  <span
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="flex flex-wrap gap-2 mb-8"
+              >
+                {marque.tags.map((tag: string, index: number) => (
+                  <motion.span
                     key={tag}
-                    className="text-sm bg-amber-100 text-amber-700 px-3 py-1 rounded-full"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: 0.4 + index * 0.1 }}
+                    className="text-sm bg-amber-100/80 text-amber-800 px-4 py-1.5 rounded-full font-medium border border-amber-200/50 backdrop-blur-sm"
                   >
                     {tag}
-                  </span>
+                  </motion.span>
                 ))}
-                <span className="text-sm bg-amber-200 text-amber-800 px-3 py-1 rounded-full font-medium">
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, delay: 0.4 + marque.tags.length * 0.1 }}
+                  className="text-sm bg-amber-200 text-amber-900 px-4 py-1.5 rounded-full font-semibold border border-amber-300/50"
+                >
                   {marque.type}
-                </span>
-              </div>
+                </motion.span>
+              </motion.div>
 
-              <p className="text-lg text-amber-800 mb-6 leading-relaxed">
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                className="text-lg md:text-xl text-amber-900/90 mb-8 leading-relaxed"
+              >
                 {marque.description}
-              </p>
+              </motion.p>
 
               {marque.website && (
-                <a
+                <motion.a
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.6 }}
                   href={marque.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center px-5 py-3 bg-amber-700 hover:bg-amber-800 text-white rounded-lg transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-800 hover:to-amber-900 text-white rounded-full transition-all duration-300 shadow-xl hover:shadow-2xl font-semibold group"
                 >
-                  Visiter le site officiel
+                  <span>Visiter le site officiel</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 20 20"
                     fill="currentColor"
-                    className="w-5 h-5 ml-2"
+                    className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300"
                   >
                     <path
                       fillRule="evenodd"
@@ -196,21 +248,26 @@ export default function MarqueDetailPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                </a>
+                </motion.a>
               )}
-            </div>
+            </motion.div>
 
-            <div className="w-full md:w-1/2 md:pl-8">
-              <div className="relative h-80 md:h-96 w-full rounded-xl overflow-hidden shadow-xl">
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="w-full md:w-1/2"
+            >
+              <div className="relative h-80 md:h-[500px] w-full rounded-2xl overflow-hidden shadow-2xl border-4 border-white/50 group">
                 <Image
                   src={getImageUrl(marque.mainImage)}
                   alt={`Image principale de ${marque.nom}`}
                   fill
-                  className="object-cover"
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -430,53 +487,79 @@ export default function MarqueDetailPage() {
       )}
 
       {/* Section marques similaires */}
-      <section className="py-16 bg-white border-t border-amber-100">
+      <section className="py-20 bg-gradient-to-b from-white to-amber-50/30 border-t border-amber-100">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-amber-900 mb-8 text-center">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-3xl md:text-4xl font-bold text-amber-950 mb-12 text-center"
+          >
             Marques similaires
-          </h2>
+          </motion.h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {similarMarques.map((similarMarque, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
                 <Link
                   href={`/marques/${similarMarque.nom
                     .toLowerCase()
                     .replace(/\s+/g, "-")}`}
-                  key={index}
-                  className="bg-amber-50 hover:bg-amber-100 rounded-xl p-6 border border-amber-100 flex items-center transition-colors"
+                  className="bg-white hover:bg-amber-50 rounded-2xl p-6 border-2 border-amber-100/50 hover:border-amber-300 flex items-center transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-1 group"
                 >
-                  <div className="h-12 w-12 bg-white rounded-full shadow-sm flex items-center justify-center mr-4 overflow-hidden">
+                  <motion.div
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    transition={{ duration: 0.3 }}
+                    className="h-16 w-16 bg-amber-50 rounded-full shadow-lg flex items-center justify-center mr-5 overflow-hidden ring-2 ring-amber-100 group-hover:ring-amber-300 transition-all duration-300"
+                  >
                     <Image
                       src={getImageUrl(similarMarque.logo)}
                       alt={`Logo de ${similarMarque.nom}`}
-                      width={35}
-                      height={35}
+                      width={45}
+                      height={45}
                       className="object-contain"
                     />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-amber-900">
+                  </motion.div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg text-amber-950 mb-1 group-hover:text-amber-700 transition-colors duration-300">
                       {similarMarque.nom}
                     </h3>
-                    <p className="text-sm text-amber-700">
+                    <p className="text-sm text-amber-700/80 font-medium">
                       {similarMarque.type}
                     </p>
                   </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-600 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </Link>
-              ))}
+              </motion.div>
+            ))}
           </div>
 
-          <div className="mt-10 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="mt-12 text-center"
+          >
             <Link
               href="/marques"
-              className="inline-flex items-center px-5 py-3 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-lg transition-colors"
+              className="inline-flex items-center px-6 py-3 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-full transition-all duration-300 shadow-md hover:shadow-lg font-semibold group"
             >
-              Voir toutes les marques
+              <span>Voir toutes les marques</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
                 fill="currentColor"
-                className="w-5 h-5 ml-2"
+                className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300"
               >
                 <path
                   fillRule="evenodd"
@@ -485,7 +568,7 @@ export default function MarqueDetailPage() {
                 />
               </svg>
             </Link>
-          </div>
+          </motion.div>
         </div>
       </section>
 

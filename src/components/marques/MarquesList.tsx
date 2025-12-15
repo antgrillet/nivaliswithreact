@@ -167,17 +167,22 @@ export default function MarquesList({ marques }: MarquesListProps) {
             <Link
               href={`/marques/${marque.nom.toLowerCase().replace(/\s+/g, "-")}`}
             >
-              <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl h-full border border-amber-100 hover:border-amber-300 hover:-translate-y-1 bg-white group">
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-amber-100">
+              <Card className="overflow-hidden transition-all duration-500 hover:shadow-2xl h-full border-2 border-amber-100/50 hover:border-amber-400 hover:-translate-y-2 bg-white group relative">
+                {/* Effet shimmer au hover */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-10 pointer-events-none">
+                  <div className="absolute inset-0 animate-shimmer"></div>
+                </div>
+
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-amber-100 to-amber-50">
                   <Image
                     src={getImageUrl(marque.mainImage)}
                     alt={`Image de ${marque.nom}`}
                     fill
-                    className="object-cover object-center group-hover:scale-105 transition-transform duration-500 brightness-[1.05]"
+                    className="object-cover object-center group-hover:scale-110 transition-transform duration-700 brightness-[1.05] group-hover:brightness-[1.1]"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     priority={filteredMarques.indexOf(marque) < 3}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-30 group-hover:opacity-70 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-40 group-hover:opacity-80 transition-opacity duration-500"></div>
 
                   {/* Bouton favoris */}
                   <button
@@ -188,10 +193,10 @@ export default function MarquesList({ marques }: MarquesListProps) {
                         : "Ajouter aux favoris"
                     }
                     className={cn(
-                      "absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center z-10 transition-all",
+                      "absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center z-20 transition-all duration-300 backdrop-blur-sm shadow-lg",
                       favorites.includes(marque.nom)
-                        ? "bg-amber-500 text-white"
-                        : "bg-white/80 text-amber-700 hover:bg-white"
+                        ? "bg-amber-500 text-white scale-110"
+                        : "bg-white/90 text-amber-700 hover:bg-white hover:scale-110"
                     )}
                   >
                     <svg
@@ -212,42 +217,49 @@ export default function MarquesList({ marques }: MarquesListProps) {
                     </svg>
                   </button>
 
-                  <div className="absolute bottom-0 left-0 w-full p-4 transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                    <span className="inline-block bg-amber-100/90 backdrop-blur-sm text-amber-900 text-xs px-2.5 py-1 rounded-full mb-2 font-medium">
+                  <div className="absolute bottom-0 left-0 w-full p-5 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 bg-gradient-to-t from-black/80 to-transparent">
+                    <span className="inline-block bg-amber-100/95 backdrop-blur-md text-amber-900 text-xs px-3 py-1.5 rounded-full mb-3 font-semibold border border-amber-200/50">
                       {marque.type}
                     </span>
-                    <p className="text-white text-sm line-clamp-3 drop-shadow-md">
+                    <p className="text-white text-sm line-clamp-3 drop-shadow-lg font-medium leading-relaxed">
                       {marque.description}
                     </p>
                   </div>
+
+                  {/* Barre de progression au hover */}
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 transform origin-left transition-transform duration-700 scale-x-0 group-hover:scale-x-100 z-20"></div>
                 </div>
 
-                <CardContent className="p-6 relative">
-                  <div className="absolute -top-10 left-4 h-16 w-16 bg-white rounded-full border-4 border-white shadow-md flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                <CardContent className="p-6 relative bg-gradient-to-b from-amber-50/30 to-white">
+                  <motion.div
+                    whileHover={{ scale: 1.15, rotate: 5 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute -top-10 left-5 h-18 w-18 bg-white rounded-full border-4 border-white shadow-xl flex items-center justify-center overflow-hidden group-hover:border-amber-100 group-hover:shadow-amber-400/50 transition-all duration-300"
+                  >
                     <Image
                       src={getImageUrl(marque.logo)}
                       alt={`Logo de ${marque.nom}`}
-                      width={50}
-                      height={50}
+                      width={60}
+                      height={60}
                       className="object-contain"
                     />
-                  </div>
+                  </motion.div>
 
-                  <div className="pt-6">
-                    <h3 className="text-xl font-bold text-amber-900 mb-1">
+                  <div className="pt-8">
+                    <h3 className="text-xl font-bold text-amber-950 mb-2 group-hover:text-amber-700 transition-colors duration-300">
                       {marque.nom}
                     </h3>
-                    <div className="flex flex-wrap gap-1 mb-3">
+                    <div className="flex flex-wrap gap-1.5 mb-3">
                       {marque.tags.slice(0, 3).map((tag) => (
                         <span
                           key={tag}
-                          className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full"
+                          className="text-xs bg-amber-100/70 text-amber-800 px-2.5 py-1 rounded-full font-medium border border-amber-200/50"
                         >
                           {tag}
                         </span>
                       ))}
                     </div>
-                    <p className="text-amber-700 text-sm line-clamp-2">
+                    <p className="text-amber-800/90 text-sm line-clamp-2 leading-relaxed">
                       {marque.description}
                     </p>
                   </div>
@@ -259,14 +271,23 @@ export default function MarquesList({ marques }: MarquesListProps) {
       </motion.div>
 
       {visibleCount < filteredMarques.length && (
-        <div className="text-center mt-12">
-          <button
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mt-16"
+        >
+          <motion.button
             onClick={loadMore}
-            className="px-6 py-3 bg-amber-700 hover:bg-amber-800 text-white rounded-lg transition-colors shadow-md hover:shadow-lg"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-8 py-4 bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-800 hover:to-amber-900 text-white rounded-full transition-all duration-300 shadow-xl hover:shadow-2xl font-semibold text-base flex items-center space-x-2 mx-auto"
           >
-            Voir plus de marques
-          </button>
-        </div>
+            <span>Voir plus de marques</span>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </motion.button>
+        </motion.div>
       )}
     </>
   );

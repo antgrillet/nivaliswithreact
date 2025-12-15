@@ -94,9 +94,6 @@ export default function HeroSection() {
       onMouseEnter={pauseAutoplay}
       onMouseLeave={resumeAutoplay}
     >
-      {/* Fond décoratif */}
-      <div className="absolute inset-0 bg-amber-900/20 z-0"></div>
-
       {/* Image ou vidéo d'arrière-plan */}
       <motion.div
         key={`bg-${currentBrand}`}
@@ -113,7 +110,7 @@ export default function HeroSection() {
               loop
               muted
               playsInline
-              className="w-full h-full object-cover brightness-[0.75]"
+              className="w-full h-full object-cover brightness-[0.85]"
             >
               <source src={currentMarque.videos[0]} type="video/mp4" />
             </video>
@@ -122,22 +119,18 @@ export default function HeroSection() {
               src={currentMarque.mainImage}
               alt={`Image de ${currentMarque.nom}`}
               fill
-              className="object-cover object-center brightness-[0.75] animate-kenburns"
+              className="object-cover object-center brightness-[0.85] animate-kenburns"
               priority
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-r from-amber-950/70 via-amber-900/50 to-amber-950/70" />
+          <div className="absolute inset-0 bg-gradient-to-r from-amber-950/60 via-amber-900/40 to-amber-950/60" />
         </div>
       </motion.div>
 
-      {/* Overlay décoratif */}
-      <div className="absolute inset-0 pattern-dots opacity-10 mix-blend-overlay z-10"></div>
-      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-black/40 to-transparent z-10"></div>
-      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/40 to-transparent z-10"></div>
-
-      {/* Cercles décoratifs */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] border border-amber-200/10 rounded-full z-10 animate-pulse-glow"></div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] border border-amber-200/15 rounded-full z-10"></div>
+      {/* Overlay décoratif avec texture noise */}
+      <div className="absolute inset-0 noise-texture opacity-20 mix-blend-overlay z-10"></div>
+      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-black/30 to-transparent z-10"></div>
+      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/30 to-transparent z-10"></div>
 
       {/* Contenu principal */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4 z-20">
@@ -158,16 +151,16 @@ export default function HeroSection() {
             </div>
 
             <div className="mb-4 md:mb-6 flex items-center">
-              <div className="h-14 w-14 bg-white/90 rounded-full flex items-center justify-center mr-4 overflow-hidden animate-float">
+              <div className="h-16 w-16 bg-white/95 rounded-full flex items-center justify-center mr-4 overflow-hidden animate-float shadow-lg hover:shadow-amber-400/50 transition-shadow duration-300 hover:scale-110">
                 <Image
                   src={currentMarque.logo}
                   alt={`Logo ${currentMarque.nom}`}
-                  width={36}
-                  height={36}
+                  width={40}
+                  height={40}
                   className="object-contain"
                 />
               </div>
-              <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight text-gradient">
+              <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight drop-shadow-lg">
                 {currentMarque.nom}
               </h1>
             </div>
@@ -182,16 +175,18 @@ export default function HeroSection() {
                   .toLowerCase()
                   .replace(/\s+/g, "-")}`}
               >
-                <Button className="bg-amber-700 hover:bg-amber-800 text-white px-6 py-5 text-base shadow-md transition-all duration-300 hover:scale-105 rounded-full btn-3d">
-                  Découvrir {currentMarque.nom}
+                <Button className="bg-amber-700 hover:bg-amber-800 text-white px-8 py-6 text-base font-semibold shadow-xl transition-all duration-300 hover:scale-105 rounded-full btn-3d relative overflow-hidden group">
+                  <span className="relative z-10">Découvrir {currentMarque.nom}</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-amber-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </Button>
               </Link>
               <Link href="/marques">
                 <Button
                   variant="outline"
-                  className="border-2 border-amber-300/50 text-amber-50 bg-transparent hover:bg-amber-800/40 px-6 py-5 text-base shadow-md transition-all duration-300 hover:scale-105 rounded-full btn-3d"
+                  className="border-2 border-white/70 text-white bg-white/10 backdrop-blur-sm hover:bg-white/20 hover:border-white px-8 py-6 text-base font-semibold shadow-xl transition-all duration-300 hover:scale-105 rounded-full"
+                  style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))' }}
                 >
-                  Voir toutes nos marques
+                  Toutes nos marques
                 </Button>
               </Link>
             </div>
@@ -235,26 +230,29 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Indication de défilement */}
-      <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 flex flex-col items-center animate-bounce animation-duration-2000 opacity-80 z-10">
-        <span className="text-amber-100 text-sm mb-1 tracking-wider font-light">
+      {/* Indication de défilement améliorée */}
+      <motion.div
+        className="absolute bottom-12 left-1/2 transform -translate-x-1/2 flex flex-col items-center z-20 cursor-pointer group"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1, duration: 0.8 }}
+        onClick={() => window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })}
+      >
+        <span className="text-amber-100 text-sm mb-2 tracking-wider font-medium backdrop-blur-md bg-amber-900/30 border border-amber-600/40 px-4 py-2 rounded-full group-hover:bg-amber-800/50 group-hover:border-amber-500/60 transition-all duration-300 shadow-lg">
           Découvrir plus
         </span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-5 h-5 text-amber-200"
+        <motion.div
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          className="w-6 h-10 border-2 border-amber-400/60 rounded-full flex items-start justify-center p-2 group-hover:border-amber-300 transition-colors duration-300 bg-amber-950/20 backdrop-blur-sm"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3"
+          <motion.div
+            className="w-1.5 h-1.5 bg-amber-300 rounded-full shadow-lg shadow-amber-500/50"
+            animate={{ y: [0, 12, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
           />
-        </svg>
-      </div>
+        </motion.div>
+      </motion.div>
     </section>
   );
 }
