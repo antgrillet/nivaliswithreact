@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import BrandCard from "@/components/BrandCard";
 import { Button } from "@/components/ui/button";
@@ -57,22 +57,38 @@ export default function BrandSection({ brands }: BrandSectionProps) {
   const [showAllBrands, setShowAllBrands] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<string>("Tous");
 
-  const allTags = ["Tous", ...new Set(brands.flatMap(brand => brand.tags || []))];
+  // Mémorisation des tags pour éviter les recalculs
+  const allTags = useMemo(
+    () => ["Tous", ...new Set(brands.flatMap(brand => brand.tags || []))],
+    [brands]
+  );
 
-  const filteredBrands = selectedFilter === "Tous"
-    ? brands
-    : brands.filter(brand => brand.tags?.includes(selectedFilter));
+  // Mémorisation du filtrage des marques
+  const filteredBrands = useMemo(
+    () => selectedFilter === "Tous"
+      ? brands
+      : brands.filter(brand => brand.tags?.includes(selectedFilter)),
+    [brands, selectedFilter]
+  );
 
-  const displayedBrands =
-    showAllBrands || !Array.isArray(filteredBrands)
-      ? Array.isArray(filteredBrands)
-        ? filteredBrands
-        : []
-      : filteredBrands.slice(0, 8);
+  // Mémorisation des marques affichées
+  const displayedBrands = useMemo(
+    () => showAllBrands ? filteredBrands : filteredBrands.slice(0, 8),
+    [filteredBrands, showAllBrands]
+  );
 
-  const featuredBrands = ["The North Face", "Arpin", "UGG"];
+  const featuredBrands = useMemo(() => ["The North Face", "Arpin", "UGG"], []);
 
-  const isFeatured = (brandName: string) => featuredBrands.includes(brandName);
+  const isFeatured = useCallback(
+    (brandName: string) => featuredBrands.includes(brandName),
+    [featuredBrands]
+  );
+
+  // Gestion du changement de filtre
+  const handleFilterChange = useCallback((tag: string) => {
+    setSelectedFilter(tag);
+    setShowAllBrands(false); // Réinitialiser l'affichage lors du changement de filtre
+  }, []);
 
   return (
     <section className="py-24 relative overflow-hidden">
@@ -106,13 +122,18 @@ export default function BrandSection({ brands }: BrandSectionProps) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex flex-wrap justify-center gap-3 mb-16"
+          className="flex flex-wrap justify-center gap-2 md:gap-3 mb-12 md:mb-16"
+          role="tablist"
+          aria-label="Filtrer les marques par catégorie"
         >
           {allTags.map((tag) => (
             <button
               key={tag}
-              onClick={() => setSelectedFilter(tag)}
-              className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
+              onClick={() => handleFilterChange(tag)}
+              role="tab"
+              aria-selected={selectedFilter === tag}
+              aria-controls="brands-grid"
+              className={`px-4 md:px-6 py-2 md:py-3 rounded-full font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 ${
                 selectedFilter === tag
                   ? "bg-amber-700 text-white shadow-lg scale-105"
                   : "bg-white text-amber-800 hover:bg-amber-100 border-2 border-amber-200"
@@ -128,7 +149,10 @@ export default function BrandSection({ brands }: BrandSectionProps) {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 auto-rows-fr"
+          id="brands-grid"
+          role="tabpanel"
+          aria-label={`Marques filtrées par ${selectedFilter}`}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12 auto-rows-fr"
         >
           {displayedBrands.map((brand, index) => (
             <motion.div
@@ -189,7 +213,7 @@ export default function BrandSection({ brands }: BrandSectionProps) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="mt-24 bg-gradient-to-br from-white to-amber-50/30 rounded-3xl shadow-2xl border-2 border-amber-200/50 p-12 grid grid-cols-1 md:grid-cols-3 gap-12"
+          className="mt-16 md:mt-24 bg-gradient-to-br from-white to-amber-50/30 rounded-3xl shadow-2xl border-2 border-amber-200/50 p-6 md:p-12 grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12"
         >
           <motion.div
             className="text-center group"
@@ -197,14 +221,14 @@ export default function BrandSection({ brands }: BrandSectionProps) {
             transition={{ duration: 0.3 }}
           >
             <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-full mb-4 group-hover:bg-amber-200 transition-colors duration-300">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-amber-700" viewBox="0 0 20 20" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-amber-700" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
               </svg>
             </div>
-            <h3 className="text-amber-950 text-5xl font-bold mb-3">
+            <h3 className="text-amber-950 text-4xl md:text-5xl font-bold mb-3">
               {brands.length}+
             </h3>
-            <p className="text-amber-800 font-medium text-lg">Marques disponibles en magasin</p>
+            <p className="text-amber-800 font-medium text-base md:text-lg">Marques disponibles en magasin</p>
           </motion.div>
           <motion.div
             className="text-center group"
@@ -212,12 +236,12 @@ export default function BrandSection({ brands }: BrandSectionProps) {
             transition={{ duration: 0.3 }}
           >
             <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-full mb-4 group-hover:bg-amber-200 transition-colors duration-300">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-amber-700" viewBox="0 0 20 20" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-amber-700" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
               </svg>
             </div>
-            <h3 className="text-amber-950 text-5xl font-bold mb-3">50m²</h3>
-            <p className="text-amber-800 font-medium text-lg">D'espace dédié aux marques</p>
+            <h3 className="text-amber-950 text-4xl md:text-5xl font-bold mb-3">50m²</h3>
+            <p className="text-amber-800 font-medium text-base md:text-lg">D'espace dédié aux marques</p>
           </motion.div>
           <motion.div
             className="text-center group"
@@ -225,12 +249,12 @@ export default function BrandSection({ brands }: BrandSectionProps) {
             transition={{ duration: 0.3 }}
           >
             <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-full mb-4 group-hover:bg-amber-200 transition-colors duration-300">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-amber-700" viewBox="0 0 20 20" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-amber-700" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
               </svg>
             </div>
-            <h3 className="text-amber-950 text-5xl font-bold mb-3">7j/7</h3>
-            <p className="text-amber-800 font-medium text-lg">Ouvert toute la semaine</p>
+            <h3 className="text-amber-950 text-4xl md:text-5xl font-bold mb-3">7j/7</h3>
+            <p className="text-amber-800 font-medium text-base md:text-lg">Ouvert toute la semaine</p>
           </motion.div>
         </motion.div>
       </div>

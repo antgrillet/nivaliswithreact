@@ -3,24 +3,25 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { getImageUrl } from "@/utils/imageUtils";
 
 export default function ArpinFeatureSection() {
   return (
-    <section className="py-20 overflow-hidden bg-gradient-to-b from-amber-50 to-amber-100/50">
+    <section className="py-12 md:py-20 overflow-hidden bg-gradient-to-b from-amber-50 to-amber-100/50">
       <div className="container mx-auto px-4">
-        <div className="flex flex-col lg:flex-row items-center gap-12">
+        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
           {/* Images gallery */}
           <motion.div
-            className="w-full lg:w-1/2 relative"
+            className="w-full lg:w-1/2 relative pb-12 md:pb-16 lg:pb-0"
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <div className="relative h-[400px] md:h-[500px] w-full overflow-hidden rounded-xl shadow-xl">
+            <div className="relative h-[300px] md:h-[400px] lg:h-[500px] w-full overflow-hidden rounded-xl shadow-xl">
               <Image
-                src="/img/Arpin/image4.jpeg"
-                alt="Collection Arpin"
+                src={getImageUrl("/img/Arpin/image4.jpeg")}
+                alt="Collection de tissus Arpin exposée en boutique"
                 fill
                 className="object-cover"
                 priority
@@ -30,7 +31,7 @@ export default function ArpinFeatureSection() {
                 <span className="inline-block bg-amber-100 text-amber-900 text-xs px-3 py-1 rounded-full font-medium mb-2">
                   Heritage depuis 1817
                 </span>
-                <h3 className="text-white font-serif text-2xl mb-1">
+                <h3 className="text-white font-serif text-xl md:text-2xl mb-1">
                   La tradition à l'état pur
                 </h3>
                 <p className="text-amber-100 text-sm">
@@ -39,8 +40,9 @@ export default function ArpinFeatureSection() {
               </div>
             </div>
 
+            {/* Image flottante - position adaptée pour éviter chevauchement sur tablet */}
             <motion.div
-              className="absolute -bottom-8 -right-8 md:bottom-auto md:right-auto md:top-32 md:-left-6 lg:-left-8 w-40 h-40 md:w-44 md:h-44 lg:w-48 lg:h-48 rounded-lg shadow-lg overflow-hidden border-4 border-white transform rotate-3 md:-rotate-6"
+              className="absolute -bottom-6 right-4 md:-bottom-8 md:right-auto md:left-4 lg:top-32 lg:-left-8 lg:bottom-auto w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 rounded-lg shadow-lg overflow-hidden border-4 border-white transform rotate-3 lg:-rotate-6"
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
@@ -48,15 +50,17 @@ export default function ArpinFeatureSection() {
               whileHover={{ scale: 1.1, rotate: -3 }}
             >
               <Image
-                src="/img/Arpin/image003.jpg"
-                alt="Artisanat Arpin"
+                src={getImageUrl("/img/Arpin/image003.jpg")}
+                alt="Artisan travaillant la laine dans l'atelier Arpin"
                 fill
                 className="object-cover"
+                loading="lazy"
               />
             </motion.div>
 
+            {/* Seconde image flottante - cachée sur mobile/tablet, visible desktop */}
             <motion.div
-              className="hidden md:block absolute -bottom-10 right-10 w-32 h-32 lg:w-36 lg:h-36 rounded-lg shadow-lg overflow-hidden border-4 border-white transform -rotate-3"
+              className="hidden lg:block absolute -bottom-10 right-10 w-36 h-36 rounded-lg shadow-lg overflow-hidden border-4 border-white transform -rotate-3"
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
@@ -64,10 +68,11 @@ export default function ArpinFeatureSection() {
               whileHover={{ scale: 1.1, rotate: 3 }}
             >
               <Image
-                src="/img/Arpin/IMG_0253.jpg"
-                alt="Détail textile Arpin"
+                src={getImageUrl("/img/Arpin/IMG_0253.jpg")}
+                alt="Détail d'un textile Arpin tissé à la main"
                 fill
                 className="object-cover"
+                loading="lazy"
               />
             </motion.div>
           </motion.div>
@@ -80,13 +85,13 @@ export default function ArpinFeatureSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <div className="max-w-lg">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">
+            <div className="max-w-lg mx-auto lg:mx-0">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6 leading-tight">
                 Découvrez l'excellence d'Arpin, un savoir-faire inégalé depuis
                 1817
               </h2>
 
-              <p className="text-amber-900/80 mb-6 leading-relaxed">
+              <p className="text-amber-900/80 mb-4 md:mb-6 leading-relaxed text-sm md:text-base">
                 Fondée en 1817, la maison Arpin perpétue l'art ancestral du
                 tissage de la laine dans son atelier historique de Séez, en
                 Savoie. Chaque pièce témoigne d'un patrimoine vivant, façonné
@@ -94,14 +99,15 @@ export default function ArpinFeatureSection() {
                 textiles d'exception.
               </p>
 
-              <div className="space-y-4 mb-8">
-                <div className="flex items-start">
+              <ul className="space-y-3 md:space-y-4 mb-6 md:mb-8">
+                <li className="flex items-start">
                   <div className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-amber-200 text-amber-900 mr-3">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                       className="w-4 h-4"
+                      aria-hidden="true"
                     >
                       <path
                         fillRule="evenodd"
@@ -110,18 +116,19 @@ export default function ArpinFeatureSection() {
                       />
                     </svg>
                   </div>
-                  <p className="text-amber-800">
+                  <span className="text-amber-800 text-sm md:text-base">
                     Tissus fabriqués exclusivement avec des laines naturelles
                     sélectionnées
-                  </p>
-                </div>
-                <div className="flex items-start">
+                  </span>
+                </li>
+                <li className="flex items-start">
                   <div className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-amber-200 text-amber-900 mr-3">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                       className="w-4 h-4"
+                      aria-hidden="true"
                     >
                       <path
                         fillRule="evenodd"
@@ -130,18 +137,19 @@ export default function ArpinFeatureSection() {
                       />
                     </svg>
                   </div>
-                  <p className="text-amber-800">
+                  <span className="text-amber-800 text-sm md:text-base">
                     Technique de tissage traditionnelle préservée depuis plus de
                     200 ans
-                  </p>
-                </div>
-                <div className="flex items-start">
+                  </span>
+                </li>
+                <li className="flex items-start">
                   <div className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-amber-200 text-amber-900 mr-3">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                       className="w-4 h-4"
+                      aria-hidden="true"
                     >
                       <path
                         fillRule="evenodd"
@@ -150,26 +158,25 @@ export default function ArpinFeatureSection() {
                       />
                     </svg>
                   </div>
-                  <p className="text-amber-800">
+                  <span className="text-amber-800 text-sm md:text-base">
                     Collections alliant héritage et modernité pour votre
                     intérieur
-                  </p>
-                </div>
-              </div>
+                  </span>
+                </li>
+              </ul>
 
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                 <Link href="/marques/arpin">
-                  <Button className="bg-amber-800 hover:bg-amber-900 text-amber-50 px-6 py-3 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg border border-amber-700 w-full sm:w-auto">
+                  <Button className="bg-amber-800 hover:bg-amber-900 text-amber-50 px-5 md:px-6 py-2.5 md:py-3 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg border border-amber-700 w-full sm:w-auto text-sm md:text-base">
                     Découvrir la collection
                   </Button>
                 </Link>
                 <a
-                  href="/Catalogue sur Mesure Arpin 2022.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className=" text-sm inline-flex items-center justify-center px-6 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors border border-amber-200 w-full sm:w-auto"
+                  href="/api/download?file=Catalogue%20sur%20Mesure%20Arpin%202022.pdf"
+                  download
+                  className="text-sm inline-flex items-center justify-center px-5 md:px-6 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors border border-amber-200 w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
                 >
-                  Catalogue
+                  Catalogue PDF
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -177,6 +184,7 @@ export default function ArpinFeatureSection() {
                     strokeWidth={1.5}
                     stroke="currentColor"
                     className="w-3 h-3 ml-2"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -188,21 +196,22 @@ export default function ArpinFeatureSection() {
                 <Link href="/contact">
                   <Button
                     variant="outline"
-                    className="border-amber-700 text-amber-800 hover:bg-amber-800/10 px-6 py-3 rounded-lg transition-all duration-300 w-full sm:w-auto"
+                    className="border-amber-700 text-amber-800 hover:bg-amber-800/10 px-5 md:px-6 py-2.5 md:py-3 rounded-lg transition-all duration-300 w-full sm:w-auto text-sm md:text-base"
                   >
                     Nous contacter
                   </Button>
                 </Link>
               </div>
 
-              <div className="mt-8 flex items-center text-amber-800">
+              <div className="mt-6 md:mt-8 flex items-center text-amber-800">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="w-5 h-5 mr-2"
+                  className="w-5 h-5 mr-2 flex-shrink-0"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -215,7 +224,7 @@ export default function ArpinFeatureSection() {
                     d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
                   />
                 </svg>
-                <span className="text-sm font-medium">
+                <span className="text-xs md:text-sm font-medium">
                   Venez découvrir nos produits en boutique -{" "}
                   <span className="underline">
                     21 Rte du Front de Neige, 74260 Les Gets
@@ -228,7 +237,7 @@ export default function ArpinFeatureSection() {
       </div>
 
       {/* Background decoration */}
-      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white to-transparent pointer-events-none" aria-hidden="true"></div>
     </section>
   );
 }

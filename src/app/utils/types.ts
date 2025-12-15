@@ -62,6 +62,11 @@ export interface MarqueData {
   imageFolder?: string;
 
   /**
+   * Liste des vidéos de la marque (optionnel)
+   */
+  videos?: string[];
+
+  /**
    * Liste des produits phares de la marque (optionnel)
    */
   produits?: {

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Gérer les CORS pour les téléchargements
   if (request.nextUrl.pathname.startsWith("/api/download")) {
     const response = NextResponse.next();

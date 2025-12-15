@@ -1,10 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  eslint: {
-    // Désactiver temporairement ESLint pour tester le build
-    ignoreDuringBuilds: true,
-  },
+  // Note: eslint config removed in Next.js 16 - use eslint.config.js instead
   images: {
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
