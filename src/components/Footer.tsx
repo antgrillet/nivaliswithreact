@@ -1,7 +1,19 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
 export default function Footer() {
+  const [hours, setHours] = useState("Lun-Dim: 10:00–12:30, 14:30–19:00");
+
+  useEffect(() => {
+    fetch("/api/cms/content?section=homepage&subsection=introduction")
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => data?.hours && setHours(data.hours))
+      .catch(() => {});
+  }, []);
+
   return (
     <footer className="bg-amber-900 text-amber-50 pt-12 pb-8">
       <div className="container mx-auto px-4">
@@ -262,9 +274,7 @@ export default function Footer() {
                   </svg>
                   <span className="font-medium text-amber-100">Horaires:</span>
                 </p>
-                <p className="ml-8 text-sm">
-                  Lun-Dim: 10:00–12:30, 14:30–19:00
-                </p>
+                <p className="ml-8 text-sm">{hours}</p>
               </div>
             </address>
           </div>

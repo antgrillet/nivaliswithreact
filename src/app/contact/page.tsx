@@ -1,5 +1,5 @@
 "use client";
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
@@ -11,6 +11,15 @@ export default function ContactPage() {
     subject: "",
     message: "",
   });
+
+  const [hours, setHours] = useState("Lun-Dim: 10:00–12:30, 14:30–19:00");
+
+  useEffect(() => {
+    fetch("/api/cms/content?section=homepage&subsection=introduction")
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => data?.hours && setHours(data.hours))
+      .catch(() => {});
+  }, []);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -149,52 +158,7 @@ export default function ContactPage() {
                     <h3 className="font-semibold text-lg text-amber-800 mb-3">
                       Horaires d'ouverture
                     </h3>
-                    <table className="text-amber-700 w-full" aria-label="Horaires d'ouverture de la boutique">
-                      <tbody>
-                        <tr className="border-b border-amber-200">
-                          <td className="py-2 font-medium">Lundi</td>
-                          <td className="py-2 text-right">
-                            10:00–12:30, 14:30–19:00
-                          </td>
-                        </tr>
-                        <tr className="border-b border-amber-200">
-                          <td className="py-2 font-medium">Mardi</td>
-                          <td className="py-2 text-right">
-                            10:00–12:30, 14:30–19:00
-                          </td>
-                        </tr>
-                        <tr className="border-b border-amber-200">
-                          <td className="py-2 font-medium">Mercredi</td>
-                          <td className="py-2 text-right">
-                            10:00–12:30, 14:30–19:00
-                          </td>
-                        </tr>
-                        <tr className="border-b border-amber-200">
-                          <td className="py-2 font-medium">Jeudi</td>
-                          <td className="py-2 text-right">
-                            10:00–12:30, 14:30–19:00
-                          </td>
-                        </tr>
-                        <tr className="border-b border-amber-200">
-                          <td className="py-2 font-medium">Vendredi</td>
-                          <td className="py-2 text-right">
-                            10:00–12:30, 14:30–19:00
-                          </td>
-                        </tr>
-                        <tr className="border-b border-amber-200">
-                          <td className="py-2 font-medium">Samedi</td>
-                          <td className="py-2 text-right">
-                            10:00–12:30, 14:30–19:00
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="py-2 font-medium">Dimanche</td>
-                          <td className="py-2 text-right">
-                            10:00–12:30, 14:30–19:00
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+                    <p className="text-amber-700">{hours}</p>
                   </div>
                 </div>
 
