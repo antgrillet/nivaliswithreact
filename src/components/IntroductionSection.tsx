@@ -33,7 +33,9 @@ export default function IntroductionSection() {
         );
         if (res.ok) {
           const data = await res.json();
-          setContent(data);
+          if (data && Object.keys(data).length > 0) {
+            setContent((prev) => ({ ...prev, ...data }));
+          }
         }
       } catch (error) {
         console.error("Erreur lors du chargement du contenu:", error);

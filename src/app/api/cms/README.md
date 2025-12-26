@@ -181,4 +181,7 @@ Une interface d'administration est disponible à `/admin` pour gérer facilement
 - **Page Arpin** : Titre, descriptions, historique, catalogue, etc.
 - Modification en temps réel de tous les textes
 
-Aucune authentification n'est requise comme demandé.
+L'accès à l'admin est désormais protégé par authentification (username + mot de passe).
+La page de connexion est disponible à `/login`.
+
+Les requêtes en écriture (POST/PUT/DELETE) sur les endpoints CMS exigent une session valide.

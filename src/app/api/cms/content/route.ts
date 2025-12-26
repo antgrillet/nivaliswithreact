@@ -1,8 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
+import { query } from "@/lib/db";
+import { auth } from "@/lib/auth";
 
-const CONTENT_FILE = path.join(process.cwd(), "src/data/content.json");
+export const runtime = "nodejs";
+
+interface ContentRow {
+  section: string;
+  subsection: string;
+  content: Record<string, unknown>;
+}
+
+async function buildContentObject(rows: ContentRow[]) {
+  const result: Record<string, Record<string, unknown>> = {};
+  for (const row of rows) {
+    if (!result[row.section]) {
+      result[row.section] = {};
+    }
+    result[row.section][row.subsection] = row.content;
+  }
+  return result;
+}
+
+async function requireAuth(request: NextRequest) {
+  const session = await auth.api.getSession({ headers: request.headers });
+  return session?.user ?? null;
+}
 
 // GET - Récupérer le contenu
 export async function GET(request: NextRequest) {
@@ -11,16 +33,29 @@ export async function GET(request: NextRequest) {
     const section = searchParams.get("section"); // homepage, arpin, etc.
     const subsection = searchParams.get("subsection"); // hero, introduction, etc.
 
-    const data = await fs.readFile(CONTENT_FILE, "utf-8");
-    const content = JSON.parse(data);
-
     if (section && subsection) {
-      return NextResponse.json(content[section]?.[subsection] || {});
-    } else if (section) {
-      return NextResponse.json(content[section] || {});
+      const { rows } = await query<ContentRow>(
+        "SELECT content FROM content_sections WHERE section = $1 AND subsection = $2",
+        [section, subsection]
+      );
+      return NextResponse.json(rows[0]?.content || {});
+    }
+    if (section) {
+      const { rows } = await query<ContentRow>(
+        "SELECT subsection, content FROM content_sections WHERE section = $1",
+        [section]
+      );
+      const result: Record<string, unknown> = {};
+      for (const row of rows) {
+        result[row.subsection] = row.content;
+      }
+      return NextResponse.json(result);
     }
 
-    return NextResponse.json(content);
+    const { rows } = await query<ContentRow>(
+      "SELECT section, subsection, content FROM content_sections"
+    );
+    return NextResponse.json(await buildContentObject(rows));
   } catch (error) {
     console.error("Erreur lecture contenu:", error);
     return NextResponse.json(
@@ -33,6 +68,11 @@ export async function GET(request: NextRequest) {
 // PUT - Mettre à jour le contenu
 export async function PUT(request: NextRequest) {
   try {
+    const user = await requireAuth(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { section, subsection, content: newContent } = await request.json();
 
     if (!section || !subsection || !newContent) {
@@ -42,24 +82,19 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Lire le contenu actuel
-    const data = await fs.readFile(CONTENT_FILE, "utf-8");
-    const contentData = JSON.parse(data);
-
-    // S'assurer que la structure existe
-    if (!contentData[section]) {
-      contentData[section] = {};
-    }
-
-    // Mettre à jour la sous-section
-    contentData[section][subsection] = newContent;
-
-    // Sauvegarder
-    await fs.writeFile(CONTENT_FILE, JSON.stringify(contentData, null, 2));
+    const { rows } = await query<ContentRow>(
+      `INSERT INTO content_sections (section, subsection, content)
+       VALUES ($1, $2, $3::jsonb)
+       ON CONFLICT (section, subsection) DO UPDATE
+       SET content = EXCLUDED.content,
+           updated_at = now()
+       RETURNING section, subsection, content`,
+      [section, subsection, newContent]
+    );
 
     return NextResponse.json({
       success: true,
-      content: contentData[section][subsection],
+      content: rows[0]?.content ?? newContent,
     });
   } catch (error) {
     console.error("Erreur:", error);
@@ -73,6 +108,11 @@ export async function PUT(request: NextRequest) {
 // POST - Créer une nouvelle section
 export async function POST(request: NextRequest) {
   try {
+    const user = await requireAuth(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { section, content } = await request.json();
 
     if (!section || !content) {
@@ -82,27 +122,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Lire le contenu actuel
-    const data = await fs.readFile(CONTENT_FILE, "utf-8");
-    const contentData = JSON.parse(data);
-
-    // Vérifier si la section existe déjà
-    if (contentData[section]) {
+    const { rows: existingRows } = await query(
+      "SELECT 1 FROM content_sections WHERE section = $1 LIMIT 1",
+      [section]
+    );
+    if (existingRows.length > 0) {
       return NextResponse.json(
         { error: "Cette section existe déjà" },
         { status: 400 }
       );
     }
 
-    // Ajouter la nouvelle section
-    contentData[section] = content;
+    const entries = Object.entries(content);
+    if (entries.length === 0) {
+      return NextResponse.json(
+        { error: "Contenu de section invalide" },
+        { status: 400 }
+      );
+    }
 
-    // Sauvegarder
-    await fs.writeFile(CONTENT_FILE, JSON.stringify(contentData, null, 2));
+    for (const [subsection, value] of entries) {
+      await query(
+        `INSERT INTO content_sections (section, subsection, content)
+         VALUES ($1, $2, $3::jsonb)`,
+        [section, subsection, value]
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      content: contentData[section],
+      content,
     });
   } catch (error) {
     console.error("Erreur:", error);

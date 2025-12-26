@@ -1,9 +1,62 @@
 import { put, del } from '@vercel/blob';
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
+import { query } from "@/lib/db";
+import { auth } from "@/lib/auth";
 
-const CONTENT_FILE = path.join(process.cwd(), "src/data/content.json");
+export const runtime = "nodejs";
+
+interface ContentRow {
+  content: Record<string, unknown>;
+}
+
+function getPathValue(target: any, path: string[]) {
+  let current = target;
+  for (const key of path) {
+    if (current === undefined || current === null) return undefined;
+    const index = Number.isNaN(Number(key)) ? null : Number(key);
+    current = index === null ? current[key] : current[index];
+  }
+  return current;
+}
+
+function setPathValue(target: any, path: string[], value: string) {
+  let current = target;
+  for (let i = 0; i < path.length - 1; i++) {
+    const key = path[i];
+    const nextKey = path[i + 1];
+    const index = Number.isNaN(Number(key)) ? null : Number(key);
+    const nextIndex = Number.isNaN(Number(nextKey)) ? null : Number(nextKey);
+
+    if (index !== null) {
+      if (!Array.isArray(current)) {
+        current = [];
+      }
+      if (!current[index]) {
+        current[index] = nextIndex === null ? {} : [];
+      }
+      current = current[index];
+      continue;
+    }
+
+    if (typeof current[key] !== "object" || current[key] === null) {
+      current[key] = nextIndex === null ? {} : [];
+    }
+    current = current[key];
+  }
+
+  const lastKey = path[path.length - 1];
+  const lastIndex = Number.isNaN(Number(lastKey)) ? null : Number(lastKey);
+  if (lastIndex !== null && Array.isArray(current)) {
+    current[lastIndex] = value;
+    return;
+  }
+  current[lastKey] = value;
+}
+
+async function requireAuth(request: NextRequest) {
+  const session = await auth.api.getSession({ headers: request.headers });
+  return session?.user ?? null;
+}
 
 // Helper pour verifier si une URL est une URL Vercel Blob
 function isBlobUrl(url: string): boolean {
@@ -13,6 +66,11 @@ function isBlobUrl(url: string): boolean {
 // POST - Ajouter/Modifier une image de contenu vers Vercel Blob
 export async function POST(request: NextRequest) {
   try {
+    const user = await requireAuth(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File;
     const section = formData.get("section") as string;
@@ -26,12 +84,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Lire les donnees actuelles
-    const data = await fs.readFile(CONTENT_FILE, "utf-8");
-    const jsonData = JSON.parse(data);
-
-    // Verifier que la section/subsection existe
-    if (!jsonData[section] || !jsonData[section][subsection]) {
+    const { rows } = await query<ContentRow>(
+      "SELECT content FROM content_sections WHERE section = $1 AND subsection = $2",
+      [section, subsection]
+    );
+    if (rows.length === 0) {
       return NextResponse.json(
         { error: "Section ou subsection non trouvee" },
         { status: 404 }
@@ -49,55 +106,37 @@ export async function POST(request: NextRequest) {
     );
 
     const imageUrl = blob.url;
-    const currentData = jsonData[section][subsection];
+    const currentData =
+      rows[0].content && typeof rows[0].content === "object"
+        ? rows[0].content
+        : {};
 
-    if (imageKey.includes(".")) {
-      // Gestion des objets imbriques (ex: "members.0.image")
-      const keys = imageKey.split(".");
-      let target = currentData;
+    const keys = imageKey.includes(".") ? imageKey.split(".") : [imageKey];
+    const existingValue = getPathValue(currentData, keys);
 
-      for (let i = 0; i < keys.length - 1; i++) {
-        const key = keys[i];
-        const nextKey = keys[i + 1];
-
-        if (!isNaN(parseInt(nextKey))) {
-          target = target[key][parseInt(nextKey)];
-          i++;
-        } else {
-          target = target[key];
-        }
+    if (existingValue && isBlobUrl(existingValue)) {
+      try {
+        await del(existingValue);
+      } catch (e) {
+        console.warn("Could not delete old blob:", existingValue, e);
       }
-
-      // Supprimer l'ancienne image si elle existe sur Vercel Blob
-      const lastKey = keys[keys.length - 1];
-      if (target[lastKey] && isBlobUrl(target[lastKey])) {
-        try {
-          await del(target[lastKey]);
-        } catch (e) {
-          console.warn("Could not delete old blob:", target[lastKey], e);
-        }
-      }
-
-      target[lastKey] = imageUrl;
-    } else {
-      // Gestion simple
-      if (currentData[imageKey] && isBlobUrl(currentData[imageKey])) {
-        try {
-          await del(currentData[imageKey]);
-        } catch (e) {
-          console.warn("Could not delete old blob:", currentData[imageKey], e);
-        }
-      }
-      currentData[imageKey] = imageUrl;
     }
 
-    // Sauvegarder les changements
-    await fs.writeFile(CONTENT_FILE, JSON.stringify(jsonData, null, 2));
+    setPathValue(currentData, keys, imageUrl);
+
+    const { rows: updatedRows } = await query<ContentRow>(
+      `UPDATE content_sections
+       SET content = $1::jsonb,
+           updated_at = now()
+       WHERE section = $2 AND subsection = $3
+       RETURNING content`,
+      [currentData, section, subsection]
+    );
 
     return NextResponse.json({
       success: true,
       imageUrl,
-      data: jsonData[section][subsection],
+      data: updatedRows[0]?.content ?? currentData,
     });
   } catch (error) {
     console.error("Erreur:", error);
@@ -111,6 +150,11 @@ export async function POST(request: NextRequest) {
 // DELETE - Supprimer une image de contenu
 export async function DELETE(request: NextRequest) {
   try {
+    const user = await requireAuth(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const section = searchParams.get("section");
     const subsection = searchParams.get("subsection");
@@ -123,64 +167,46 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Lire les donnees actuelles
-    const data = await fs.readFile(CONTENT_FILE, "utf-8");
-    const jsonData = JSON.parse(data);
-
-    // Verifier que la section/subsection existe
-    if (!jsonData[section] || !jsonData[section][subsection]) {
+    const { rows } = await query<ContentRow>(
+      "SELECT content FROM content_sections WHERE section = $1 AND subsection = $2",
+      [section, subsection]
+    );
+    if (rows.length === 0) {
       return NextResponse.json(
         { error: "Section ou subsection non trouvee" },
         { status: 404 }
       );
     }
 
-    const currentData = jsonData[section][subsection];
+    const currentData =
+      rows[0].content && typeof rows[0].content === "object"
+        ? rows[0].content
+        : {};
+    const keys = imageKey.includes(".") ? imageKey.split(".") : [imageKey];
+    const existingValue = getPathValue(currentData, keys);
 
-    if (imageKey.includes(".")) {
-      // Gestion des objets imbriques
-      const keys = imageKey.split(".");
-      let target = currentData;
-
-      for (let i = 0; i < keys.length - 1; i++) {
-        const key = keys[i];
-        const nextKey = keys[i + 1];
-
-        if (!isNaN(parseInt(nextKey))) {
-          target = target[key][parseInt(nextKey)];
-          i++;
-        } else {
-          target = target[key];
-        }
+    if (existingValue && isBlobUrl(existingValue)) {
+      try {
+        await del(existingValue);
+      } catch (e) {
+        console.warn("Could not delete blob:", e);
       }
-
-      const lastKey = keys[keys.length - 1];
-      if (target[lastKey] && isBlobUrl(target[lastKey])) {
-        try {
-          await del(target[lastKey]);
-        } catch (e) {
-          console.warn("Could not delete blob:", e);
-        }
-      }
-      target[lastKey] = "";
-    } else {
-      // Gestion simple
-      if (currentData[imageKey] && isBlobUrl(currentData[imageKey])) {
-        try {
-          await del(currentData[imageKey]);
-        } catch (e) {
-          console.warn("Could not delete blob:", e);
-        }
-      }
-      currentData[imageKey] = "";
     }
 
-    // Sauvegarder les changements
-    await fs.writeFile(CONTENT_FILE, JSON.stringify(jsonData, null, 2));
+    setPathValue(currentData, keys, "");
+
+    const { rows: updatedRows } = await query<ContentRow>(
+      `UPDATE content_sections
+       SET content = $1::jsonb,
+           updated_at = now()
+       WHERE section = $2 AND subsection = $3
+       RETURNING content`,
+      [currentData, section, subsection]
+    );
 
     return NextResponse.json({
       success: true,
-      data: jsonData[section][subsection],
+      data: updatedRows[0]?.content ?? currentData,
     });
   } catch (error) {
     console.error("Erreur:", error);

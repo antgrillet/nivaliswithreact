@@ -5,10 +5,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getImageUrl } from "@/utils/imageUtils";
 
 interface TeamMember {
-  name: string;
-  role: string;
-  description: string;
-  image: string;
+  name?: string;
+  role?: string;
+  description?: string;
+  image?: string;
 }
 
 interface TeamContent {
@@ -43,7 +43,13 @@ export default function TeamSection() {
         );
         if (res.ok) {
           const data = await res.json();
-          setContent(data);
+          if (data && Object.keys(data).length > 0) {
+            setContent((prev) => ({
+              ...prev,
+              ...data,
+              members: Array.isArray(data.members) ? data.members : prev.members,
+            }));
+          }
         }
       } catch (error) {
         console.error("Erreur lors du chargement du contenu:", error);
@@ -100,7 +106,22 @@ export default function TeamSection() {
           <p className="text-center text-amber-700">Aucun membre à afficher pour le moment.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
-            {content.members?.map((member, index) => (
+            {content.members?.map((member, index) => {
+              const memberName =
+                typeof member?.name === "string" ? member.name.trim() : "";
+              const memberRole =
+                typeof member?.role === "string" ? member.role.trim() : "";
+              const memberDescription =
+                typeof member?.description === "string" ? member.description : "";
+              const memberImage =
+                typeof member?.image === "string" ? member.image : "";
+              const fallbackInitial = memberName ? memberName.charAt(0) : "?";
+              const displayName = memberName || "Membre";
+              const displayAlt = memberRole
+                ? `Photo de ${displayName}, ${memberRole}`
+                : `Photo de ${displayName}`;
+
+              return (
               <motion.article
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
@@ -112,14 +133,16 @@ export default function TeamSection() {
               >
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 border-2 border-amber-100 hover:border-amber-300">
                   <div className="relative h-72 md:h-96 overflow-hidden">
-                    {imageErrors[index] || !member.image ? (
+                    {imageErrors[index] || !memberImage ? (
                       <div className="w-full h-full bg-gradient-to-br from-amber-200 to-amber-400 flex items-center justify-center">
-                        <span className="text-amber-800 text-4xl font-bold">{member.name.charAt(0)}</span>
+                        <span className="text-amber-800 text-4xl font-bold">
+                          {fallbackInitial}
+                        </span>
                       </div>
                     ) : (
                       <Image
-                        src={getImageUrl(member.image)}
-                        alt={`Photo de ${member.name}, ${member.role}`}
+                        src={getImageUrl(memberImage)}
+                        alt={displayAlt}
                         fill
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
                         loading="lazy"
@@ -130,19 +153,26 @@ export default function TeamSection() {
 
                     <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 transform translate-y-0 transition-transform duration-500">
                       <h3 className="text-xl md:text-2xl font-bold text-white mb-2 drop-shadow-lg">
-                        {member.name}
+                        {displayName}
                       </h3>
-                      <p className="text-amber-200 font-semibold text-base md:text-lg">
-                        {member.role}
-                      </p>
+                      {memberRole && (
+                        <p className="text-amber-200 font-semibold text-base md:text-lg">
+                          {memberRole}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="p-4 md:p-6 bg-gradient-to-b from-amber-50/50 to-white">
-                    <p className="text-amber-900/90 leading-relaxed text-sm md:text-base">{member.description}</p>
+                    {memberDescription && (
+                      <p className="text-amber-900/90 leading-relaxed text-sm md:text-base">
+                        {memberDescription}
+                      </p>
+                    )}
                   </div>
                 </div>
               </motion.article>
-            ))}
+              );
+            })}
           </div>
         )}
 

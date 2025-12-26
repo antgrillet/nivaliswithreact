@@ -16,6 +16,24 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Environment Variables
+
+Create a `.env.local` file with the following values:
+
+```bash
+DATABASE_URL="postgres://user:password@host:5432/database?sslmode=require"
+BETTER_AUTH_SECRET="your-strong-secret-at-least-32-chars"
+DISABLE_SIGNUP="false"
+```
+
+## Admin Access
+
+The admin interface is protected with Better Auth (username + password).
+Sign-in is available at `/login`. CMS write endpoints require a valid session.
+
+For the initial setup, visit `/login?setup=1` to create the first admin account.
+After that, set `DISABLE_SIGNUP=true` to prevent new account creation.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

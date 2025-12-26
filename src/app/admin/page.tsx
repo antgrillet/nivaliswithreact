@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getImageUrlWithCacheBusting } from "@/utils/imageUtils";
+import { authClient } from "@/lib/auth-client";
 
 interface Marque {
   nom: string;
@@ -23,6 +25,7 @@ interface Marque {
 }
 
 export default function AdminPage() {
+  const router = useRouter();
   const [marques, setMarques] = useState<Marque[]>([]);
   const [selectedMarque, setSelectedMarque] = useState<Marque | null>(null);
   const [loading, setLoading] = useState(false);
@@ -46,6 +49,16 @@ export default function AdminPage() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [showUpdateNotification, setShowUpdateNotification] = useState(false);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await authClient.getSession();
+      if (!data?.user) {
+        router.replace("/login");
+      }
+    };
+    checkSession();
+  }, [router]);
 
   // Charger les marques et le contenu
   useEffect(() => {

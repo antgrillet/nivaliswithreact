@@ -12,10 +12,14 @@ interface HeroContent {
   description: string;
 }
 
-export default function HeroSection() {
+interface HeroSectionProps {
+  brands?: MarqueData[];
+}
+
+export default function HeroSection({ brands }: HeroSectionProps) {
   const [currentBrand, setCurrentBrand] = useState(0);
   const [autoplay, setAutoplay] = useState(true);
-  const [marques, setMarques] = useState<MarqueData[]>([]);
+  const [marques, setMarques] = useState<MarqueData[]>(brands ?? []);
   const [isLoading, setIsLoading] = useState(true);
   const [imageError, setImageError] = useState<Record<string, boolean>>({});
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
@@ -25,24 +29,35 @@ export default function HeroSection() {
       "Découvrez notre sélection exclusive de marques prestigieuses, chacune choisie pour son excellence et son engagement.",
   });
 
+  useEffect(() => {
+    if (brands && Array.isArray(brands)) {
+      setMarques(brands);
+    }
+  }, [brands]);
+
   // Charger les marques et le contenu depuis l'API
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const [marquesRes, contentRes] = await Promise.all([
-          fetch("/api/cms/marques"),
-          fetch("/api/cms/content?section=homepage&subsection=hero"),
-        ]);
-
-        if (marquesRes.ok) {
-          const marquesData = await marquesRes.json();
-          setMarques(marquesData.marques || []);
-        }
+        const contentRes = await fetch(
+          "/api/cms/content?section=homepage&subsection=hero"
+        );
 
         if (contentRes.ok) {
           const contentData = await contentRes.json();
           setContent(contentData);
+        }
+
+        if (!brands) {
+          const marquesRes = await fetch("/api/cms/marques");
+          if (marquesRes.ok) {
+            const marquesData = await marquesRes.json();
+            const list = Array.isArray(marquesData?.marques)
+              ? marquesData.marques
+              : [];
+            setMarques(list);
+          }
         }
       } catch (error) {
         console.error("Erreur lors du chargement des données:", error);
@@ -51,7 +66,7 @@ export default function HeroSection() {
       }
     };
     fetchData();
-  }, []);
+  }, [brands]);
 
   // Sélection des marques phares à mettre en avant (5 max) - mémorisée
   const highlightedBrands = useMemo(() => {
@@ -254,6 +269,7 @@ export default function HeroSection() {
                   <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-amber-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </Button>
               </Link>
+              
               <Link href="/marques">
                 <Button
                   variant="outline"

@@ -15,7 +15,7 @@ import { MarqueData } from "@/app/utils/types";
 // }
 
 interface BrandSectionProps {
-  brands: MarqueData[];
+  brands?: MarqueData[];
 }
 
 // Animation variants
@@ -52,24 +52,26 @@ const textVariants = {
   },
 };
 
-export default function BrandSection({ brands }: BrandSectionProps) {
+export default function BrandSection({ brands = [] }: BrandSectionProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [showAllBrands, setShowAllBrands] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<string>("Tous");
 
   // Mémorisation des tags pour éviter les recalculs
-  const allTags = useMemo(
-    () => ["Tous", ...new Set(brands.flatMap(brand => brand.tags || []))],
-    [brands]
-  );
+  const allTags = useMemo(() => {
+    const safeBrands = Array.isArray(brands) ? brands : [];
+    return ["Tous", ...new Set(safeBrands.flatMap((brand) => brand.tags || []))];
+  }, [brands]);
 
   // Mémorisation du filtrage des marques
-  const filteredBrands = useMemo(
-    () => selectedFilter === "Tous"
-      ? brands
-      : brands.filter(brand => brand.tags?.includes(selectedFilter)),
-    [brands, selectedFilter]
-  );
+  const filteredBrands = useMemo(() => {
+    const safeBrands = Array.isArray(brands) ? brands : [];
+    return selectedFilter === "Tous"
+      ? safeBrands
+      : safeBrands.filter((brand) =>
+          brand.tags?.includes(selectedFilter)
+        );
+  }, [brands, selectedFilter]);
 
   // Mémorisation des marques affichées
   const displayedBrands = useMemo(

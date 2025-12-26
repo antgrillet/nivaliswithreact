@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { auth } from "@/lib/auth";
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Gérer les CORS pour les téléchargements
   if (request.nextUrl.pathname.startsWith("/api/download")) {
     const response = NextResponse.next();
@@ -17,6 +18,31 @@ export function proxy(request: NextRequest) {
     );
 
     return response;
+  }
+
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session?.user) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("next", request.nextUrl.pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  if (request.nextUrl.pathname.startsWith("/api/cms")) {
+    const method = request.method.toUpperCase();
+    if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+      const session = await auth.api.getSession({
+        headers: request.headers,
+      });
+
+      if (!session?.user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+    }
   }
 
   // Gérer les fichiers statiques PDF

@@ -1,32 +1,21 @@
 import { put, del, list } from '@vercel/blob';
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
+import { query } from "@/lib/db";
+import { auth } from "@/lib/auth";
 
-interface Marque {
+export const runtime = "nodejs";
+
+interface MarqueRow {
   nom: string;
-  description: string;
-  description_fr?: string;
-  description_en?: string;
-  imageFolder: string;
-  mainImage?: string;
-  logo?: string;
-  images?: string[];
-  videos?: string[];
-  tags?: string[];
-  type?: string;
+  logo: string | null;
+  main_image: string | null;
+  images: string[] | null;
+  videos: string[] | null;
 }
 
-const DATA_FILE = path.join(process.cwd(), "src/data/marque.json");
-
-// Helper pour lire/ecrire JSON
-async function readMarques() {
-  const data = await fs.readFile(DATA_FILE, "utf-8");
-  return JSON.parse(data);
-}
-
-async function writeMarques(data: { marques: Marque[] }) {
-  await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
+async function requireAuth(request: NextRequest) {
+  const session = await auth.api.getSession({ headers: request.headers });
+  return session?.user ?? null;
 }
 
 // Helper pour verifier si une URL est une URL Vercel Blob
@@ -37,6 +26,11 @@ function isBlobUrl(url: string): boolean {
 // POST - Upload image vers Vercel Blob
 export async function POST(request: NextRequest) {
   try {
+    const user = await requireAuth(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const marque = formData.get('marque') as string;
@@ -60,37 +54,52 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    // Mettre a jour le JSON
-    const data = await readMarques();
-    const marqueIndex = data.marques.findIndex((m: Marque) => m.nom === marque);
-
-    if (marqueIndex === -1) {
+    const { rows } = await query<MarqueRow>(
+      "SELECT nom, logo, main_image, images, videos FROM marques WHERE nom = $1",
+      [marque]
+    );
+    if (rows.length === 0) {
       return NextResponse.json({ error: 'Marque not found' }, { status: 404 });
     }
 
-    const marqueData = data.marques[marqueIndex];
+    const marqueData = rows[0];
     let oldUrl: string | null = null;
+    let logo = marqueData.logo;
+    let mainImage = marqueData.main_image;
+    let images: string[] = marqueData.images ?? [];
 
     switch (action) {
       case 'logo':
-        oldUrl = marqueData.logo || null;
-        marqueData.logo = blob.url;
+        oldUrl = logo || null;
+        logo = blob.url;
         break;
       case 'mainImage':
-        oldUrl = marqueData.mainImage || null;
-        marqueData.mainImage = blob.url;
+        oldUrl = mainImage || null;
+        mainImage = blob.url;
         break;
       case 'add':
-        if (!marqueData.images) marqueData.images = [];
-        marqueData.images.push(blob.url);
+        images = [...images, blob.url];
         break;
       case 'replace':
+        if (!replaceIndex) {
+          return NextResponse.json(
+            { error: 'replaceIndex required' },
+            { status: 400 }
+          );
+        }
         const idx = parseInt(replaceIndex as string);
-        if (marqueData.images && marqueData.images[idx]) {
-          oldUrl = marqueData.images[idx];
-          marqueData.images[idx] = blob.url;
+        if (images[idx]) {
+          oldUrl = images[idx];
+          images = images.map((value, index) =>
+            index === idx ? blob.url : value
+          );
         }
         break;
+      default:
+        return NextResponse.json(
+          { error: "Invalid action" },
+          { status: 400 }
+        );
     }
 
     // Supprimer l'ancienne image si elle existe sur Vercel Blob
@@ -102,13 +111,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    await writeMarques(data);
+    const { rows: updatedRows } = await query<MarqueRow>(
+      `UPDATE marques
+       SET logo = $1,
+           main_image = $2,
+           images = $3::text[],
+           updated_at = now()
+       WHERE nom = $4
+       RETURNING nom, logo, main_image, images, videos`,
+      [logo, mainImage, images, marque]
+    );
 
     return NextResponse.json({
       success: true,
       url: blob.url,
       pathname: blob.pathname,
-      marque: marqueData,
+      marque: updatedRows[0],
     });
   } catch (error) {
     console.error('Upload error:', error);
@@ -122,6 +140,11 @@ export async function POST(request: NextRequest) {
 // DELETE - Supprimer image de Vercel Blob
 export async function DELETE(request: NextRequest) {
   try {
+    const user = await requireAuth(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const marqueName = searchParams.get('marque');
     const imageUrl = searchParams.get('imageUrl');
@@ -143,31 +166,43 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
-    // Mettre a jour le JSON
-    const data = await readMarques();
-    const marqueIndex = data.marques.findIndex((m: Marque) => m.nom === marqueName);
-
-    if (marqueIndex === -1) {
+    const { rows } = await query<MarqueRow>(
+      "SELECT nom, logo, main_image, images, videos FROM marques WHERE nom = $1",
+      [marqueName]
+    );
+    if (rows.length === 0) {
       return NextResponse.json({ error: 'Marque not found' }, { status: 404 });
     }
 
-    const marqueData = data.marques[marqueIndex];
+    const marqueData = rows[0];
+    let logo = marqueData.logo;
+    let mainImage = marqueData.main_image;
+    let images: string[] = marqueData.images ?? [];
 
     switch (type) {
       case 'gallery':
-        marqueData.images = marqueData.images?.filter((img: string) => img !== imageUrl) || [];
+        images = images.filter((img) => img !== imageUrl);
         break;
       case 'main':
-        marqueData.mainImage = '';
+        mainImage = null;
         break;
       case 'logo':
-        marqueData.logo = '';
+        logo = null;
         break;
     }
 
-    await writeMarques(data);
+    const { rows: updatedRows } = await query<MarqueRow>(
+      `UPDATE marques
+       SET logo = $1,
+           main_image = $2,
+           images = $3::text[],
+           updated_at = now()
+       WHERE nom = $4
+       RETURNING nom, logo, main_image, images, videos`,
+      [logo, mainImage, images, marqueName]
+    );
 
-    return NextResponse.json({ success: true, marque: marqueData });
+    return NextResponse.json({ success: true, marque: updatedRows[0] });
   } catch (error) {
     console.error('Delete error:', error);
     return NextResponse.json(
@@ -188,13 +223,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Marque required' }, { status: 400 });
     }
 
-    // Lire les donnees JSON
-    const data = await readMarques();
-    const marque = data.marques.find((m: Marque) => m.nom === marqueName);
-
-    if (!marque) {
+    const { rows } = await query<MarqueRow>(
+      "SELECT nom, logo, main_image, images, videos FROM marques WHERE nom = $1",
+      [marqueName]
+    );
+    if (rows.length === 0) {
       return NextResponse.json({ error: 'Marque not found' }, { status: 404 });
     }
+    const marque = rows[0];
 
     const response: {
       marque: string;
@@ -206,7 +242,7 @@ export async function GET(request: NextRequest) {
     } = {
       marque: marque.nom,
       logo: marque.logo || null,
-      mainImage: marque.mainImage || null,
+      mainImage: marque.main_image || null,
       images: marque.images || [],
       videos: marque.videos || [],
     };
