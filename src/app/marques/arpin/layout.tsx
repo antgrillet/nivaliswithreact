@@ -48,7 +48,7 @@ export const metadata: Metadata = {
       "Découvrez la collection Arpin chez Nivalis : plaids, couvertures et textiles en laine de Savoie depuis 1817. Artisanat d'exception et savoir-faire ancestral.",
     images: [
       {
-        url: "/img/Arpin/image1.jpg",
+        url: "/img/Arpin/image4.jpeg",
         width: 1200,
         height: 630,
         alt: "Collection Arpin - Plaids et textiles en laine de Savoie chez Nivalis Les Gets",
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     title: "Arpin aux Gets | Plaids & Textiles Laine Savoyarde | Nivalis",
     description:
       "Découvrez Arpin chez Nivalis : plaids et textiles en laine de Savoie depuis 1817. Revendeur officiel Portes du Soleil.",
-    images: ["/img/Arpin/image1.jpg"],
+    images: ["/img/Arpin/image4.jpeg"],
   },
 };
 
@@ -112,7 +112,7 @@ function JsonLd() {
         description:
           "Manufacture de laine savoyarde fondée en 1817. Spécialiste du drap de Bonneval et des textiles en laine naturelle.",
         url: "https://www.arpin1817.com",
-        logo: "/img/Arpin/logo.svg",
+        logo: "https://nivalis-lesgets.fr/img/Arpin/logo.jpeg",
         foundingDate: "1817",
         foundingLocation: {
           "@type": "Place",

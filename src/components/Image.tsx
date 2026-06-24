@@ -82,9 +82,9 @@ export default function Image({
   if (error) {
     return (
       <div
-        className={`${className} flex items-center justify-center bg-gray-100`}
+        className={`${className} flex items-center justify-center bg-muted`}
       >
-        <span className="text-gray-500">Image non disponible</span>
+        <span className="text-muted-foreground">Image non disponible</span>
       </div>
     );
   }

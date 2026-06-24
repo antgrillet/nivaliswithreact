@@ -1,422 +1,239 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import Image from "./Image";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { getImageUrl } from "@/utils/imageUtils";
-import { MarqueData } from "@/app/utils/types";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, X } from "lucide-react";
+import { SafeImage } from "@/components/SafeImage";
+import { cn } from "@/lib/utils";
 
 interface ImageGalleryProps {
-  // Uniquement le chemin du dossier d'images
-  imageFolderPath: string;
-  marqueNom: string;
-}
-
-// Type pour les entrées dans le cache
-interface CacheEntry {
   images: string[];
-  timestamp: number;
+  /** Nom de la marque (alt + libellé éditorial). */
+  nom: string;
 }
 
-// Cache d'images simple pour éviter de recharger les mêmes données à chaque fois
-const imageCache: Record<string, CacheEntry> = {};
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+/**
+ * Galerie monochrome « Galerie Monochrome ».
+ * Grille d'images en niveaux de gris qui passent en couleur au survol,
+ * lightbox plein écran sobre (fond encre), navigation clavier ←/→/Échap,
+ * focus trap simple et verrouillage du défilement.
+ */
+export default function ImageGallery({ images, nom }: ImageGalleryProps) {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const closeRef = useRef<HTMLButtonElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
 
-interface ImageData {
-  path: string;
-  brand: string;
-  category: string;
-}
+  const isOpen = openIndex !== null;
+  const total = images.length;
 
-export default function ImageGallery({
-  imageFolderPath,
-  marqueNom,
-}: ImageGalleryProps) {
-  const [fullscreen, setFullscreen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [galleryImages, setGalleryImages] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const imagesPerPage = 12; // Nombre d'images par page
-  useEffect(() => {
-    const loadImages = async () => {
-      try {
-        setIsLoading(true);
-
-        // Utiliser la nouvelle API CMS pour récupérer les marques
-        const response = await fetch("/api/cms/marques");
-        const data = await response.json();
-
-        // Trouver la marque correspondante
-        const marque = data.marques.find(
-          (m: MarqueData) => m.nom === marqueNom || m.imageFolder === imageFolderPath
-        );
-
-        if (marque && marque.images) {
-          setGalleryImages(marque.images);
-        } else {
-          setGalleryImages([]);
-        }
-
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Erreur lors du chargement des images:", error);
-        setError(
-          "Impossible de charger les images. Veuillez réessayer plus tard."
-        );
-        setIsLoading(false);
-      }
-    };
-
-    loadImages();
-  }, [imageFolderPath, marqueNom]);
-
-  // Fonction pour ouvrir l'image en plein écran
-  const openFullscreen = (index: number) => {
-    setSelectedImage(index);
-    setFullscreen(true);
-  };
-
-  // Navigation entre les images en mode plein écran
-  const nextImage = useCallback(() => {
-    setSelectedImage((prev) => (prev + 1) % galleryImages.length);
-  }, [galleryImages.length]);
-
-  const prevImage = useCallback(() => {
-    setSelectedImage(
-      (prev) => (prev - 1 + galleryImages.length) % galleryImages.length
-    );
-  }, [galleryImages.length]);
-
-  // Gestion des touches du clavier en mode plein écran
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!fullscreen) return;
-
-      switch (e.key) {
-        case "ArrowRight":
-          nextImage();
-          break;
-        case "ArrowLeft":
-          prevImage();
-          break;
-        case "Escape":
-          setFullscreen(false);
-          break;
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [fullscreen, nextImage, prevImage]);
-
-  // Calcul pour la pagination
-  const totalPages = Math.ceil(galleryImages.length / imagesPerPage);
-  const currentImages = galleryImages.slice(
-    (currentPage - 1) * imagesPerPage,
-    currentPage * imagesPerPage
+  const close = useCallback(() => setOpenIndex(null), []);
+  const next = useCallback(
+    () => setOpenIndex((i) => (i === null ? i : (i + 1) % total)),
+    [total]
+  );
+  const prev = useCallback(
+    () => setOpenIndex((i) => (i === null ? i : (i - 1 + total) % total)),
+    [total]
   );
 
-  // Changement de page
-  const goToPage = (page: number) => {
-    setCurrentPage(page);
+  const openAt = (index: number, trigger: HTMLButtonElement) => {
+    triggerRef.current = trigger;
+    setOpenIndex(index);
   };
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <section className="py-16 bg-amber-50/30">
-        <div className="container mx-auto px-4">
-          <Skeleton className="h-10 w-64 mx-auto mb-8" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {[...Array(8)].map((_, i) => (
-              <Skeleton key={i} className="aspect-square rounded-lg" />
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
+  // Navigation clavier + focus trap minimal (Tab piégé sur la lightbox)
+  useEffect(() => {
+    if (!isOpen) return;
 
-  // Error state
-  if (error) {
-    return (
-      <section className="py-16 bg-amber-50/30">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-amber-900 mb-8">
-            Collection {marqueNom}
-          </h2>
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <p className="text-amber-800">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors shadow-sm"
-            >
-              Réessayer
-            </button>
-          </div>
-        </div>
-      </section>
-    );
-  }
+    const onKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case "Escape":
+          e.preventDefault();
+          close();
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          next();
+          break;
+        case "ArrowLeft":
+          e.preventDefault();
+          prev();
+          break;
+        case "Tab":
+          // Focus trap simple : on garde le focus dans l'overlay
+          e.preventDefault();
+          closeRef.current?.focus();
+          break;
+      }
+    };
 
-  // Empty state
-  if (galleryImages.length === 0) {
-    return (
-      <section className="py-16 bg-amber-50/30">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-amber-900 mb-8">
-            Collection {marqueNom}
-          </h2>
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <p className="text-amber-800">
-              Aucune image disponible pour le moment.
-            </p>
-          </div>
-        </div>
-      </section>
-    );
-  }
+    document.addEventListener("keydown", onKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeRef.current?.focus();
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isOpen, close, next, prev]);
+
+  // Restaure le focus sur la vignette d'origine à la fermeture
+  useEffect(() => {
+    if (!isOpen && triggerRef.current) {
+      triggerRef.current.focus();
+      triggerRef.current = null;
+    }
+  }, [isOpen]);
+
+  if (total === 0) return null;
 
   return (
-    <section className="py-16 bg-amber-50/30">
-      <div className="container mx-auto px-4">
-        <h2 className="text-2xl md:text-3xl font-bold text-amber-900 mb-8 text-center">
-          Collection {marqueNom}
-        </h2>
+    <section className="bg-background py-20 md:py-24">
+      <div className="mx-auto max-w-7xl px-6 lg:px-10">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="eyebrow">La collection</p>
+            <h2 className="mt-4 font-serif text-3xl tracking-tight md:text-4xl">
+              {nom} en images
+            </h2>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {total} {total > 1 ? "visuels" : "visuel"}
+          </p>
+        </div>
 
-        {/* Grille d'images avec animation - affiche toutes les images de la page courante */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {currentImages.map((img, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.05 }} // Délai réduit pour ne pas attendre trop longtemps
-              className="group relative aspect-square rounded-lg overflow-hidden shadow-md cursor-pointer"
-              onClick={() =>
-                openFullscreen((currentPage - 1) * imagesPerPage + index)
-              }
+        <div className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
+          {images.map((img, i) => (
+            <button
+              key={`${img}-${i}`}
+              type="button"
+              onClick={(e) => openAt(i, e.currentTarget)}
+              aria-label={`Agrandir le visuel ${i + 1} de ${nom}`}
+              className="img-zoom group relative aspect-square overflow-hidden bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              <Image
-                src={getImageUrl(img)}
-                alt={`Image ${
-                  (currentPage - 1) * imagesPerPage + index + 1
-                } de ${marqueNom}`}
+              <SafeImage
+                src={img}
+                alt={`Visuel ${i + 1} de ${nom}`}
                 fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                priority={index < 4}
+                fallbackLabel={nom.charAt(0)}
+                className="object-cover grayscale transition-[filter] duration-700 group-hover:grayscale-0"
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                priority={i < 4}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="absolute bottom-3 left-3 text-white text-sm font-medium">
-                  {(currentPage - 1) * imagesPerPage + index + 1}/
-                  {galleryImages.length}
-                </div>
-                <div className="absolute bottom-3 right-3">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-5 h-5 text-white"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </motion.div>
+            </button>
           ))}
         </div>
+      </div>
 
-        {/* Pagination pour naviguer entre les pages d'images */}
-        {totalPages > 1 && (
-          <div className="flex justify-center mt-8 gap-2">
+      {isOpen ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Visuels de ${nom}`}
+          className="animate-fadeIn fixed inset-0 z-[60] flex flex-col bg-foreground text-background"
+          onClick={close}
+        >
+          <div className="flex items-center justify-between px-6 py-5 lg:px-10">
+            <span className="text-xs uppercase tracking-[0.2em] text-background/60">
+              {(openIndex ?? 0) + 1} / {total}
+            </span>
             <button
-              onClick={() => goToPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className={`px-3 py-1 rounded-md ${
-                currentPage === 1
-                  ? "bg-amber-100 text-amber-400 cursor-not-allowed"
-                  : "bg-amber-100 hover:bg-amber-200 text-amber-800"
-              }`}
+              ref={closeRef}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                close();
+              }}
+              aria-label="Fermer"
+              className="flex size-10 items-center justify-center border border-background/25 text-background outline-none transition-colors hover:bg-background hover:text-foreground focus-visible:bg-background focus-visible:text-foreground"
             >
-              &larr;
-            </button>
-
-            {Array.from({ length: totalPages }, (_, i) => (
-              <button
-                key={i}
-                onClick={() => goToPage(i + 1)}
-                className={`px-3 py-1 rounded-md ${
-                  currentPage === i + 1
-                    ? "bg-amber-500 text-white"
-                    : "bg-amber-100 hover:bg-amber-200 text-amber-800"
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
-
-            <button
-              onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage === totalPages}
-              className={`px-3 py-1 rounded-md ${
-                currentPage === totalPages
-                  ? "bg-amber-100 text-amber-400 cursor-not-allowed"
-                  : "bg-amber-100 hover:bg-amber-200 text-amber-800"
-              }`}
-            >
-              &rarr;
+              <X className="size-4" />
             </button>
           </div>
-        )}
 
-        {/* Bouton pour voir toutes les images en plein écran */}
-        <div className="flex justify-center mt-8">
-          <button
-            onClick={() => {
-              setSelectedImage(0);
-              setFullscreen(true);
-            }}
-            className="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors shadow-sm"
-          >
-            Voir toutes les images ({galleryImages.length})
-          </button>
-        </div>
-
-        {/* Mode plein écran - permet de parcourir toutes les images */}
-        {fullscreen && (
           <div
-            className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center"
-            onClick={() => setFullscreen(false)}
+            className="relative flex flex-1 items-center justify-center px-6 pb-10 lg:px-20"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative h-full w-full p-10 flex items-center justify-center">
-              <Image
-                src={getImageUrl(galleryImages[selectedImage])}
-                alt={`Image ${selectedImage + 1} de ${marqueNom}`}
+            <div className="relative h-full w-full max-w-5xl">
+              <SafeImage
+                key={openIndex}
+                src={images[openIndex ?? 0]}
+                alt={`Visuel ${(openIndex ?? 0) + 1} de ${nom}`}
                 fill
+                fallbackLabel={nom.charAt(0)}
                 className="object-contain"
+                sizes="100vw"
                 priority
               />
+            </div>
 
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  prevImage();
-                }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 p-3 rounded-full"
-                aria-label="Image précédente"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                  className="w-6 h-6 text-white"
-                  aria-hidden="true"
+            {total > 1 ? (
+              <>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    prev();
+                  }}
+                  aria-label="Visuel précédent"
+                  className="absolute left-4 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center border border-background/25 text-background outline-none transition-colors hover:bg-background hover:text-foreground focus-visible:bg-background focus-visible:text-foreground lg:left-6"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15.75 19.5L8.25 12l7.5-7.5"
-                  />
-                </svg>
-              </button>
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  nextImage();
-                }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 p-3 rounded-full"
-                aria-label="Image suivante"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                  className="w-6 h-6 text-white"
-                  aria-hidden="true"
+                  <ArrowLeft className="size-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    next();
+                  }}
+                  aria-label="Visuel suivant"
+                  className="absolute right-4 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center border border-background/25 text-background outline-none transition-colors hover:bg-background hover:text-foreground focus-visible:bg-background focus-visible:text-foreground lg:right-6"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
-                  />
-                </svg>
-              </button>
+                  <ArrowRight className="size-5" />
+                </button>
+              </>
+            ) : null}
+          </div>
 
-              <button
-                onClick={() => setFullscreen(false)}
-                className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 p-3 rounded-md"
-                aria-label="Fermer"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                  className="w-6 h-6 text-white"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-
-              {/* Miniatures en bas avec défilement horizontal */}
-              <div className="absolute bottom-6 left-0 right-0 flex justify-center">
-                <div className="bg-black/60 p-2 rounded-md flex space-x-2 overflow-x-auto max-w-screen-lg snap-x">
-                  {galleryImages.map((img, index) => (
-                    <div
-                      key={index}
-                      className={`relative h-16 w-16 flex-shrink-0 rounded-md overflow-hidden cursor-pointer border transition-transform snap-start ${
-                        index === selectedImage
-                          ? "border-amber-500 scale-105"
-                          : "border-transparent opacity-50 hover:opacity-100"
-                      }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedImage(index);
-                      }}
-                    >
-                      <Image
-                        src={getImageUrl(img)}
-                        alt={`Miniature ${index + 1}`}
-                        fill
-                        className="object-cover"
-                        sizes="64px"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="absolute top-4 left-4 bg-black/40 px-3 py-1 rounded-md text-white text-sm">
-                {selectedImage + 1} / {galleryImages.length}
+          {total > 1 ? (
+            <div
+              className="px-6 pb-6 lg:px-10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mx-auto flex max-w-3xl gap-2 overflow-x-auto pb-1">
+                {images.map((img, i) => (
+                  <button
+                    key={`thumb-${img}-${i}`}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenIndex(i);
+                    }}
+                    aria-label={`Aller au visuel ${i + 1}`}
+                    aria-current={i === openIndex}
+                    className={cn(
+                      "relative h-14 w-14 shrink-0 overflow-hidden border outline-none transition-opacity",
+                      i === openIndex
+                        ? "border-background opacity-100"
+                        : "border-background/20 opacity-50 hover:opacity-90"
+                    )}
+                  >
+                    <SafeImage
+                      src={img}
+                      alt=""
+                      fill
+                      fallbackLabel={nom.charAt(0)}
+                      className="object-cover"
+                      sizes="56px"
+                    />
+                  </button>
+                ))}
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          ) : null}
+        </div>
+      ) : null}
     </section>
   );
 }

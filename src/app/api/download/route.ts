@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Créer la réponse avec les bons headers
-    const response = new NextResponse(fileBuffer as any);
+    const response = new NextResponse(new Uint8Array(fileBuffer));
 
     response.headers.set("Content-Type", contentType);
     response.headers.set("Content-Length", stats.size.toString());

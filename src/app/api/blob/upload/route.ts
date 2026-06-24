@@ -1,5 +1,6 @@
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import { NextResponse } from 'next/server';
+import { getSessionUser } from '@/lib/auth-guard';
 
 export async function POST(request: Request): Promise<NextResponse> {
   const body = (await request.json()) as HandleUploadBody;
@@ -9,7 +10,12 @@ export async function POST(request: Request): Promise<NextResponse> {
       body,
       request,
       onBeforeGenerateToken: async (pathname, clientPayload) => {
-        // Validation et autorisation
+        // Auth : seul un admin connecté peut obtenir un token d'upload.
+        // (Non appelé pour le webhook onUploadCompleted signé par Vercel.)
+        const user = await getSessionUser(request.headers);
+        if (!user) {
+          throw new Error("Unauthorized");
+        }
         // clientPayload contient: { marque, type, action }
         const payload = clientPayload ? JSON.parse(clientPayload) : {};
 
@@ -21,8 +27,9 @@ export async function POST(request: Request): Promise<NextResponse> {
             'image/svg+xml',
             'image/gif',
             'image/avif',
+            'application/pdf',
           ],
-          maximumSizeInBytes: 10 * 1024 * 1024, // 10MB max
+          maximumSizeInBytes: 25 * 1024 * 1024, // 25 Mo max (images + PDF catalogues)
           addRandomSuffix: true, // Remplace les timestamps manuels
           tokenPayload: JSON.stringify(payload),
         };

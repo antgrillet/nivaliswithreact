@@ -1,5 +1,6 @@
 import { put, del } from '@vercel/blob';
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { query } from "@/lib/db";
 import { auth } from "@/lib/auth";
 
@@ -9,6 +10,8 @@ interface ContentRow {
   content: Record<string, unknown>;
 }
 
+// Navigation dans une structure JSON dynamique (chemins arbitraires).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getPathValue(target: any, path: string[]) {
   let current = target;
   for (const key of path) {
@@ -19,6 +22,8 @@ function getPathValue(target: any, path: string[]) {
   return current;
 }
 
+// Mutation d'une structure JSON dynamique (chemins arbitraires).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setPathValue(target: any, path: string[], value: string) {
   let current = target;
   for (let i = 0; i < path.length - 1; i++) {
@@ -133,6 +138,7 @@ export async function POST(request: NextRequest) {
       [currentData, section, subsection]
     );
 
+    revalidateTag("content", "max");
     return NextResponse.json({
       success: true,
       imageUrl,
@@ -204,6 +210,7 @@ export async function DELETE(request: NextRequest) {
       [currentData, section, subsection]
     );
 
+    revalidateTag("content", "max");
     return NextResponse.json({
       success: true,
       data: updatedRows[0]?.content ?? currentData,

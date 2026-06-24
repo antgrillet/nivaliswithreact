@@ -45,6 +45,19 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // Routes Blob sensibles : suppression et énumération réservées aux admins.
+  // /api/blob/upload est volontairement exclu (handleUpload reçoit aussi un
+  // webhook signé de Vercel sans cookie) ; l'auth y est vérifiée dans la route.
+  if (
+    request.nextUrl.pathname.startsWith("/api/blob/delete") ||
+    request.nextUrl.pathname.startsWith("/api/blob/list")
+  ) {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   // Gérer les fichiers statiques PDF
   if (request.nextUrl.pathname.endsWith(".pdf")) {
     const response = NextResponse.next();

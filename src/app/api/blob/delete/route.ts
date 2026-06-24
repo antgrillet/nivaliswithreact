@@ -1,8 +1,12 @@
 import { del } from '@vercel/blob';
 import { NextResponse } from 'next/server';
+import { getSessionUser } from '@/lib/auth-guard';
 
 // DELETE - Suppression simple via query param
 export async function DELETE(request: Request) {
+  if (!(await getSessionUser(request.headers))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   const { searchParams } = new URL(request.url);
   const url = searchParams.get('url');
 
@@ -23,6 +27,9 @@ export async function DELETE(request: Request) {
 
 // POST - Suppression multiple
 export async function POST(request: Request) {
+  if (!(await getSessionUser(request.headers))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   const { urls } = await request.json();
 
   if (!urls || !Array.isArray(urls)) {

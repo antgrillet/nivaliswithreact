@@ -1,8 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
-import { motion } from "framer-motion";
-import { Skeleton } from "@/components/ui/skeleton";
-import { getImageUrl } from "@/utils/imageUtils";
+import { SafeImage } from "@/components/SafeImage";
 
 interface TeamMember {
   name?: string;
@@ -12,183 +8,69 @@ interface TeamMember {
 }
 
 interface TeamContent {
-  title: string;
-  subtitle: string;
-  description: string;
-  members: TeamMember[];
+  title?: string;
+  description?: string;
+  members?: TeamMember[];
 }
 
-export default function TeamSection() {
-  const [content, setContent] = useState<TeamContent>({
-    title: "Notre équipe",
-    subtitle: "Des passionnés à votre service",
-    description:
-      "Rencontrez notre équipe de professionnels passionnés, toujours prêts à vous conseiller et vous accompagner dans vos choix.",
-    members: [],
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
-
-  const handleImageError = useCallback((index: number) => {
-    setImageErrors((prev) => ({ ...prev, [index]: true }));
-  }, []);
-
-  // Charger le contenu depuis l'API
-  useEffect(() => {
-    const fetchContent = async () => {
-      setIsLoading(true);
-      try {
-        const res = await fetch(
-          "/api/cms/content?section=homepage&subsection=team"
-        );
-        if (res.ok) {
-          const data = await res.json();
-          if (data && Object.keys(data).length > 0) {
-            setContent((prev) => ({
-              ...prev,
-              ...data,
-              members: Array.isArray(data.members) ? data.members : prev.members,
-            }));
-          }
-        }
-      } catch (error) {
-        console.error("Erreur lors du chargement du contenu:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchContent();
-  }, []);
-  // État de chargement
-  if (isLoading) {
-    return (
-      <section className="py-16 md:py-32 px-4 bg-gradient-to-b from-white via-amber-50/30 to-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12 md:mb-20 space-y-4">
-            <Skeleton className="h-12 w-64 mx-auto" />
-            <Skeleton className="h-6 w-full max-w-2xl mx-auto" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-amber-100">
-                <Skeleton className="h-72 md:h-96 w-full" />
-                <div className="p-6 space-y-3">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
+export default function TeamSection({ content }: { content?: TeamContent }) {
+  const title = content?.title || "Notre équipe";
+  const description =
+    content?.description ||
+    "Des professionnels passionnés, toujours prêts à vous conseiller et vous accompagner dans vos choix.";
+  const members = Array.isArray(content?.members) ? content!.members : [];
 
   return (
-    <section className="py-16 md:py-32 px-4 bg-gradient-to-b from-white via-amber-50/30 to-white">
-      <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12 md:mb-20"
-        >
-          <h2 className="text-3xl md:text-5xl font-bold text-amber-950 mb-4 md:mb-6">
-            {content.title}
+    <section className="bg-secondary py-24 md:py-32">
+      <div className="mx-auto max-w-7xl px-6 lg:px-10">
+        <div className="max-w-2xl">
+          <p className="eyebrow">L'équipe</p>
+          <h2 className="mt-4 font-serif text-4xl tracking-tight md:text-5xl">
+            {title}
           </h2>
-          <p className="text-lg md:text-xl text-amber-900/80 max-w-3xl mx-auto leading-relaxed">
-            {content.description}
+          <p className="mt-5 leading-relaxed text-muted-foreground">
+            {description}
           </p>
-        </motion.div>
+        </div>
 
-        {content.members?.length === 0 ? (
-          <p className="text-center text-amber-700">Aucun membre à afficher pour le moment.</p>
+        {members.length === 0 ? (
+          <div className="mt-16 flex min-h-48 items-center justify-center border border-dashed border-border">
+            <p className="text-sm text-muted-foreground">
+              L&apos;équipe sera présentée ici prochainement.
+            </p>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
-            {content.members?.map((member, index) => {
-              const memberName =
-                typeof member?.name === "string" ? member.name.trim() : "";
-              const memberRole =
-                typeof member?.role === "string" ? member.role.trim() : "";
-              const memberDescription =
-                typeof member?.description === "string" ? member.description : "";
-              const memberImage =
-                typeof member?.image === "string" ? member.image : "";
-              const fallbackInitial = memberName ? memberName.charAt(0) : "?";
-              const displayName = memberName || "Membre";
-              const displayAlt = memberRole
-                ? `Photo de ${displayName}, ${memberRole}`
-                : `Photo de ${displayName}`;
-
+          <div className="mt-16 grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            {members.map((member, index) => {
+              const name = member?.name?.trim() || "Membre";
               return (
-              <motion.article
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: index * 0.15 }}
-                whileHover={{ y: -12 }}
-                className="group"
-              >
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 border-2 border-amber-100 hover:border-amber-300">
-                  <div className="relative h-72 md:h-96 overflow-hidden">
-                    {imageErrors[index] || !memberImage ? (
-                      <div className="w-full h-full bg-gradient-to-br from-amber-200 to-amber-400 flex items-center justify-center">
-                        <span className="text-amber-800 text-4xl font-bold">
-                          {fallbackInitial}
-                        </span>
-                      </div>
-                    ) : (
-                      <Image
-                        src={getImageUrl(memberImage)}
-                        alt={displayAlt}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        loading="lazy"
-                        onError={() => handleImageError(index)}
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-amber-950/90 via-amber-900/50 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500"></div>
-
-                    <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 transform translate-y-0 transition-transform duration-500">
-                      <h3 className="text-xl md:text-2xl font-bold text-white mb-2 drop-shadow-lg">
-                        {displayName}
-                      </h3>
-                      {memberRole && (
-                        <p className="text-amber-200 font-semibold text-base md:text-lg">
-                          {memberRole}
-                        </p>
-                      )}
-                    </div>
+                <article key={index} className="group">
+                  <div className="img-zoom relative aspect-[3/4] overflow-hidden bg-muted">
+                    <SafeImage
+                      src={member?.image}
+                      alt={`${name}${member?.role ? `, ${member.role}` : ""}`}
+                      fill
+                      fallbackLabel={name.charAt(0)}
+                      className="object-cover grayscale transition-[filter] duration-700 group-hover:grayscale-0"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
                   </div>
-                  <div className="p-4 md:p-6 bg-gradient-to-b from-amber-50/50 to-white">
-                    {memberDescription && (
-                      <p className="text-amber-900/90 leading-relaxed text-sm md:text-base">
-                        {memberDescription}
+                  <div className="mt-5">
+                    <h3 className="font-serif text-xl tracking-tight">{name}</h3>
+                    {member?.role ? (
+                      <p className="eyebrow mt-1.5">{member.role}</p>
+                    ) : null}
+                    {member?.description ? (
+                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                        {member.description}
                       </p>
-                    )}
+                    ) : null}
                   </div>
-                </div>
-              </motion.article>
+                </article>
               );
             })}
           </div>
         )}
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="mt-12 md:mt-20 text-center bg-gradient-to-r from-amber-100 via-amber-50 to-amber-100 p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-lg border border-amber-200"
-        >
-          <p className="text-lg md:text-xl text-amber-950 font-medium max-w-3xl mx-auto leading-relaxed">
-            Notre équipe est à votre disposition pour vous conseiller et vous
-            accompagner dans vos choix. N'hésitez pas à venir nous rencontrer en
-            boutique !
-          </p>
-        </motion.div>
       </div>
     </section>
   );

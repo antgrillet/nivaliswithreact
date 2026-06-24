@@ -1,7 +1,11 @@
 import { list } from '@vercel/blob';
 import { NextResponse } from 'next/server';
+import { getSessionUser } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
+  if (!(await getSessionUser(request.headers))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   const { searchParams } = new URL(request.url);
   const prefix = searchParams.get('prefix') || '';
   const limit = parseInt(searchParams.get('limit') || '100');

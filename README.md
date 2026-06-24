@@ -1,54 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nivalis
 
-## Getting Started
+Site vitrine de **Nivalis** — boutique de marques premium outdoor aux Gets (marque phare : Arpin, lainage savoyard depuis 1817). Bilingue FR/EN, direction artistique « Galerie Monochrome ».
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui · Better Auth · PostgreSQL (`pg`) · Vercel Blob · Resend · TanStack Query · Zod. Gestionnaire de paquets : **Bun**.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-## Environment Variables
-
-Create a `.env.local` file with the following values:
+## Démarrage
 
 ```bash
-DATABASE_URL="postgres://user:password@host:5432/database?sslmode=require"
-BETTER_AUTH_SECRET="your-strong-secret-at-least-32-chars"
-DISABLE_SIGNUP="false"
+bun install
+bunx vercel env pull .env.local   # récupère les variables depuis Vercel
+bun run dev                       # http://localhost:3000
 ```
 
-## Admin Access
+## Scripts
 
-The admin interface is protected with Better Auth (username + password).
-Sign-in is available at `/login`. CMS write endpoints require a valid session.
+| Commande | Description |
+| --- | --- |
+| `bun run dev` | Serveur de développement (Turbopack) |
+| `bun run build` | Build de production |
+| `bun run start` | Serveur de production |
+| `bun run lint` | ESLint |
 
-For the initial setup, visit `/login?setup=1` to create the first admin account.
-After that, set `DISABLE_SIGNUP=true` to prevent new account creation.
+## Variables d'environnement
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Rôle |
+| --- | --- |
+| `DATABASE_URL` | Connexion PostgreSQL (source de vérité) |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob (médias) |
+| `RESEND_API_KEY` | Envoi des e-mails (formulaires) |
+| `BETTER_AUTH_SECRET` | Secret de session Better Auth (≥ 32 caractères) |
+| `BETTER_AUTH_URL` | URL publique (recommandé en prod) |
+| `DISABLE_SIGNUP` | `true` pour désactiver la création de comptes |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Back-office
 
-## Learn More
+Interface d'administration sur `/admin`, protégée par Better Auth (identifiant + mot de passe). Création du premier compte : `/login?setup=1` (puis passer `DISABLE_SIGNUP=true`).
 
-To learn more about Next.js, take a look at the following resources:
+## Documentation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Voir [`CLAUDE.md`](./CLAUDE.md) pour l'architecture détaillée (couche data, Server Components, sécurité, conventions de design).

@@ -1,24 +1,45 @@
 import type { Metadata } from "next";
-import { Work_Sans, Playfair_Display } from "next/font/google";
+import { Fraunces, Geist } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
+import { getSiteSettings } from "@/lib/data/content";
 
-const workSans = Work_Sans({
+const geist = Geist({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-work-sans",
+  variable: "--font-geist",
 });
 
-const playfair = Playfair_Display({
+const fraunces = Fraunces({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-playfair",
+  variable: "--font-fraunces",
+  axes: ["opsz"],
 });
 
-export const metadata: Metadata = {
-  title: "Marques Premium - Arpin et bien plus",
-  description:
-    "Découvrez notre sélection de marques de qualité, dont Arpin, marque historique française depuis 1817",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { seo } = await getSiteSettings();
+  const defaultTitle =
+    seo?.defaultTitle?.trim() || "Nivalis — Marques premium outdoor · Les Gets";
+  const template = seo?.titleTemplate?.trim() || "%s — Nivalis";
+  const description =
+    seo?.description?.trim() ||
+    "Maison de marques premium outdoor aux Gets : Arpin, The North Face, UGG et une sélection de maisons d'exception. Vêtements et accessoires de montagne.";
+  const ogImage = seo?.ogImage?.trim();
+
+  return {
+    title: { default: defaultTitle, template },
+    description,
+    metadataBase: new URL("https://www.nivalislesgets.com"),
+    openGraph: {
+      title: defaultTitle,
+      description,
+      type: "website",
+      locale: "fr_FR",
+      ...(ogImage ? { images: [{ url: ogImage }] } : {}),
+    },
+  };
+}
 
 export default function RootLayout({
   children,
@@ -28,9 +49,10 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body
-        className={`${workSans.variable} ${playfair.variable} font-sans antialiased`}
+        className={`${geist.variable} ${fraunces.variable} font-sans antialiased`}
       >
         {children}
+        <Toaster position="bottom-right" theme="light" richColors={false} />
       </body>
     </html>
   );

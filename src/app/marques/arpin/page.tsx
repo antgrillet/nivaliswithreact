@@ -1,1172 +1,492 @@
-"use client";
-
-import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { ArrowLeft, ArrowRight, Download } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { SafeImage } from "@/components/SafeImage";
 import { Button } from "@/components/ui/button";
-import { ChangeEvent, FormEvent } from "react";
-import ImageGallery from "@/components/ImageGallery";
-import { getImageUrl } from "@/utils/imageUtils";
+import ArpinDevisForm from "@/components/arpin/ArpinDevisForm";
+import { getContent, getSiteSettings } from "@/lib/data/content";
+import type { ContentValue, SectionContent, SiteSettings } from "@/lib/types";
 
-// Composant Breadcrumb accessible
-function Breadcrumb() {
-  return (
-    <nav aria-label="Fil d'Ariane" className="bg-amber-50/80 border-b border-amber-100">
-      <div className="container mx-auto px-4 py-3">
-        <ol className="flex items-center space-x-2 text-sm" itemScope itemType="https://schema.org/BreadcrumbList">
-          <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
-            <Link
-              href="/"
-              itemProp="item"
-              className="text-amber-600 hover:text-amber-800 transition-colors"
-            >
-              <span itemProp="name">Accueil</span>
-            </Link>
-            <meta itemProp="position" content="1" />
-          </li>
-          <li aria-hidden="true" className="text-amber-400">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-            </svg>
-          </li>
-          <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
-            <Link
-              href="/marques"
-              itemProp="item"
-              className="text-amber-600 hover:text-amber-800 transition-colors"
-            >
-              <span itemProp="name">Nos Marques</span>
-            </Link>
-            <meta itemProp="position" content="2" />
-          </li>
-          <li aria-hidden="true" className="text-amber-400">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-            </svg>
-          </li>
-          <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem" aria-current="page">
-            <span itemProp="name" className="text-amber-900 font-medium">Arpin</span>
-            <meta itemProp="position" content="3" />
-          </li>
-        </ol>
-      </div>
-    </nav>
-  );
+export const revalidate = 300;
+
+const CATALOGUE_HREF =
+  "/api/download?file=Catalogue%20sur%20Mesure%20Arpin%202022.pdf";
+
+const HERO_IMAGE = "/img/Arpin/image4.jpeg";
+
+const PROCESS: { n: string; title: string; body: string }[] = [
+  {
+    n: "01",
+    title: "Sélection de la laine",
+    body: "Des toisons des Alpes choisies pour leur finesse et leur résistance, premières d'une chaîne entièrement maîtrisée.",
+  },
+  {
+    n: "02",
+    title: "Lavage & cardage",
+    body: "La laine brute est nettoyée puis les fibres démêlées, préparées avec soin pour le filage.",
+  },
+  {
+    n: "03",
+    title: "Filage & tissage",
+    body: "Le fil est tissé sur métiers à navette historiques, selon les gestes du Drap de Bonneval.",
+  },
+  {
+    n: "04",
+    title: "Foulonnage & finitions",
+    body: "Feutré au foulon à eau, brossé puis tondu : un drap dense, chaud, fait pour traverser le temps.",
+  },
+];
+
+const GALLERY: { src: string; alt: string }[] = [
+  {
+    src: "/img/Arpin/image4.jpeg",
+    alt: "Couverture en laine Arpin — Drap de Bonneval tissé à la main",
+  },
+  {
+    src: "/img/Arpin/image003.jpg",
+    alt: "Plaid Arpin en laine de Savoie",
+  },
+  {
+    src: "/img/Arpin/IMG_0253.jpg",
+    alt: "Détail de tissage du drap de Bonneval Arpin",
+  },
+  {
+    src: "/img/Arpin/IMG_1521.jpeg",
+    alt: "Textile Arpin en laine naturelle",
+  },
+  {
+    src: "/img/Arpin/IMG_1525.jpeg",
+    alt: "Pièce d'habitat en laine Arpin",
+  },
+  {
+    src: "/img/Arpin/IMG_1527.jpeg",
+    alt: "Collection de textiles Arpin en laine de Savoie",
+  },
+];
+
+const FACTS: [string, string][] = [
+  ["1817", "Fondation à Séez, Savoie"],
+  ["2005", "Classée Monument historique"],
+  ["200+", "Ans de savoir-faire transmis"],
+];
+
+// --- Formes lues depuis le CMS (section "arpin"). Tout est optionnel : la
+// page applique systématiquement les constantes ci-dessus en repli. ---
+interface FactItem {
+  value: string;
+  label: string;
 }
 
-interface ArpinContent {
-  hero: {
-    title?: string;
-    subtitle?: string;
-    logo_image?: string;
-    main_image?: string;
-    tags?: string[];
-  };
-  history: Record<string, unknown>;
-  catalogue: Record<string, unknown>;
-  gallery: Record<string, unknown>;
-  contact: Record<string, unknown>;
+interface GalleryImage {
+  src?: string;
+  alt?: string;
 }
 
-export default function ArpinPage() {
-  const [content, setContent] = useState<ArpinContent>({
-    hero: {},
-    history: {},
-    catalogue: {},
-    gallery: {},
-    contact: {},
-  });
+// --- Accès défensifs typés sur ContentValue (Record<string, unknown>). ---
+function str(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim() !== "" ? value : undefined;
+}
 
-  // Charger le contenu depuis l'API
-  useEffect(() => {
-    const fetchContent = async () => {
-      try {
-        const res = await fetch("/api/cms/content?section=arpin");
-        if (res.ok) {
-          const data = await res.json();
-          setContent(data);
-        }
-      } catch (error) {
-        console.error("Erreur lors du chargement du contenu:", error);
-      }
-    };
-    fetchContent();
-  }, []);
-  const [formData, setFormData] = useState({
-    nom: "",
-    email: "",
-    telephone: "",
-    message: "",
-    produit: "",
-    acceptConditions: false,
-  });
+function block(section: SectionContent, key: string): ContentValue {
+  const value = section[key];
+  return value && typeof value === "object" ? (value as ContentValue) : {};
+}
 
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formError, setFormError] = useState("");
+function objectList(value: unknown): ContentValue[] {
+  return Array.isArray(value)
+    ? value.filter(
+        (item): item is ContentValue =>
+          !!item && typeof item === "object" && !Array.isArray(item)
+      )
+    : [];
+}
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type, checked } = e.target as HTMLInputElement;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
+export default async function ArpinPage() {
+  const [arpin, settings] = await Promise.all([
+    getContent("arpin").catch((): SectionContent => ({})),
+    getSiteSettings().catch((): SiteSettings => ({})),
+  ]);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const hero = block(arpin, "hero");
+  const heritage = block(arpin, "heritage");
+  const process = block(arpin, "process");
+  const facts = block(arpin, "facts");
+  const gallery = block(arpin, "gallery");
+  const catalog = block(arpin, "catalog");
 
-    // Validation basique
-    if (!formData.nom || !formData.email || !formData.message) {
-      setFormError("Veuillez remplir tous les champs obligatoires.");
-      return;
-    }
+  // Hero
+  const heroTitle = str(hero.title) ?? "Arpin";
+  const heroSubtitle =
+    str(hero.subtitle) ??
+    "Manufacture de lainage française fondée en 1817. Le geste du tissage savoyard, perpétué dans l'atelier historique de Séez, au cœur des Alpes.";
+  const heroImage = str(hero.image) ?? HERO_IMAGE;
 
-    if (!formData.acceptConditions) {
-      setFormError("Veuillez accepter les conditions générales.");
-      return;
-    }
+  // Héritage : paragraphes (séparés par double saut de ligne) + citation
+  const heritageContent = str(heritage.content);
+  const heritageParagraphs = heritageContent
+    ? heritageContent.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
+    : null;
+  const heritageQuote =
+    str(heritage.quote) ??
+    "Le patrimoine vivant d'un savoir-faire unique, classé au titre des Monuments historiques depuis 2005.";
 
-    // Simulation d'envoi
-    setTimeout(() => {
-      setFormSubmitted(true);
-      setFormError("");
-    }, 1000);
-  };
+  // Process : 4 étapes
+  const cmsSteps = objectList(process.steps)
+    .map((step) => ({
+      n: str(step.n),
+      title: str(step.title),
+      body: str(step.body),
+    }))
+    .filter(
+      (step): step is {
+        n: string | undefined;
+        title: string;
+        body: string | undefined;
+      } => step.title !== undefined
+    );
+  const processSteps =
+    cmsSteps.length > 0
+      ? cmsSteps.map((step, i) => ({
+          n: step.n ?? PROCESS[i]?.n ?? String(i + 1).padStart(2, "0"),
+          title: step.title,
+          body: step.body ?? "",
+        }))
+      : PROCESS;
 
-  const produits = [
-    {
-      id: "couvertures",
-      nom: "Couvertures traditionnelles",
-      image: "/img/Arpin/image4.jpeg",
-      alt: "Couverture traditionnelle en laine Arpin - Drap de Bonneval tissé à la main",
-    },
-    {
-      id: "plaids",
-      nom: "Plaids et jetés",
-      image: "/img/Arpin/image003.jpg",
-      alt: "Plaid Arpin en laine de Savoie - Confort et chaleur pour votre intérieur",
-    },
-    {
-      id: "decoration",
-      nom: "Articles de décoration",
-      image: "/img/Arpin/IMG_0253.jpg",
-      alt: "Décoration intérieure Arpin - Textiles artisanaux pour chalet et maison",
-    },
-    {
-      id: "vetements",
-      nom: "Vêtements en laine",
-      image: "/img/Arpin/image4.jpeg",
-      alt: "Vêtements en laine Arpin - Mode montagne et artisanat savoyard",
-    },
-  ];
+  // Repères chiffrés
+  const cmsFacts = objectList(facts.items)
+    .map((item) => ({ value: str(item.value), label: str(item.label) }))
+    .filter(
+      (item): item is FactItem =>
+        item.value !== undefined && item.label !== undefined
+    );
+  const factItems: FactItem[] =
+    cmsFacts.length > 0
+      ? cmsFacts
+      : FACTS.map(([value, label]) => ({ value, label }));
 
-  // Ref et hooks pour le parallax du Hero
-  const heroRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
+  // Galerie
+  const cmsGallery = objectList(gallery.images)
+    .map((item) => ({ src: str(item.src), alt: str(item.alt) }))
+    .filter(
+      (item): item is { src: string; alt: string | undefined } =>
+        item.src !== undefined
+    );
+  const galleryImages: GalleryImage[] =
+    cmsGallery.length > 0 ? cmsGallery : GALLERY;
 
-  // Transformations parallax
-  const heroImageY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const heroTextY = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-  const decorScale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
+  // Catalogue PDF
+  const catalogueHref = str(catalog.file) ?? CATALOGUE_HREF;
+
+  // Coordonnées contact
+  const contact = settings.contact ?? {};
+  const phone = contact.phone ?? "06 81 73 66 47";
+  const email = contact.email ?? "contact@nivalislesgets.com";
+  const boutique = contact.address ?? "Les Gets, Haute-Savoie";
+  const phoneDigits = phone.replace(/[^\d]/g, "");
+  const telHref = phoneDigits.startsWith("0")
+    ? `tel:+33${phoneDigits.slice(1)}`
+    : `tel:${phoneDigits}`;
 
   return (
-    <main className="min-h-screen bg-amber-50/60">
-      <Navbar />
-      <Breadcrumb />
+    <main className="min-h-screen bg-background">
+      <Navbar overHero />
 
-      {/* Hero section avec parallax */}
-      <section
-        ref={heroRef}
-        className="pt-16 pb-16 bg-gradient-to-b from-amber-100/80 to-amber-50/60 relative overflow-hidden"
-      >
-        {/* Éléments décoratifs avec parallax */}
-        <motion.div
-          style={{ scale: decorScale }}
-          className="absolute top-0 right-0 -mr-64 -mt-32 w-96 h-96 bg-amber-300/20 rounded-full blur-3xl"
+      {/* Hero — plein cadre, noir & blanc */}
+      <section className="relative flex min-h-[92vh] items-end overflow-hidden bg-foreground text-background">
+        <SafeImage
+          src={heroImage}
+          alt="Tissus de laine Arpin — savoir-faire savoyard depuis 1817"
+          fill
+          priority
+          fallbackLabel="A"
+          fallbackClassName="bg-foreground text-background/40"
+          className="object-cover opacity-55 grayscale"
+          sizes="100vw"
         />
-        <motion.div
-          style={{ scale: decorScale }}
-          className="absolute bottom-0 left-0 -ml-40 -mb-16 w-80 h-80 bg-amber-200/30 rounded-full blur-3xl"
-        />
-        <motion.div
-          style={{ scale: decorScale }}
-          className="absolute top-1/2 left-1/4 w-72 h-72 bg-amber-100/20 rounded-full blur-3xl"
-        />
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/55 to-foreground/15" />
 
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            style={{ y: heroTextY, opacity: heroOpacity }}
-            className="flex flex-col lg:flex-row items-center gap-10"
+        <div className="relative mx-auto w-full max-w-7xl px-6 pb-20 pt-32 lg:px-10">
+          <Link
+            href="/marques"
+            className="link-underline inline-flex items-center gap-2 text-sm text-background/70 transition-opacity hover:text-background"
           >
-            <div className="w-full lg:w-1/2">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <Link
-                  href="/marques"
-                  className="inline-flex items-center text-amber-700 hover:text-amber-900 mb-6 transition-colors"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    className="w-5 h-5 mr-1"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  Retour aux marques
-                </Link>
+            <ArrowLeft className="size-4" />
+            Retour aux marques
+          </Link>
 
-                <div className="flex items-center mb-6">
-                  <div className="h-20 w-20 bg-white rounded-full shadow-md flex items-center justify-center mr-4 overflow-hidden border border-amber-200">
-                    <Image
-                      src={getImageUrl(
-                        content.hero?.logo_image || "/img/Arpin/IMG_0253.jpg"
-                      )}
-                      alt="Logo Arpin"
-                      width={60}
-                      height={60}
-                      className="object-contain"
-                    />
-                  </div>
-                  <h1 className="text-5xl md:text-6xl font-bold text-amber-900 tracking-tight">
-                    {content.hero?.title || "Arpin"}
-                  </h1>
-                </div>
+          <p className="eyebrow mt-10 text-background/55">
+            Maison Arpin · depuis 1817
+          </p>
+          <h1 className="mt-5 max-w-3xl font-serif text-6xl tracking-tight md:text-8xl">
+            {heroTitle}
+          </h1>
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-background/75">
+            {heroSubtitle}
+          </p>
 
-                <div className="mb-8">
-                  {content.hero?.tags?.map((tag: string, index: number) => (
-                    <span
-                      key={index}
-                      className="inline-block bg-amber-200 text-amber-800 text-sm font-medium px-3 py-1 rounded-full mr-2 shadow-sm"
-                    >
-                      {tag}
-                    </span>
-                  )) || (
-                    <>
-                      <span className="inline-block bg-amber-200 text-amber-800 text-sm font-medium px-3 py-1 rounded-full mr-2 shadow-sm">
-                        Tradition
-                      </span>
-                      <span className="inline-block bg-amber-200 text-amber-800 text-sm font-medium px-3 py-1 rounded-full mr-2 shadow-sm">
-                        Artisanat
-                      </span>
-                      <span className="inline-block bg-amber-200 text-amber-800 text-sm font-medium px-3 py-1 rounded-full shadow-sm">
-                        Excellence française
-                      </span>
-                    </>
-                  )}
-                </div>
-
-                <p className="text-xl text-amber-800 mb-8 leading-relaxed">
-                  {content.hero?.subtitle ||
-                    "Marque historique française spécialisée dans les tissus de laine et la confection artisanale de qualité, perpétuant un savoir-faire traditionnel depuis 1817. Chaque création Arpin est le fruit d'un travail minutieux respectant des méthodes ancestrales."}
-                </p>
-
-                <div className="flex flex-wrap gap-4">
-                  <a
-                    href="#devis"
-                    className="inline-flex items-center px-6 py-3 bg-amber-700 hover:bg-amber-800 text-white rounded-lg transition-colors shadow-md"
-                  >
-                    Demander un devis
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5 ml-2"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-                      />
-                    </svg>
-                  </a>
-
-                  <a
-                    href="#catalogue"
-                    className="inline-flex items-center px-6 py-3 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors shadow-sm"
-                  >
-                    Télécharger le catalogue
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5 ml-2"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-                      />
-                    </svg>
-                  </a>
-
-                  <a
-                    href="#histoire"
-                    className="inline-flex items-center px-6 py-3 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors shadow-sm"
-                  >
-                    Découvrir l'histoire
-                  </a>
-                </div>
-              </motion.div>
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="w-full lg:w-1/2"
+          <div className="mt-10 flex flex-wrap gap-4">
+            <Button
+              asChild
+              size="lg"
+              className="bg-background text-foreground hover:bg-background/90"
             >
-              <motion.div
-                style={{ y: heroImageY }}
-                className="relative h-[450px] w-full rounded-xl overflow-hidden shadow-xl"
-              >
-                <Image
-                  src={getImageUrl(content.hero?.main_image || "/img/Arpin/image4.jpeg")}
-                  alt="Collection Arpin - Plaids et textiles en laine de Savoie tissés artisanalement depuis 1817"
-                  fill
-                  className="object-cover"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                <div className="absolute bottom-6 left-6 right-6">
-                  <span className="inline-block bg-amber-100/90 text-amber-900 text-xs font-medium px-3 py-1 rounded-full mb-3 shadow-sm">
-                    Depuis 1817
-                  </span>
-                  <h3 className="text-white font-semibold text-2xl">
-                    Un héritage textile d'exception
-                  </h3>
-                  <p className="text-white/90 mt-2">
-                    Découvrez l'élégance intemporelle de nos créations
-                    artisanales
+              <Link href="#devis">
+                Demander un devis
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="border-background/30 bg-transparent text-background hover:border-background hover:bg-background/10 hover:text-background"
+            >
+              <a href={catalogueHref} download>
+                Catalogue PDF
+                <Download className="size-4" />
+              </a>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Héritage — 1817 */}
+      <section className="bg-background py-24 md:py-32">
+        <div className="mx-auto grid max-w-7xl gap-16 px-6 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:px-10">
+          <div className="max-w-xl">
+            <p className="eyebrow">Notre héritage</p>
+            <h2 className="mt-4 font-serif text-4xl tracking-tight md:text-5xl">
+              Deux siècles de laine, un même geste
+            </h2>
+            <div className="mt-6 space-y-5 leading-relaxed text-muted-foreground">
+              {heritageParagraphs ? (
+                heritageParagraphs.map((paragraph, i) => (
+                  <p key={i}>{paragraph}</p>
+                ))
+              ) : (
+                <>
+                  <p>
+                    Fondée en 1817 dans le village de Séez, la Filature Arpin
+                    perpétue depuis plus de deux cents ans l&apos;art du travail
+                    de la laine. Véritable institution du patrimoine textile
+                    français, elle transforme la laine brute en étoffes
+                    d&apos;exception.
                   </p>
-                </div>
-              </motion.div>
-            </motion.div>
-          </motion.div>
+                  <p>
+                    Des méthodes ancestrales et des gestes précis, transmis de
+                    génération en génération, donnent naissance au fameux Drap de
+                    Bonneval — un tissu dense, reconnu pour sa résistance et sa
+                    chaleur incomparables.
+                  </p>
+                </>
+              )}
+            </div>
+
+            <blockquote className="mt-10 border-l border-border pl-6">
+              <p className="font-serif text-xl leading-relaxed tracking-tight text-foreground">
+                « {heritageQuote} »
+              </p>
+            </blockquote>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="img-zoom relative aspect-[3/4] overflow-hidden border border-border">
+              <SafeImage
+                src="/img/Arpin/image003.jpg"
+                alt="Atelier de tissage Arpin à Séez, en Savoie"
+                fill
+                fallbackLabel="A"
+                className="object-cover grayscale"
+                sizes="(max-width: 1024px) 50vw, 33vw"
+              />
+            </div>
+            <div className="img-zoom relative mt-10 aspect-[3/4] overflow-hidden border border-border">
+              <SafeImage
+                src="/img/Arpin/IMG_0253.jpg"
+                alt="Détail du drap de Bonneval Arpin"
+                fill
+                fallbackLabel="A"
+                className="object-cover grayscale"
+                sizes="(max-width: 1024px) 50vw, 33vw"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Repères chiffrés */}
+        <div className="mx-auto mt-20 max-w-7xl px-6 lg:px-10">
+          <dl className="grid grid-cols-1 gap-px overflow-hidden border border-border bg-border sm:grid-cols-3">
+            {factItems.map(({ value, label }) => (
+              <div key={label} className="bg-background p-10 text-center">
+                <dt className="font-serif text-4xl tracking-tight md:text-5xl">
+                  {value}
+                </dt>
+                <dd className="mt-2 text-sm text-muted-foreground">{label}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 
-      {/* Histoire section améliorée */}
-      <section id="histoire" className="py-24 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <span className="inline-block bg-amber-100 text-amber-800 text-sm font-medium px-3 py-1 rounded-full mb-4">
-              Notre héritage
-            </span>
-            <h2 className="text-4xl font-bold text-amber-900 mb-6">
-              Un savoir-faire transmis depuis des générations
+      {/* Savoir-faire — section sombre */}
+      <section className="bg-foreground py-24 text-background md:py-32">
+        <div className="mx-auto max-w-7xl px-6 lg:px-10">
+          <div className="max-w-xl">
+            <p className="eyebrow text-background/55">Le savoir-faire</p>
+            <h2 className="mt-4 font-serif text-4xl tracking-tight md:text-5xl">
+              De la toison à l&apos;étoffe
             </h2>
-            <p className="text-amber-700 text-xl">
-              Découvrez l'histoire exceptionnelle de la maison Arpin, dernière
-              filature artisanale de Savoie
+            <p className="mt-6 leading-relaxed text-background/70">
+              Chaque drap Arpin naît d&apos;une chaîne d&apos;ateliers maîtrisée
+              de bout en bout, où les machines centenaires côtoient la main des
+              artisans.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-14 items-center">
-            <div>
-              <p className="text-amber-900 text-lg mb-6 leading-relaxed">
-                Fondée en 1817 dans le village de Séez en Savoie, la Filature
-                Arpin perpétue depuis plus de deux siècles l&apos;art du travail
-                de la laine selon des méthodes traditionnelles. Véritable
-                institution du patrimoine textile français, elle transforme la
-                laine brute en étoffes d&apos;exception.
-              </p>
-
-              <p className="text-amber-900 text-lg mb-6 leading-relaxed">
-                Les méthodes ancestrales utilisées, combinées à des gestes
-                précis transmis de génération en génération, donnent naissance à
-                des tissus robustes aux propriétés thermiques exceptionnelles.
-                La draperie savoyarde, le fameux &quot;Drap de Bonneval&quot;,
-                est ainsi reconnue pour sa résistance et sa chaleur
-                incomparables.
-              </p>
-
-              <p className="text-amber-900 text-lg mb-8 leading-relaxed">
-                L&apos;entreprise a su évoluer avec son temps tout en conservant
-                l&apos;essence de son savoir-faire. Aujourd&apos;hui, Arpin
-                propose des collections pour l&apos;habitat et le vêtement qui
-                allient tradition et modernité, perpétuant l&apos;excellence
-                d&apos;un artisanat d&apos;exception.
-              </p>
-
-              <div className="flex items-center p-6 bg-amber-50 rounded-lg shadow-sm">
-                <div className="flex-shrink-0 h-12 w-12 flex items-center justify-center rounded-full bg-amber-100 text-amber-700 mr-4">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"
-                    />
-                  </svg>
-                </div>
-                <p className="text-amber-800 italic font-medium text-lg">
-                  &quot;Le patrimoine vivant d&apos;un savoir-faire unique,
-                  classé au titre des monuments historiques depuis 2005.&quot;
+          <ol className="mt-16 grid grid-cols-1 gap-px overflow-hidden border border-background/15 bg-background/15 sm:grid-cols-2 lg:grid-cols-4">
+            {processSteps.map((step) => (
+              <li key={step.n} className="bg-foreground p-8">
+                <span className="font-serif text-3xl tracking-tight text-background/40">
+                  {step.n}
+                </span>
+                <h3 className="mt-6 font-serif text-xl tracking-tight">
+                  {step.title}
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-background/65">
+                  {step.body}
                 </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-5">
-              <div className="relative h-72 w-full rounded-lg overflow-hidden shadow-lg">
-                <Image
-                  src={getImageUrl("/img/Arpin/image4.jpeg")}
-                  alt="Métier à tisser traditionnel de la filature Arpin - Savoir-faire artisanal savoyard depuis 1817"
-                  fill
-                  className="object-cover hover:scale-105 transition-transform duration-700"
-                />
-              </div>
-              <div className="relative h-72 w-full rounded-lg overflow-hidden shadow-lg mt-10">
-                <Image
-                  src={getImageUrl("/img/Arpin/image003.jpg")}
-                  alt="Atelier de fabrication Arpin à Séez en Savoie - Transformation artisanale de la laine"
-                  fill
-                  className="object-cover hover:scale-105 transition-transform duration-700"
-                />
-              </div>
-              <div className="relative h-72 w-full rounded-lg overflow-hidden shadow-lg">
-                <Image
-                  src={getImageUrl("/img/Arpin/IMG_0253.jpg")}
-                  alt="Détail du drap de Bonneval Arpin - Texture unique de la laine feutrée savoyarde"
-                  fill
-                  className="object-cover hover:scale-105 transition-transform duration-700"
-                />
-              </div>
-              <div className="relative h-72 w-full rounded-lg overflow-hidden shadow-lg mt-10">
-                <Image
-                  src={getImageUrl("/img/Arpin/image4.jpeg")}
-                  alt="Collection de plaids et couvertures Arpin - Textiles de montagne en laine naturelle"
-                  fill
-                  className="object-cover hover:scale-105 transition-transform duration-700"
-                />
-              </div>
-            </div>
-          </div>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 
-      {/* Section Processus de Fabrication - Timeline */}
-      <section className="py-24 bg-gradient-to-b from-white to-amber-50/50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <span className="inline-block bg-amber-100 text-amber-800 text-sm font-medium px-3 py-1 rounded-full mb-4">
-              Notre savoir-faire
-            </span>
-            <h2 className="text-4xl font-bold text-amber-900 mb-6">
-              Le processus de fabrication Arpin
-            </h2>
-            <p className="text-amber-700 text-xl">
-              De la laine brute au produit fini, découvrez les étapes ancestrales
-              qui font l'excellence de nos textiles
+      {/* Galerie de tissus */}
+      <section className="bg-background py-24 md:py-32">
+        <div className="mx-auto max-w-7xl px-6 lg:px-10">
+          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-xl">
+              <p className="eyebrow">La collection</p>
+              <h2 className="mt-4 font-serif text-4xl tracking-tight md:text-5xl">
+                Tissus & pièces d&apos;exception
+              </h2>
+            </div>
+            <p className="max-w-sm leading-relaxed text-muted-foreground">
+              Plaids, couvertures, articles d&apos;habitat et créations
+              sur-mesure : la laine de Savoie déclinée pour la maison comme pour
+              le vêtement.
             </p>
           </div>
 
-          {/* Timeline verticale */}
-          <div className="relative max-w-4xl mx-auto">
-            {/* Ligne centrale */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-amber-200 via-amber-400 to-amber-200 rounded-full" aria-hidden="true" />
-
-            {/* Étapes */}
-            {[
-              {
-                step: 1,
-                title: "Sélection de la laine",
-                description:
-                  "Choix minutieux des toisons de moutons des Alpes pour leur qualité et leur finesse exceptionnelles.",
-                icon: (
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                ),
-              },
-              {
-                step: 2,
-                title: "Lavage et cardage",
-                description:
-                  "Nettoyage délicat de la laine brute puis démêlage des fibres pour les préparer au filage.",
-                icon: (
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                ),
-              },
-              {
-                step: 3,
-                title: "Filage artisanal",
-                description:
-                  "Transformation des fibres en fils solides sur nos métiers historiques, perpétuant un geste centenaire.",
-                icon: (
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                ),
-              },
-              {
-                step: 4,
-                title: "Tissage traditionnel",
-                description:
-                  "Création du tissu sur métiers à navette selon les techniques du Drap de Bonneval.",
-                icon: (
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                  </svg>
-                ),
-              },
-              {
-                step: 5,
-                title: "Foulonnage",
-                description:
-                  "Feutrage du tissu dans nos foulons à eau pour lui donner sa densité et sa résistance caractéristiques.",
-                icon: (
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                  </svg>
-                ),
-              },
-              {
-                step: 6,
-                title: "Finitions",
-                description:
-                  "Brossage, tonte et contrôle qualité rigoureux pour des produits d'exception prêts à traverser le temps.",
-                icon: (
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                  </svg>
-                ),
-              },
-            ].map((item, index) => (
-              <motion.div
-                key={item.step}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={`relative flex items-center mb-12 ${
-                  index % 2 === 0 ? "flex-row" : "flex-row-reverse"
-                }`}
+          <div className="mt-16 grid grid-cols-2 gap-4 md:grid-cols-3">
+            {galleryImages.map((item, i) => (
+              <div
+                key={(item.src ?? "") + i}
+                className="img-zoom relative aspect-square overflow-hidden border border-border"
               >
-                {/* Contenu */}
-                <div className={`w-5/12 ${index % 2 === 0 ? "text-right pr-8" : "text-left pl-8"}`}>
-                  <div className={`bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow ${
-                    index % 2 === 0 ? "ml-auto" : "mr-auto"
-                  }`}>
-                    <span className="text-amber-600 font-bold text-sm">Étape {item.step}</span>
-                    <h3 className="text-xl font-bold text-amber-900 mt-1 mb-2">{item.title}</h3>
-                    <p className="text-amber-700">{item.description}</p>
-                  </div>
-                </div>
-
-                {/* Point central */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center text-white shadow-lg z-10">
-                  {item.icon}
-                </div>
-
-                {/* Espace vide */}
-                <div className="w-5/12" />
-              </motion.div>
+                <SafeImage
+                  src={item.src ?? ""}
+                  alt={item.alt ?? ""}
+                  fill
+                  fallbackLabel="A"
+                  className="object-cover grayscale"
+                  sizes="(max-width: 768px) 50vw, 33vw"
+                />
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Section Catalogue PDF améliorée */}
-      <section
-        id="catalogue"
-        className="py-24 bg-gradient-to-b from-amber-50/60 to-amber-100/40"
-      >
-        <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-16">
-              <span className="inline-block bg-amber-100 text-amber-800 text-sm font-medium px-3 py-1 rounded-full mb-4">
-                Notre catalogue
-              </span>
-              <h2 className="text-4xl font-bold text-amber-900 mb-6">
-                Découvrez nos créations exclusives
-              </h2>
-              <p className="text-amber-700 text-xl mb-8 max-w-3xl mx-auto">
-                Explorez notre sélection de produits artisanaux en laine, conçus
-                selon des techniques traditionnelles et un savoir-faire
-                d'exception
-              </p>
-              <a
-                href="/api/download?file=Catalogue sur Mesure Arpin 2022.pdf"
-                download="Catalogue sur Mesure Arpin 2022.pdf"
-                className="inline-flex items-center px-8 py-4 bg-amber-700 hover:bg-amber-800 text-white rounded-lg transition-colors shadow-md mb-12 text-lg"
-              >
-                Télécharger le catalogue complet
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5 ml-2"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-                  />
-                </svg>
-              </a>
-            </div>
-
-            <div className="w-full bg-white rounded-xl shadow-xl overflow-hidden relative">
-              <div className="absolute inset-0 bg-amber-50/30 -z-10"></div>
-              <div className="absolute top-4 right-4 z-20">
-                <a
-                  href="/api/download?file=Catalogue sur Mesure Arpin 2022.pdf"
-                  download="Catalogue sur Mesure Arpin 2022.pdf"
-                  className="inline-flex items-center px-4 py-2 bg-amber-700 hover:bg-amber-800 text-white rounded-lg transition-colors shadow-md text-sm"
-                >
-                  Télécharger le PDF
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-4 h-4 ml-2"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
-                    />
-                  </svg>
-                </a>
-              </div>
-              <div className="relative w-full" style={{ height: "70vh" }}>
-                <iframe
-                  src="/Catalogue sur Mesure Arpin 2022.pdf"
-                  className="w-full h-full"
-                  title="Catalogue sur Mesure Arpin 2022"
-                  allowFullScreen
-                ></iframe>
-              </div>
-            </div>
-
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-              {produits.slice(0, 3).map((produit) => (
-                <div
-                  key={produit.id}
-                  className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
-                >
-                  <div className="relative h-40 w-full mb-4 rounded-md overflow-hidden">
-                    <Image
-                      src={getImageUrl(produit.image)}
-                      alt={produit.alt}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <h3 className="text-lg font-medium text-amber-900 mb-2">
-                    {produit.nom}
-                  </h3>
-                  <a
-                    href="#devis"
-                    className="inline-flex items-center text-amber-700 hover:text-amber-900 transition-colors"
-                    onClick={() =>
-                      setFormData((prev) => ({ ...prev, produit: produit.nom }))
-                    }
-                  >
-                    Demander un devis
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      className="w-5 h-5 ml-1"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M5.22 14.78a.75.75 0 001.06 0l7.22-7.22v5.69a.75.75 0 001.5 0v-7.5a.75.75 0 00-.75-.75h-7.5a.75.75 0 000 1.5h5.69l-7.22 7.22a.75.75 0 000 1.06z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </a>
-                </div>
-              ))}
-            </div>
-
-            {/* Section catalogue mobilier */}
-            <div className="mt-16 bg-gradient-to-br from-amber-100/50 to-amber-50/50 rounded-xl p-8">
-              <div className="text-center mb-8">
-                <span className="inline-block bg-amber-200 text-amber-800 text-sm font-medium px-3 py-1 rounded-full mb-4">
-                  Nouveauté 2023
-                </span>
-                <h3 className="text-3xl font-bold text-amber-900 mb-4">
-                  Catalogue Mobilier
-                </h3>
-                <p className="text-amber-700 text-lg mb-6 max-w-2xl mx-auto">
-                  Découvrez notre nouvelle collection de mobilier artisanal en laine, 
-                  alliant tradition et design contemporain
-                </p>
-                <div className="flex flex-wrap gap-4 justify-center">
-                  <a
-                    href="/api/download?file=ML 2023 Novedades News Nouveautes.pdf"
-                    download="ML 2023 Novedades News Nouveautes.pdf"
-                    className="inline-flex items-center px-6 py-3 bg-amber-700 hover:bg-amber-800 text-white rounded-lg transition-colors shadow-md"
-                  >
-                    Télécharger le catalogue mobilier 2023
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5 ml-2"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-                      />
-                    </svg>
-                  </a>
-                  <a
-                    href="#devis"
-                    className="inline-flex items-center px-6 py-3 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors shadow-sm"
-                    onClick={() =>
-                      setFormData((prev) => ({ ...prev, produit: "Mobilier - Collection 2023" }))
-                    }
-                  >
-                    Demander un devis mobilier
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5 ml-2"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-                      />
-                    </svg>
-                  </a>
-                </div>
-              </div>
-
-              {/* Aperçu du PDF mobilier */}
-              <div className="mt-8 bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="relative w-full" style={{ height: "400px" }}>
-                  <iframe
-                    src="/ML 2023 Novedades News Nouveautes.pdf"
-                    className="w-full h-full"
-                    title="Catalogue Mobilier Arpin - Nouveautés 2023"
-                    allowFullScreen
-                  ></iframe>
-                </div>
-                <div className="p-4 bg-amber-50 border-t border-amber-200">
-                  <p className="text-amber-800 text-sm text-center">
-                    Cliquez sur le bouton de téléchargement pour consulter le catalogue complet
-                  </p>
-                </div>
-              </div>
-            </div>
+      {/* Catalogue / PDF */}
+      <section className="bg-secondary py-24 md:py-32">
+        <div className="mx-auto grid max-w-7xl gap-14 px-6 lg:grid-cols-2 lg:items-center lg:px-10">
+          <div className="img-zoom relative aspect-[4/5] overflow-hidden border border-border">
+            <SafeImage
+              src="/img/Arpin/IMG_1522.jpeg"
+              alt="Catalogue des créations sur-mesure Arpin"
+              fill
+              fallbackLabel="A"
+              className="object-cover grayscale"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
           </div>
-        </div>
-      </section>
 
-      {/* Galerie d'images améliorée */}
-      <section className="py-24 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <span className="inline-block bg-amber-100 text-amber-800 text-sm font-medium px-3 py-1 rounded-full mb-4">
-              Galerie
-            </span>
-            <h2 className="text-4xl font-bold text-amber-900 mb-6">
-              Nos créations en images
+          <div className="max-w-lg">
+            <p className="eyebrow">Le catalogue</p>
+            <h2 className="mt-4 font-serif text-4xl tracking-tight md:text-5xl">
+              Découvrez les créations sur-mesure
             </h2>
-            <p className="text-amber-700 text-xl">
-              Découvrez la beauté et la finesse de nos produits artisanaux
+            <p className="mt-6 leading-relaxed text-muted-foreground">
+              Explorez l&apos;ensemble des pièces Arpin, leurs coloris et leurs
+              finitions dans notre catalogue complet. Idéal pour préparer une
+              demande de devis ou un projet personnalisé.
+            </p>
+
+            <div className="mt-10">
+              <Button asChild size="lg">
+                <a href={catalogueHref} download>
+                  Télécharger le catalogue (PDF)
+                  <Download className="size-4" />
+                </a>
+              </Button>
+            </div>
+
+            <p className="mt-6 text-sm text-muted-foreground">
+              Catalogue sur-mesure Arpin · format PDF
             </p>
           </div>
         </div>
-        <ImageGallery imageFolderPath="/img/Arpin/" marqueNom="Arpin" />
       </section>
 
-      {/* Section devis améliorée */}
-      <section id="devis" className="py-24 bg-amber-50 relative">
-        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-white to-transparent"></div>
-        <div className="absolute inset-0 bg-[url('/img/Arpin/texture-pattern.png')] opacity-5"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-            <div className="flex flex-col lg:flex-row">
-              <div className="w-full lg:w-1/2 p-8 lg:p-12">
-                <span className="inline-block bg-amber-100 text-amber-800 text-sm font-medium px-3 py-1 rounded-full mb-4">
-                  Contact
-                </span>
-                <h2 className="text-3xl font-bold text-amber-900 mb-6">
-                  Demande de devis personnalisé
-                </h2>
-                <p className="text-amber-700 mb-8 text-lg">
-                  Vous souhaitez obtenir un devis pour un article Arpin ?
-                  Remplissez le formulaire ci-dessous et nous vous répondrons
-                  dans les plus brefs délais.
-                </p>
+      {/* Demande de devis */}
+      <section id="devis" className="bg-background py-24 md:py-32">
+        <div className="mx-auto grid max-w-7xl gap-16 px-6 lg:grid-cols-[1fr_1.1fr] lg:px-10">
+          <div className="max-w-md">
+            <p className="eyebrow">Contact</p>
+            <h2 className="mt-4 font-serif text-4xl tracking-tight md:text-5xl">
+              Demander un devis
+            </h2>
+            <p className="mt-6 leading-relaxed text-muted-foreground">
+              Une pièce vous intéresse ou vous avez un projet sur-mesure ?
+              Décrivez-nous votre besoin : notre équipe vous répond dans les
+              meilleurs délais.
+            </p>
 
-                {formSubmitted ? (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-16 h-16 text-green-500 mx-auto mb-4"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-
-                    <h3 className="text-2xl font-medium text-green-800 mb-4">
-                      Demande envoyée avec succès !
-                    </h3>
-                    <p className="text-green-700 mb-6 text-lg">
-                      Nous avons bien reçu votre demande de devis. Notre équipe
-                      vous contactera très prochainement.
-                    </p>
-                    <Button
-                      onClick={() => {
-                        setFormSubmitted(false);
-                        setFormData({
-                          nom: "",
-                          email: "",
-                          telephone: "",
-                          message: "",
-                          produit: "",
-                          acceptConditions: false,
-                        });
-                      }}
-                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 text-lg"
-                    >
-                      Faire une nouvelle demande
-                    </Button>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label
-                          htmlFor="nom"
-                          className="block text-sm font-medium text-amber-900 mb-1"
-                        >
-                          Nom complet *
-                        </label>
-                        <input
-                          type="text"
-                          id="nom"
-                          name="nom"
-                          value={formData.nom}
-                          onChange={handleChange}
-                          className="w-full px-4 py-3 border border-amber-200 rounded-lg bg-amber-50/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500"
-                          required
-                        />
-                      </div>
-
-                      <div>
-                        <label
-                          htmlFor="email"
-                          className="block text-sm font-medium text-amber-900 mb-1"
-                        >
-                          Email *
-                        </label>
-                        <input
-                          type="email"
-                          id="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleChange}
-                          className="w-full px-4 py-3 border border-amber-200 rounded-lg bg-amber-50/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="telephone"
-                        className="block text-sm font-medium text-amber-900 mb-1"
-                      >
-                        Téléphone
-                      </label>
-                      <input
-                        type="tel"
-                        id="telephone"
-                        name="telephone"
-                        value={formData.telephone}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border border-amber-200 rounded-lg bg-amber-50/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="produit"
-                        className="block text-sm font-medium text-amber-900 mb-1"
-                      >
-                        Produit qui vous intéresse
-                      </label>
-                      <select
-                        id="produit"
-                        name="produit"
-                        value={formData.produit}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border border-amber-200 rounded-lg bg-amber-50/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500"
-                      >
-                        <option value="">Sélectionnez un produit</option>
-                        {produits.map((produit) => (
-                          <option key={produit.id} value={produit.nom}>
-                            {produit.nom}
-                          </option>
-                        ))}
-                        <option value="autre">
-                          Autre (préciser dans le message)
-                        </option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="message"
-                        className="block text-sm font-medium text-amber-900 mb-1"
-                      >
-                        Votre message *
-                      </label>
-                      <textarea
-                        id="message"
-                        name="message"
-                        rows={5}
-                        value={formData.message}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border border-amber-200 rounded-lg bg-amber-50/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500"
-                        required
-                        placeholder="Décrivez votre projet ou posez-nous vos questions..."
-                      ></textarea>
-                    </div>
-
-                    <div className="flex items-start">
-                      <div className="flex items-center h-5">
-                        <input
-                          id="acceptConditions"
-                          name="acceptConditions"
-                          type="checkbox"
-                          checked={formData.acceptConditions}
-                          onChange={handleChange}
-                          className="h-4 w-4 text-amber-700 border-amber-300 rounded focus:ring-amber-500"
-                          required
-                        />
-                      </div>
-                      <label
-                        htmlFor="acceptConditions"
-                        className="ml-2 block text-sm text-amber-700"
-                      >
-                        J&apos;accepte les conditions générales et la politique
-                        de confidentialité *
-                      </label>
-                    </div>
-
-                    {formError && (
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
-                        {formError}
-                      </div>
-                    )}
-
-                    <Button
-                      type="submit"
-                      className="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium py-3 text-lg"
-                    >
-                      Envoyer ma demande de devis
-                    </Button>
-
-                    <p className="text-xs text-amber-700 mt-4">
-                      * Champs obligatoires. Nous nous engageons à respecter la
-                      confidentialité de vos données.
-                    </p>
-                  </form>
-                )}
+            <dl className="mt-10 space-y-0 border-t border-border">
+              <div className="flex items-center justify-between border-b border-border py-4">
+                <dt className="text-sm text-muted-foreground">Téléphone</dt>
+                <dd className="text-sm">
+                  <a
+                    href={telHref}
+                    className="link-underline transition-colors hover:text-foreground"
+                  >
+                    {phone}
+                  </a>
+                </dd>
               </div>
-
-              <div className="w-full lg:w-1/2 bg-gradient-to-br from-amber-50 to-amber-100/80 p-8 lg:p-12 relative overflow-hidden">
-                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-amber-200/50 rounded-full blur-2xl"></div>
-                <div className="absolute bottom-0 left-0 -ml-10 -mb-10 w-48 h-48 bg-amber-300/30 rounded-full blur-2xl"></div>
-
-                <div className="relative z-10">
-                  <h3 className="text-2xl font-bold text-amber-900 mb-8">
-                    Pourquoi choisir Arpin ?
-                  </h3>
-
-                  <div className="space-y-8">
-                    <div className="flex bg-white/80 p-5 rounded-lg shadow-sm">
-                      <div className="flex-shrink-0 h-14 w-14 flex items-center justify-center rounded-full bg-amber-200 text-amber-800 mr-5">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="w-7 h-7"
-                          aria-hidden="true"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <h4 className="text-lg font-medium text-amber-900 mb-2">
-                          Savoir-faire unique
-                        </h4>
-                        <p className="text-amber-800">
-                          Plus de 200 ans d'expertise dans la confection de
-                          textiles d'exception, avec des méthodes transmises de
-                          génération en génération.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex bg-white/80 p-5 rounded-lg shadow-sm">
-                      <div className="flex-shrink-0 h-14 w-14 flex items-center justify-center rounded-full bg-amber-200 text-amber-800 mr-5">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="w-7 h-7"
-                          aria-hidden="true"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <h4 className="text-lg font-medium text-amber-900 mb-2">
-                          Qualité premium
-                        </h4>
-                        <p className="text-amber-800">
-                          Des matières premières sélectionnées avec soin pour
-                          des produits durables et des finitions impeccables.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex bg-white/80 p-5 rounded-lg shadow-sm">
-                      <div className="flex-shrink-0 h-14 w-14 flex items-center justify-center rounded-full bg-amber-200 text-amber-800 mr-5">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="w-7 h-7"
-                          aria-hidden="true"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <h4 className="text-lg font-medium text-amber-900 mb-2">
-                          Fabrication française
-                        </h4>
-                        <p className="text-amber-800">
-                          Tous nos produits sont fabriqués dans notre atelier
-                          historique en Savoie, soutenant l'artisanat local.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-12 p-6 bg-white rounded-lg shadow-md">
-                    <h4 className="text-lg font-medium text-amber-900 mb-3">
-                      Besoin d'aide ?
-                    </h4>
-                    <p className="text-amber-800 mb-4">
-                      Notre équipe est à votre disposition pour toute question
-                      ou conseil personnalisé.
-                    </p>
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-12 w-12 flex items-center justify-center rounded-full bg-amber-100 text-amber-700 mr-4">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="w-6 h-6"
-                          aria-hidden="true"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-amber-900 font-medium text-lg">
-                          +33 (0)6 81 73 66 47
-                        </p>
-                        <p className="text-amber-700">
-                          Du lundi au Dimanche, 10h-19h
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div className="flex items-center justify-between border-b border-border py-4">
+                <dt className="text-sm text-muted-foreground">E-mail</dt>
+                <dd className="text-sm">
+                  <a
+                    href={`mailto:${email}`}
+                    className="link-underline break-all transition-colors hover:text-foreground"
+                  >
+                    {email}
+                  </a>
+                </dd>
               </div>
-            </div>
+              <div className="flex items-center justify-between border-b border-border py-4">
+                <dt className="text-sm text-muted-foreground">Boutique</dt>
+                <dd className="text-sm text-right">{boutique}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div className="border border-border bg-card p-8 md:p-10">
+            <ArpinDevisForm />
           </div>
         </div>
       </section>

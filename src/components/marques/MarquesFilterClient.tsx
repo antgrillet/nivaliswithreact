@@ -1,338 +1,330 @@
 "use client";
 
-import {
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-  useTransition,
-} from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { MarqueData } from "@/app/utils/types";
-import debounce from "lodash.debounce";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Star } from "lucide-react";
+import BrandCard from "@/components/BrandCard";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import type { MarqueData } from "@/lib/types";
 
 interface MarquesFilterClientProps {
   marques: MarqueData[];
 }
 
+const ALL_TYPES = "Tous";
+const ALL_TAGS = "Toutes";
+const PAGE_SIZE = 12;
+const FAVORITES_KEY = "nivalis:marques:favoris";
+
+/**
+ * Filtre + grille des marques (esprit galerie monochrome).
+ * Reçoit toutes les marques en props : aucune requête côté client.
+ * Recherche debounced, filtres tag/type en boutons texte (actif souligné),
+ * favoris persistés en localStorage, pagination « voir plus ».
+ */
 export default function MarquesFilterClient({
   marques,
 }: MarquesFilterClientProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [activeTag, setActiveTag] = useState(ALL_TAGS);
+  const [activeType, setActiveType] = useState(ALL_TYPES);
+  const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  // États
-  const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
-  const [activeFilter, setActiveFilter] = useState(
-    searchParams.get("tag") || "Toutes"
-  );
-  const [activeType, setActiveType] = useState(
-    searchParams.get("type") || "Tous types"
-  );
-  const [filtersVisible, setFiltersVisible] = useState(false);
-  const [filteredCount, setFilteredCount] = useState(marques.length);
+  // Recherche debounced (300 ms) sans dépendance externe.
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setSearch(searchInput), 300);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [searchInput]);
 
-  // Extraction des tags et types uniques (useMemo pour optimiser)
-  const allTags = useMemo(
-    () => ["Toutes", ...new Set(marques.flatMap((marque) => marque.tags))],
+  // Favoris : lecture initiale puis persistance.
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(FAVORITES_KEY);
+      if (stored) setFavorites(JSON.parse(stored));
+    } catch {
+      // Stockage indisponible ou corrompu : on ignore silencieusement.
+    }
+  }, []);
+
+  const toggleFavorite = useCallback((nom: string) => {
+    setFavorites((prev) => {
+      const next = prev.includes(nom)
+        ? prev.filter((n) => n !== nom)
+        : [...prev, nom];
+      try {
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
+      } catch {
+        // Persistance best-effort.
+      }
+      return next;
+    });
+  }, []);
+
+  const tags = useMemo(
+    () => [
+      ALL_TAGS,
+      ...Array.from(new Set(marques.flatMap((m) => m.tags ?? []))).sort(
+        (a, b) => a.localeCompare(b, "fr")
+      ),
+    ],
     [marques]
   );
 
-  const allTypes = useMemo(
-    () => ["Tous types", ...new Set(marques.map((marque) => marque.type))],
+  const types = useMemo(
+    () => [
+      ALL_TYPES,
+      ...Array.from(
+        new Set(marques.map((m) => m.type).filter(Boolean))
+      ).sort((a, b) => a.localeCompare(b, "fr")),
+    ],
     [marques]
   );
 
-  // Débouncer la recherche
-  const debouncedUpdateUrl = useCallback(
-    debounce((newParams: URLSearchParams) => {
-      startTransition(() => {
-        router.push(`?${newParams.toString()}`, { scroll: false });
-      });
-    }, 300),
-    [router]
-  );
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return marques.filter((m) => {
+      if (activeTag !== ALL_TAGS && !(m.tags ?? []).includes(activeTag))
+        return false;
+      if (activeType !== ALL_TYPES && m.type !== activeType) return false;
+      if (onlyFavorites && !favorites.includes(m.nom)) return false;
+      if (term) {
+        const haystack = [m.nom, m.displayName, m.description, m.type, ...(m.tags ?? [])]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        if (!haystack.includes(term)) return false;
+      }
+      return true;
+    });
+  }, [marques, search, activeTag, activeType, onlyFavorites, favorites]);
 
-  // Filtrage pour le comptage
+  // Réinitialise la pagination quand le résultat change.
   useEffect(() => {
-    let results = marques;
+    setVisibleCount(PAGE_SIZE);
+  }, [search, activeTag, activeType, onlyFavorites]);
 
-    if (activeFilter !== "Toutes") {
-      results = results.filter((marque) => marque.tags.includes(activeFilter));
-    }
-
-    if (activeType !== "Tous types") {
-      results = results.filter((marque) => marque.type === activeType);
-    }
-
-    if (searchTerm.trim() !== "") {
-      const term = searchTerm.toLowerCase();
-      results = results.filter(
-        (marque) =>
-          marque.nom.toLowerCase().includes(term) ||
-          marque.description.toLowerCase().includes(term) ||
-          marque.type.toLowerCase().includes(term)
-      );
-    }
-
-    setFilteredCount(results.length);
-  }, [searchTerm, activeFilter, activeType, marques]);
-
-  // Mettre à jour l'URL lorsque les filtres changent
-  useEffect(() => {
-    const params = new URLSearchParams();
-
-    if (searchTerm) params.set("q", searchTerm);
-    if (activeFilter !== "Toutes") params.set("tag", activeFilter);
-    if (activeType !== "Tous types") params.set("type", activeType);
-
-    debouncedUpdateUrl(params);
-  }, [searchTerm, activeFilter, activeType, debouncedUpdateUrl]);
-
-  // Réinitialiser les filtres
-  const resetFilters = useCallback(() => {
-    setSearchTerm("");
-    setActiveFilter("Toutes");
-    setActiveType("Tous types");
-    router.push("/marques", { scroll: false });
-  }, [router]);
-
-  // Vérifier si des filtres sont actifs
   const hasActiveFilters =
-    activeFilter !== "Toutes" ||
-    activeType !== "Tous types" ||
-    searchTerm !== "";
+    activeTag !== ALL_TAGS ||
+    activeType !== ALL_TYPES ||
+    onlyFavorites ||
+    search !== "";
+
+  const resetFilters = useCallback(() => {
+    setSearchInput("");
+    setSearch("");
+    setActiveTag(ALL_TAGS);
+    setActiveType(ALL_TYPES);
+    setOnlyFavorites(false);
+  }, []);
+
+  const visible = filtered.slice(0, visibleCount);
 
   return (
-    <>
-      {/* Barre de filtres collante */}
-      <div className="bg-white border-y border-amber-100 py-4 sticky top-16 z-30 shadow-sm">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-amber-900">
-              {filteredCount}{" "}
-              {filteredCount > 1 ? "marques trouvées" : "marque trouvée"}
-              {isPending && (
-                <span className="ml-2 text-amber-500 animate-pulse">
-                  Mise à jour...
-                </span>
-              )}
-            </h2>
-            <button
-              onClick={() => setFiltersVisible(!filtersVisible)}
-              className="flex items-center gap-2 px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-all"
-              aria-expanded={filtersVisible}
-              aria-controls="filter-panel"
+    <section className="bg-background pb-24 md:pb-32">
+      <div className="mx-auto max-w-7xl px-6 lg:px-10">
+        {/* Barre de contrôle */}
+        <div className="border-b border-border pb-10">
+          {/* Recherche */}
+          <div className="max-w-md">
+            <label htmlFor="marque-search" className="eyebrow">
+              Rechercher
+            </label>
+            <input
+              id="marque-search"
+              type="search"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Nom, univers, catégorie…"
+              autoComplete="off"
+              className="mt-3 w-full border-b border-border bg-transparent pb-2 font-serif text-2xl tracking-tight text-foreground placeholder:text-muted-foreground/50 focus:border-foreground focus:outline-none"
+            />
+          </div>
+
+          {/* Filtres par type */}
+          <div className="mt-10">
+            <p className="eyebrow">Univers</p>
+            <div
+              role="group"
+              aria-label="Filtrer par univers"
+              className="mt-4 flex flex-wrap gap-x-6 gap-y-3"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-5 h-5"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"
-                />
-              </svg>
-              Filtrer
-              {hasActiveFilters && (
-                <span className="text-xs bg-amber-700 text-white px-2 py-0.5 rounded-full ml-1">
-                  Actif
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Section filtres dépliable */}
-      <AnimatePresence>
-        {filtersVisible && (
-          <motion.section
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="bg-white border-b border-amber-100 overflow-hidden z-20"
-            id="filter-panel"
-          >
-            <div className="container mx-auto px-4 py-6">
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="flex flex-col md:flex-row gap-6 justify-between items-start"
-              >
-                {/* Barre de recherche améliorée */}
-                <div className="w-full md:w-1/3">
-                  <label
-                    htmlFor="search-input"
-                    className="block text-amber-900 text-sm font-medium mb-2"
-                  >
-                    Rechercher
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        className="w-5 h-5 text-amber-500"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <input
-                      id="search-input"
-                      type="search"
-                      placeholder="Rechercher une marque..."
-                      className="block w-full pl-10 pr-4 py-3 border border-amber-200 rounded-lg bg-amber-50/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                {/* Filtres améliorés */}
-                <div className="flex flex-col lg:flex-row gap-6 w-full md:w-2/3">
-                  <div className="w-full lg:w-1/2">
-                    <label className="block text-amber-900 text-sm font-medium mb-2">
-                      Filtrer par catégorie
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {allTags.map((tag) => (
-                        <button
-                          key={tag}
-                          onClick={() => setActiveFilter(tag)}
-                          className={`px-3 py-1.5 rounded-full text-sm transition-all ${
-                            activeFilter === tag
-                              ? "bg-amber-700 text-amber-50 shadow-md"
-                              : "bg-amber-100 text-amber-800 hover:bg-amber-200"
-                          }`}
-                        >
-                          {tag}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="w-full lg:w-1/2">
-                    <label
-                      htmlFor="type-select"
-                      className="block text-amber-900 text-sm font-medium mb-2"
-                    >
-                      Filtrer par type
-                    </label>
-                    <select
-                      id="type-select"
-                      value={activeType}
-                      onChange={(e) => setActiveType(e.target.value)}
-                      className="block w-full py-2 px-3 border border-amber-200 rounded-lg bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all"
-                    >
-                      {allTypes.map((type) => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Actions des filtres */}
-              {hasActiveFilters && (
-                <div className="flex justify-end mt-4">
+              {types.map((type) => {
+                const isActive = activeType === type;
+                return (
                   <button
-                    onClick={resetFilters}
-                    className="text-sm text-amber-700 hover:text-amber-900 flex items-center"
+                    key={type}
+                    type="button"
+                    aria-pressed={isActive}
+                    onClick={() => setActiveType(type)}
+                    className={cn(
+                      "link-underline pb-0.5 text-sm tracking-wide transition-opacity",
+                      isActive
+                        ? "bg-[length:100%_1px] text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      className="w-4 h-4 mr-1"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    Réinitialiser les filtres
+                    {type}
                   </button>
-                </div>
-              )}
+                );
+              })}
             </div>
-          </motion.section>
-        )}
-      </AnimatePresence>
+          </div>
 
-      {/* Bandeau de filtres actifs */}
-      {hasActiveFilters && !filtersVisible && (
-        <div className="bg-amber-50 border-b border-amber-100 py-2 px-4">
-          <div className="container mx-auto">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm text-amber-800">Filtres actifs:</span>
+          {/* Filtres par catégorie / tag */}
+          {tags.length > 1 ? (
+            <div className="mt-8">
+              <p className="eyebrow">Catégorie</p>
+              <div
+                role="group"
+                aria-label="Filtrer par catégorie"
+                className="mt-4 flex flex-wrap gap-x-6 gap-y-3"
+              >
+                {tags.map((tag) => {
+                  const isActive = activeTag === tag;
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      aria-pressed={isActive}
+                      onClick={() => setActiveTag(tag)}
+                      className={cn(
+                        "link-underline pb-0.5 text-sm tracking-wide transition-opacity",
+                        isActive
+                          ? "bg-[length:100%_1px] text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {tag}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
 
-              {searchTerm && (
-                <span className="inline-flex items-center text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full">
-                  Recherche: {searchTerm}
-                  <button
-                    onClick={() => setSearchTerm("")}
-                    className="ml-1 text-amber-700 hover:text-amber-900"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-
-              {activeFilter !== "Toutes" && (
-                <span className="inline-flex items-center text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full">
-                  Catégorie: {activeFilter}
-                  <button
-                    onClick={() => setActiveFilter("Toutes")}
-                    className="ml-1 text-amber-700 hover:text-amber-900"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-
-              {activeType !== "Tous types" && (
-                <span className="inline-flex items-center text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full">
-                  Type: {activeType}
-                  <button
-                    onClick={() => setActiveType("Tous types")}
-                    className="ml-1 text-amber-700 hover:text-amber-900"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-
+          {/* Résumé + favoris + reset */}
+          <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
+            <p className="text-sm text-muted-foreground" aria-live="polite">
+              {filtered.length}{" "}
+              {filtered.length > 1 ? "marques affichées" : "marque affichée"}
+            </p>
+            <div className="flex items-center gap-6">
               <button
-                onClick={resetFilters}
-                className="ml-auto text-xs text-amber-700 hover:text-amber-900 flex items-center"
+                type="button"
+                aria-pressed={onlyFavorites}
+                onClick={() => setOnlyFavorites((v) => !v)}
+                className={cn(
+                  "link-underline inline-flex items-center gap-2 pb-0.5 text-sm tracking-wide transition-opacity",
+                  onlyFavorites
+                    ? "bg-[length:100%_1px] text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
               >
-                Tout réinitialiser
+                <Star
+                  className={cn("size-4", onlyFavorites && "fill-current")}
+                  aria-hidden="true"
+                />
+                Favoris
+                {favorites.length > 0 ? ` (${favorites.length})` : ""}
               </button>
+              {hasActiveFilters ? (
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="link-underline pb-0.5 text-sm tracking-wide text-muted-foreground transition-opacity hover:text-foreground"
+                >
+                  Réinitialiser
+                </button>
+              ) : null}
             </div>
           </div>
         </div>
-      )}
-    </>
+
+        {/* Grille / état vide */}
+        {visible.length > 0 ? (
+          <>
+            <div className="mt-16 grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-3 lg:grid-cols-4">
+              {visible.map((marque, i) => {
+                const isFavorite = favorites.includes(marque.nom);
+                const label = marque.displayName?.trim() || marque.nom;
+                return (
+                  <div key={marque.nom} className="group/card relative">
+                    <BrandCard
+                      nom={marque.nom}
+                      displayName={marque.displayName}
+                      type={marque.type}
+                      mainImage={marque.mainImage}
+                      description={marque.description}
+                      logo={marque.logo}
+                      priority={i < 4}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => toggleFavorite(marque.nom)}
+                      aria-pressed={isFavorite}
+                      aria-label={
+                        isFavorite
+                          ? `Retirer ${label} des favoris`
+                          : `Ajouter ${label} aux favoris`
+                      }
+                      className={cn(
+                        "absolute right-3 top-3 z-10 flex size-9 items-center justify-center border bg-background/85 backdrop-blur-sm transition-all duration-300",
+                        isFavorite
+                          ? "border-foreground text-foreground opacity-100"
+                          : "border-border text-muted-foreground opacity-0 hover:text-foreground focus-visible:opacity-100 group-hover/card:opacity-100"
+                      )}
+                    >
+                      <Star
+                        className={cn("size-4", isFavorite && "fill-current")}
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            {visibleCount < filtered.length ? (
+              <div className="mt-20 flex justify-center">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    setVisibleCount((c) => c + PAGE_SIZE)
+                  }
+                >
+                  Voir plus de marques
+                </Button>
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <div className="mt-24 border-t border-border pt-24 text-center">
+            <p className="font-serif text-2xl tracking-tight text-foreground">
+              Aucune marque ne correspond
+            </p>
+            <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
+              Affinez votre recherche ou réinitialisez les filtres pour
+              retrouver l&apos;ensemble de la sélection.
+            </p>
+            {hasActiveFilters ? (
+              <Button
+                variant="outline"
+                onClick={resetFilters}
+                className="mt-8"
+              >
+                Réinitialiser les filtres
+              </Button>
+            ) : null}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

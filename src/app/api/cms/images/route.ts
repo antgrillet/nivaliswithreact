@@ -1,5 +1,6 @@
 import { put, del, list } from '@vercel/blob';
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { query } from "@/lib/db";
 import { auth } from "@/lib/auth";
 
@@ -122,6 +123,7 @@ export async function POST(request: NextRequest) {
       [logo, mainImage, images, marque]
     );
 
+    revalidateTag("marques", "max");
     return NextResponse.json({
       success: true,
       url: blob.url,
@@ -202,6 +204,7 @@ export async function DELETE(request: NextRequest) {
       [logo, mainImage, images, marqueName]
     );
 
+    revalidateTag("marques", "max");
     return NextResponse.json({ success: true, marque: updatedRows[0] });
   } catch (error) {
     console.error('Delete error:', error);
