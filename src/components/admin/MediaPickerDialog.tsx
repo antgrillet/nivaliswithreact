@@ -1,28 +1,38 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { UploadCloud, Check, Loader2 } from "lucide-react";
+import { UploadCloud, Check, Loader2, Film } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { SafeImage } from "@/components/SafeImage";
 import { useBlobList } from "@/hooks/admin/useBlobList";
 import { uploadToBlob, type UploadPayload } from "@/lib/admin/upload";
 import { cn } from "@/lib/utils";
 
+type Accept = "image" | "video" | "all";
+
 interface MediaPickerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Appelé avec l'URL Blob choisie ou fraîchement uploadée. */
-  onSelect: (url: string) => void;
+  /** Sélection unique (mode par défaut). */
+  onSelect?: (url: string) => void;
+  /** Sélection multiple (quand `multiple`). */
+  onSelectMany?: (urls: string[]) => void;
+  /** Active la sélection / le téléversement multiple. */
+  multiple?: boolean;
+  /** Types acceptés (filtre l'input ET la médiathèque). */
+  accept?: Accept;
   /** Préfixe de stockage pour les uploads (ex : `marques/Nike/gallery`). */
   uploadPrefix?: string;
   /** Préfixe de filtrage de la médiathèque (vide = tout). */
@@ -32,10 +42,37 @@ interface MediaPickerDialogProps {
   title?: string;
 }
 
+const VIDEO_RE = /\.(mp4|webm|mov|m4v|ogv)$/i;
+const IMAGE_RE = /\.(jpe?g|png|webp|svg|gif|avif)$/i;
+
+const acceptAttr = (a: Accept): string =>
+  a === "video"
+    ? "video/mp4,video/webm,video/quicktime"
+    : a === "all"
+      ? "image/*,video/*"
+      : "image/*";
+
+const fileMatches = (file: File, a: Accept): boolean =>
+  a === "video"
+    ? file.type.startsWith("video/")
+    : a === "all"
+      ? file.type.startsWith("image/") || file.type.startsWith("video/")
+      : file.type.startsWith("image/");
+
+const blobMatches = (pathname: string, a: Accept): boolean =>
+  a === "video"
+    ? VIDEO_RE.test(pathname)
+    : a === "all"
+      ? IMAGE_RE.test(pathname) || VIDEO_RE.test(pathname)
+      : IMAGE_RE.test(pathname);
+
 export default function MediaPickerDialog({
   open,
   onOpenChange,
   onSelect,
+  onSelectMany,
+  multiple = false,
+  accept = "image",
   uploadPrefix = "uploads",
   listPrefix = "",
   payload,
@@ -46,21 +83,40 @@ export default function MediaPickerDialog({
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const handleFiles = async (files: FileList | null) => {
-    const file = files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("Seules les images sont acceptées.");
+  // Sélection de la médiathèque remise à zéro à chaque ouverture.
+  useEffect(() => {
+    if (!open) setSelected(new Set());
+  }, [open]);
+
+  const emit = (urls: string[]) => {
+    if (urls.length === 0) return;
+    if (multiple) onSelectMany?.(urls);
+    else onSelect?.(urls[0]);
+  };
+
+  const handleFiles = async (fileList: FileList | null) => {
+    const all = fileList ? Array.from(fileList) : [];
+    const picked = multiple ? all : all.slice(0, 1);
+    const valid = picked.filter((f) => fileMatches(f, accept));
+    if (valid.length === 0) {
+      if (picked.length > 0) toast.error("Format de fichier non accepté.");
       return;
     }
+
     setUploading(true);
     try {
-      const pathname = `${uploadPrefix.replace(/\/$/, "")}/${file.name}`;
-      const url = await uploadToBlob(file, pathname, payload);
+      const urls: string[] = [];
+      for (const file of valid) {
+        const pathname = `${uploadPrefix.replace(/\/$/, "")}/${file.name}`;
+        urls.push(await uploadToBlob(file, pathname, payload));
+      }
       await queryClient.invalidateQueries({ queryKey: ["blobs"] });
-      toast.success("Image téléversée.");
-      onSelect(url);
+      toast.success(
+        urls.length > 1 ? `${urls.length} fichiers téléversés.` : "Fichier téléversé."
+      );
+      emit(urls);
       onOpenChange(false);
     } catch (error) {
       toast.error(
@@ -71,15 +127,39 @@ export default function MediaPickerDialog({
     }
   };
 
+  const toggle = (url: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(url)) next.delete(url);
+      else next.add(url);
+      return next;
+    });
+  };
+
+  const handleTileClick = (url: string) => {
+    if (multiple) {
+      toggle(url);
+    } else {
+      onSelect?.(url);
+      onOpenChange(false);
+    }
+  };
+
+  const confirmSelection = () => {
+    emit([...selected]);
+    onOpenChange(false);
+  };
+
+  const visibleBlobs = (blobs ?? []).filter((b) => blobMatches(b.pathname, accept));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="font-serif tracking-tight">
-            {title}
-          </DialogTitle>
+          <DialogTitle className="font-serif tracking-tight">{title}</DialogTitle>
           <DialogDescription>
-            Téléversez une nouvelle image ou réutilisez une image existante.
+            Téléversez {multiple ? "un ou plusieurs fichiers" : "un fichier"} ou
+            réutilisez {multiple ? "des médias existants" : "un média existant"}.
           </DialogDescription>
         </DialogHeader>
 
@@ -121,16 +201,23 @@ export default function MediaPickerDialog({
               <span className="text-sm font-medium">
                 {uploading
                   ? "Téléversement…"
-                  : "Glissez une image ou cliquez pour parcourir"}
+                  : multiple
+                    ? "Glissez des fichiers ou cliquez pour parcourir"
+                    : "Glissez un fichier ou cliquez pour parcourir"}
               </span>
               <span className="text-xs text-muted-foreground">
-                JPG, PNG, WebP, SVG, GIF, AVIF — 10 Mo max
+                {accept === "video"
+                  ? "MP4, WebM, MOV — 200 Mo max"
+                  : accept === "all"
+                    ? "Images & vidéos"
+                    : "JPG, PNG, WebP, SVG, GIF, AVIF — 25 Mo max"}
               </span>
             </button>
             <input
               ref={inputRef}
               type="file"
-              accept="image/*"
+              accept={acceptAttr(accept)}
+              multiple={multiple}
               className="hidden"
               onChange={(e) => handleFiles(e.target.files)}
             />
@@ -143,39 +230,81 @@ export default function MediaPickerDialog({
                   <Skeleton key={i} className="aspect-square w-full" />
                 ))}
               </div>
-            ) : !blobs || blobs.length === 0 ? (
+            ) : visibleBlobs.length === 0 ? (
               <p className="py-12 text-center text-sm text-muted-foreground">
-                Aucune image dans la médiathèque pour l’instant.
+                Aucun média dans la médiathèque pour l’instant.
               </p>
             ) : (
               <div className="grid max-h-80 grid-cols-3 gap-3 overflow-y-auto sm:grid-cols-4">
-                {blobs.map((blob) => (
-                  <button
-                    key={blob.url}
-                    type="button"
-                    onClick={() => {
-                      onSelect(blob.url);
-                      onOpenChange(false);
-                    }}
-                    className="group relative aspect-square overflow-hidden rounded-md border border-border transition-colors hover:border-foreground/50"
-                    title={blob.pathname}
-                  >
-                    <SafeImage
-                      src={blob.url}
-                      alt={blob.pathname}
-                      fill
-                      sizes="120px"
-                      className="object-cover"
-                    />
-                    <span className="absolute inset-0 flex items-center justify-center bg-foreground/0 opacity-0 transition-all group-hover:bg-foreground/40 group-hover:opacity-100">
-                      <Check className="size-5 text-background" />
-                    </span>
-                  </button>
-                ))}
+                {visibleBlobs.map((blob) => {
+                  const isVideo = VIDEO_RE.test(blob.pathname);
+                  const isSelected = selected.has(blob.url);
+                  return (
+                    <button
+                      key={blob.url}
+                      type="button"
+                      onClick={() => handleTileClick(blob.url)}
+                      aria-pressed={multiple ? isSelected : undefined}
+                      className={cn(
+                        "group relative aspect-square overflow-hidden rounded-md border transition-colors",
+                        isSelected
+                          ? "border-foreground ring-2 ring-foreground"
+                          : "border-border hover:border-foreground/50"
+                      )}
+                      title={blob.pathname}
+                    >
+                      {isVideo ? (
+                        <span className="flex size-full items-center justify-center bg-secondary/40">
+                          <Film className="size-6 text-muted-foreground" />
+                        </span>
+                      ) : (
+                        <SafeImage
+                          src={blob.url}
+                          alt={blob.pathname}
+                          fill
+                          sizes="120px"
+                          className="object-cover"
+                        />
+                      )}
+                      <span
+                        className={cn(
+                          "absolute inset-0 flex items-center justify-center transition-all",
+                          isSelected
+                            ? "bg-foreground/40 opacity-100"
+                            : "bg-foreground/0 opacity-0 group-hover:bg-foreground/40 group-hover:opacity-100"
+                        )}
+                      >
+                        <Check className="size-5 text-background" />
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </TabsContent>
         </Tabs>
+
+        {multiple && (
+          <DialogFooter>
+            <span className="mr-auto self-center text-sm text-muted-foreground">
+              {selected.size} sélectionné(s)
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onOpenChange(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="button"
+              onClick={confirmSelection}
+              disabled={selected.size === 0}
+            >
+              Ajouter{selected.size > 0 ? ` (${selected.size})` : ""}
+            </Button>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -19,6 +19,12 @@ export async function POST(request: Request): Promise<NextResponse> {
         // clientPayload contient: { marque, type, action }
         const payload = clientPayload ? JSON.parse(clientPayload) : {};
 
+        // Les vidéos (fichiers volumineux) bénéficient d'une limite plus haute.
+        const isVideo =
+          payload?.type === 'video' ||
+          /\.(mp4|webm|mov)$/i.test(pathname) ||
+          /\/videos\//i.test(pathname);
+
         return {
           allowedContentTypes: [
             'image/jpeg',
@@ -28,8 +34,15 @@ export async function POST(request: Request): Promise<NextResponse> {
             'image/gif',
             'image/avif',
             'application/pdf',
+            'video/mp4',
+            'video/webm',
+            'video/quicktime',
+            'video/x-m4v',
+            'video/ogg',
           ],
-          maximumSizeInBytes: 25 * 1024 * 1024, // 25 Mo max (images + PDF catalogues)
+          maximumSizeInBytes: isVideo
+            ? 200 * 1024 * 1024 // 200 Mo max pour la vidéo
+            : 25 * 1024 * 1024, // 25 Mo max (images + PDF catalogues)
           addRandomSuffix: true, // Remplace les timestamps manuels
           tokenPayload: JSON.stringify(payload),
         };

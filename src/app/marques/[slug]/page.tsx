@@ -12,6 +12,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BrandCard from "@/components/BrandCard";
+import BrandVideos from "@/components/BrandVideos";
 import ImageGallery from "@/components/ImageGallery";
 import { SafeImage } from "@/components/SafeImage";
 import {
@@ -166,6 +167,9 @@ export default async function MarqueDetailPage({ params }: PageProps) {
       {gallery.length > 0 ? (
         <ImageGallery images={gallery} nom={label} />
       ) : null}
+
+      {/* Vidéos (rien affiché si la marque n'en a pas) */}
+      <BrandVideos videos={marque.videos ?? []} nom={label} />
 
       {/* Histoire et valeurs */}
       {marque.histoire ? (

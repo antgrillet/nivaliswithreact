@@ -197,9 +197,11 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // On valide le corps (schema partiel) mais on conserve l'objet brut pour
-    // le merge partiel basé sur `hasOwnProperty` : seules les clés réellement
-    // envoyées par le client sont écrasées côté serveur.
+    // Merge partiel : on valide le corps (schema partiel) et on travaille sur
+    // `parsed.data`. Avec `.partial()`, Zod n'injecte PAS les `.default()` pour
+    // les clés absentes — donc `hasOwnProperty(data, key)` reflète fidèlement les
+    // seules clés envoyées (les autres sont conservées en base), tout en
+    // normalisant (trim) les valeurs réellement transmises.
     const updatedMarque = await request.json();
     const parsed = marqueUpdateSchema.safeParse(updatedMarque);
     if (!parsed.success) {
@@ -208,10 +210,11 @@ export async function PUT(request: NextRequest) {
         { status: 400 }
       );
     }
+    const data = parsed.data;
 
     const { rows: existingRows } = await query<MarqueRow>(
       "SELECT * FROM marques WHERE nom = $1",
-      [updatedMarque.nom]
+      [data.nom]
     );
     if (existingRows.length === 0) {
       return NextResponse.json(
@@ -221,38 +224,34 @@ export async function PUT(request: NextRequest) {
     }
 
     const existing = mapRow(existingRows[0]);
-    const has = (key: keyof Marque) =>
-      Object.prototype.hasOwnProperty.call(updatedMarque, key);
+    const has = (key: keyof typeof data) =>
+      Object.prototype.hasOwnProperty.call(data, key);
 
     const merged: Marque = {
       nom: existing.nom,
-      displayName: has("displayName")
-        ? updatedMarque.displayName
-        : existing.displayName,
+      displayName: has("displayName") ? data.displayName : existing.displayName,
       description: has("description")
-        ? updatedMarque.description
+        ? data.description ?? existing.description
         : existing.description,
       description_fr: has("description_fr")
-        ? updatedMarque.description_fr
+        ? data.description_fr
         : existing.description_fr,
       description_en: has("description_en")
-        ? updatedMarque.description_en
+        ? data.description_en
         : existing.description_en,
       imageFolder: has("imageFolder")
-        ? updatedMarque.imageFolder
+        ? data.imageFolder ?? existing.imageFolder
         : existing.imageFolder,
-      mainImage: has("mainImage")
-        ? updatedMarque.mainImage
-        : existing.mainImage,
-      logo: has("logo") ? updatedMarque.logo : existing.logo,
-      tags: has("tags") ? updatedMarque.tags : existing.tags,
-      type: has("type") ? updatedMarque.type : existing.type,
-      images: has("images") ? updatedMarque.images : existing.images,
-      videos: has("videos") ? updatedMarque.videos : existing.videos,
-      website: has("website") ? updatedMarque.website : existing.website,
-      histoire: has("histoire") ? updatedMarque.histoire : existing.histoire,
-      contact: has("contact") ? updatedMarque.contact : existing.contact,
-      produits: has("produits") ? updatedMarque.produits : existing.produits,
+      mainImage: has("mainImage") ? data.mainImage : existing.mainImage,
+      logo: has("logo") ? data.logo : existing.logo,
+      tags: has("tags") ? data.tags : existing.tags,
+      type: has("type") ? data.type : existing.type,
+      images: has("images") ? data.images : existing.images,
+      videos: has("videos") ? data.videos : existing.videos,
+      website: has("website") ? data.website : existing.website,
+      histoire: has("histoire") ? data.histoire : existing.histoire,
+      contact: has("contact") ? data.contact : existing.contact,
+      produits: has("produits") ? data.produits : existing.produits,
     };
 
     const { rows } = await query<MarqueRow>(
