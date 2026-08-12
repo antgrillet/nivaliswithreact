@@ -3,7 +3,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MarquesHeader from "@/components/marques/MarquesHeader";
 import MarquesFilterClient from "@/components/marques/MarquesFilterClient";
-import MarquesStatistics from "@/components/marques/MarquesStatistics";
 import { getMarques } from "@/lib/data/marques";
 
 export const revalidate = 300;
@@ -20,9 +19,8 @@ export default async function MarquesPage() {
   return (
     <main className="min-h-screen bg-background">
       <Navbar />
-      <MarquesHeader count={marques.length} />
+      <MarquesHeader count={marques.length} marques={marques} />
       <MarquesFilterClient marques={marques} />
-      <MarquesStatistics marques={marques} />
       <Footer />
     </main>
   );

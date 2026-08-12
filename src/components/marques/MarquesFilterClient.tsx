@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Star } from "lucide-react";
+import { Search, SlidersHorizontal, Star, X } from "lucide-react";
 import BrandCard from "@/components/BrandCard";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,7 @@ const FAVORITES_KEY = "nivalis:marques:favoris";
 /**
  * Filtre + grille des marques (esprit galerie monochrome).
  * Reçoit toutes les marques en props : aucune requête côté client.
- * Recherche debounced, filtres tag/type en boutons texte (actif souligné),
+ * Recherche debounced, filtres tag/type à divulgation progressive,
  * favoris persistés en localStorage, pagination « voir plus ».
  */
 export default function MarquesFilterClient({
@@ -30,6 +30,7 @@ export default function MarquesFilterClient({
   const [activeTag, setActiveTag] = useState(ALL_TAGS);
   const [activeType, setActiveType] = useState(ALL_TYPES);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
@@ -127,113 +128,157 @@ export default function MarquesFilterClient({
   const visible = filtered.slice(0, visibleCount);
 
   return (
-    <section className="bg-background pb-24 md:pb-32">
+    <section id="selection" className="scroll-mt-20 bg-background pb-24 md:pb-32">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
         {/* Barre de contrôle */}
-        <div className="border-b border-border pb-10">
-          {/* Recherche */}
-          <div className="max-w-md">
-            <label htmlFor="marque-search" className="eyebrow">
-              Rechercher
-            </label>
-            <input
-              id="marque-search"
-              type="search"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Nom, univers, catégorie…"
-              autoComplete="off"
-              className="mt-3 w-full border-b border-border bg-transparent pb-2 font-serif text-2xl tracking-tight text-foreground placeholder:text-muted-foreground/50 focus:border-foreground focus:outline-none"
-            />
-          </div>
+        <div className="border-b border-border py-6 md:py-8">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="relative w-full md:max-w-lg">
+              <label htmlFor="marque-search" className="sr-only">
+                Rechercher une marque
+              </label>
+              <Search
+                className="pointer-events-none absolute left-0 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <input
+                id="marque-search"
+                type="search"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Rechercher une marque…"
+                autoComplete="off"
+                className="h-12 w-full border-b border-border bg-transparent pl-7 pr-10 text-base text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none"
+              />
+              {searchInput ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchInput("")}
+                  className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                  aria-label="Effacer la recherche"
+                >
+                  <X className="size-4" aria-hidden="true" />
+                </button>
+              ) : null}
+            </div>
 
-          {/* Filtres par type */}
-          <div className="mt-10">
-            <p className="eyebrow">Univers</p>
-            <div
-              role="group"
-              aria-label="Filtrer par univers"
-              className="mt-4 flex flex-wrap gap-x-6 gap-y-3"
-            >
-              {types.map((type) => {
-                const isActive = activeType === type;
-                return (
-                  <button
-                    key={type}
-                    type="button"
-                    aria-pressed={isActive}
-                    onClick={() => setActiveType(type)}
-                    className={cn(
-                      "link-underline pb-0.5 text-sm tracking-wide transition-opacity",
-                      isActive
-                        ? "bg-[length:100%_1px] text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {type}
-                  </button>
-                );
-              })}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-expanded={filtersOpen}
+                aria-controls="marques-filters"
+                onClick={() => setFiltersOpen((value) => !value)}
+                className={cn(
+                  "inline-flex h-11 flex-1 items-center justify-center gap-2 border px-4 text-sm transition-colors md:flex-none",
+                  filtersOpen || activeTag !== ALL_TAGS || activeType !== ALL_TYPES
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border hover:border-foreground"
+                )}
+              >
+                <SlidersHorizontal className="size-4" aria-hidden="true" />
+                Filtres
+                {(activeTag !== ALL_TAGS || activeType !== ALL_TYPES) && (
+                  <span aria-label="Filtres actifs">
+                    ({Number(activeTag !== ALL_TAGS) + Number(activeType !== ALL_TYPES)})
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                aria-pressed={onlyFavorites}
+                onClick={() => setOnlyFavorites((value) => !value)}
+                className={cn(
+                  "inline-flex size-11 shrink-0 items-center justify-center border transition-colors",
+                  onlyFavorites
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border text-muted-foreground hover:border-foreground hover:text-foreground"
+                )}
+                aria-label={onlyFavorites ? "Afficher toutes les marques" : "Afficher les favoris"}
+              >
+                <Star className={cn("size-4", onlyFavorites && "fill-current")} aria-hidden="true" />
+              </button>
             </div>
           </div>
 
-          {/* Filtres par catégorie / tag */}
-          {tags.length > 1 ? (
-            <div className="mt-8">
-              <p className="eyebrow">Catégorie</p>
-              <div
-                role="group"
-                aria-label="Filtrer par catégorie"
-                className="mt-4 flex flex-wrap gap-x-6 gap-y-3"
-              >
-                {tags.map((tag) => {
-                  const isActive = activeTag === tag;
-                  return (
-                    <button
-                      key={tag}
-                      type="button"
-                      aria-pressed={isActive}
-                      onClick={() => setActiveTag(tag)}
-                      className={cn(
-                        "link-underline pb-0.5 text-sm tracking-wide transition-opacity",
-                        isActive
-                          ? "bg-[length:100%_1px] text-foreground"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      {tag}
-                    </button>
-                  );
-                })}
+          {filtersOpen ? (
+            <div
+              id="marques-filters"
+              className="mt-8 grid gap-8 border-t border-border pt-8 lg:grid-cols-2"
+            >
+              <div>
+                <p className="eyebrow">Univers</p>
+                <div
+                  role="group"
+                  aria-label="Filtrer par univers"
+                  className="mt-4 flex flex-wrap gap-2"
+                >
+                  {types.map((type) => {
+                    const isActive = activeType === type;
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        aria-pressed={isActive}
+                        onClick={() => setActiveType(type)}
+                        className={cn(
+                          "min-h-11 border px-3 py-2 text-left text-sm transition-colors",
+                          isActive
+                            ? "border-foreground bg-foreground text-background"
+                            : "border-border text-muted-foreground hover:border-foreground hover:text-foreground"
+                        )}
+                      >
+                        {type}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
+
+              {tags.length > 1 ? (
+                <div>
+                  <p className="eyebrow">Catégorie</p>
+                  <div
+                    role="group"
+                    aria-label="Filtrer par catégorie"
+                    className="mt-4 flex flex-wrap gap-2"
+                  >
+                    {tags.map((tag) => {
+                      const isActive = activeTag === tag;
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          aria-pressed={isActive}
+                          onClick={() => setActiveTag(tag)}
+                          className={cn(
+                            "min-h-11 border px-3 py-2 text-sm transition-colors",
+                            isActive
+                            ? "border-foreground bg-foreground text-background"
+                            : "border-border text-muted-foreground hover:border-foreground hover:text-foreground"
+                          )}
+                        >
+                          {tag}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
             </div>
           ) : null}
 
-          {/* Résumé + favoris + reset */}
-          <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground" aria-live="polite">
               {filtered.length}{" "}
               {filtered.length > 1 ? "marques affichées" : "marque affichée"}
             </p>
-            <div className="flex items-center gap-6">
-              <button
-                type="button"
-                aria-pressed={onlyFavorites}
-                onClick={() => setOnlyFavorites((v) => !v)}
-                className={cn(
-                  "link-underline inline-flex items-center gap-2 pb-0.5 text-sm tracking-wide transition-opacity",
-                  onlyFavorites
-                    ? "bg-[length:100%_1px] text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <Star
-                  className={cn("size-4", onlyFavorites && "fill-current")}
-                  aria-hidden="true"
-                />
-                Favoris
-                {favorites.length > 0 ? ` (${favorites.length})` : ""}
-              </button>
+            <div className="flex items-center gap-5">
+              {favorites.length > 0 ? (
+                <span className="text-xs text-muted-foreground">
+                  {favorites.length} {favorites.length > 1 ? "favoris" : "favori"}
+                </span>
+              ) : null}
               {hasActiveFilters ? (
                 <button
                   type="button"
@@ -250,7 +295,7 @@ export default function MarquesFilterClient({
         {/* Grille / état vide */}
         {visible.length > 0 ? (
           <>
-            <div className="mt-16 grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-3 lg:grid-cols-4">
+            <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 md:mt-12 md:grid-cols-3 lg:grid-cols-4 lg:gap-y-14">
               {visible.map((marque, i) => {
                 const isFavorite = favorites.includes(marque.nom);
                 const label = marque.displayName?.trim() || marque.nom;
@@ -275,7 +320,7 @@ export default function MarquesFilterClient({
                           : `Ajouter ${label} aux favoris`
                       }
                       className={cn(
-                        "absolute right-3 top-3 z-10 flex size-9 items-center justify-center border bg-background/85 backdrop-blur-sm transition-all duration-300",
+                        "absolute right-2 top-2 z-10 flex size-11 items-center justify-center border bg-background/85 backdrop-blur-sm transition-all duration-300 md:right-3 md:top-3 md:size-9",
                         isFavorite
                           ? "border-foreground text-foreground opacity-100"
                           : "border-border text-muted-foreground opacity-0 hover:text-foreground focus-visible:opacity-100 group-hover/card:opacity-100"
